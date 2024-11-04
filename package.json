@@ -1,0 +1,55 @@
+{
+  "name": "opta-hire-ai-recruitment-fyp-app-mern",
+  "version": "1.0.0",
+  "description": "AI-driven recruitment platform powered by the MERN stack for streamlined hiring and interviewing processes.",
+  "main": "server/app.js",
+  "scripts": {
+    "server": "nodemon server/app --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install": "cd client && npm install && cd .. && cd server && npm install && cd ..",
+    "data:import": "node server/seeder",
+    "data:destroy": "node server/seeder -d",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "build": "cd client && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-mern.git"
+  },
+  "keywords": [
+    "mern",
+    "react",
+    "node",
+    "express",
+    "mongodb",
+    "recruitment",
+    "ai",
+    "hiring",
+    "interviewing",
+    "job",
+    "application",
+    "management",
+    "platform",
+    "system",
+    "app",
+    "application"
+  ],
+  "author": "Muhammad Saad",
+  "contributors": [
+    "Muhammad Saad",
+    "Mirza Moiz",
+    "Hassnain Raza"
+  ],
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-mern/issues"
+  },
+  "homepage": "https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-mern#readme",
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "eslint": "^9.14.0",
+    "nodemon": "^3.1.7"
+  }
+}
