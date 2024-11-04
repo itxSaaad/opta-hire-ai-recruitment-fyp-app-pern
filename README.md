@@ -4,7 +4,7 @@
 
 <br/>
 <div align="center">
-  <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp">
+  <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern">
     <img src="/client/public/images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
@@ -14,14 +14,14 @@
     Optimize your recruitment journey with OptaHire!
     <br/>
     <br/>
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
-    <a href="https://opta-hire-ai-recruitment-app-mern-fyp.vercel.app/">View Demo</a>
+    <a href="https://opta-hire-ai-recruitment-fyp-app-mern.vercel.app/">View Demo</a>
     .
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/issues">Report Bug</a>
+    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues">Report Bug</a>
     .
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/issues">Request Feature</a>
+    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues">Request Feature</a>
   </p>
 </div>
 
@@ -133,7 +133,7 @@ OptaHire revolutionizes hiring for busy professionals and businesses by enabling
 1. Clone the repo
 
    ```sh
-   git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-app-mern-fyp.git
+   git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-mern.git
    ```
 
 2. Install NPM packages
@@ -167,16 +167,16 @@ OptaHire revolutionizes hiring for busy professionals and businesses by enabling
 
 ## Roadmap
 
-See the [open issues](https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern) for a list of proposed features (and known issues).
 
 ## Contributing
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-- If you have suggestions for adding or removing projects, feel free to [open an issue](https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/issues/new) to discuss it, or directly create a pull request after you edit the _README.md_ file with necessary changes.
+- If you have suggestions for adding or removing projects, feel free to [open an issue](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues/new) to discuss it, or directly create a pull request after you edit the _README.md_ file with necessary changes.
 - Please make sure you check your spelling and grammar.
 - Create individual PR for each suggestion.
-- Please also read through the [Code Of Conduct](https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/blob/master/CODE_OF_CONDUCT.md) before posting your first idea as well.
+- Please also read through the [Code Of Conduct](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/blob/master/CODE_OF_CONDUCT.md) before posting your first idea as well.
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Don't forget to give the project a star! Thanks again!
 
@@ -193,7 +193,7 @@ If you have a suggestion that would make this better, please fork the repo and c
 - **Mirza Moiz** - Full Stack Developer - [mirza-moiz](https://github.com/mirza-moiz) - _Handling Backend and Database_ - _Documentation_
 - **Hassnain Raza** - Front End Developer - [hassnain512](https://github.com/hassnain512) - _Handling Frontend and Deployment_ - _Documentation_
 
-See also the list of [contributors](https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/graphs/contributors)
+See also the list of [contributors](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/graphs/contributors)
 
 ## License
 
@@ -207,13 +207,13 @@ Give ⭐️ if you like this project!
 
 <!-- MARKDOWN LINKS & IMAGES -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp.svg?style=for-the-badge
-[contributors-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp.svg?style=for-the-badge
-[forks-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/network/members
-[stars-shield]: https://img.shields.io/github/stars/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp.svg?style=for-the-badge
-[stars-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/stargazers
-[issues-shield]: https://img.shields.io/github/issues/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp.svg?style=for-the-badge
-[issues-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/issues
-[license-shield]: https://img.shields.io/github/license/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp.svg?style=for-the-badge
-[license-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-app-mern-fyp/blob/main/LICENSE.md
+[contributors-shield]: https://img.shields.io/github/contributors/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
+[contributors-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
+[forks-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/network/members
+[stars-shield]: https://img.shields.io/github/stars/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
+[stars-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/stargazers
+[issues-shield]: https://img.shields.io/github/issues/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
+[issues-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues
+[license-shield]: https://img.shields.io/github/license/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
+[license-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/blob/main/LICENSE.md
