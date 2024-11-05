@@ -58,6 +58,9 @@
 
 OptaHire revolutionizes hiring for busy professionals and businesses by enabling efficient recruitment through AI-powered tools. Recruiters can post jobs, connect with industry-experienced interviewers, schedule video interviews, and get AI-generated summaries for candidate evaluation. Designed for reliability and scalability, OptaHire aims to optimize recruitment with cutting-edge technologies.
 
+- **Client URL:** [https://opta-hire-ai-recruitment-fyp-app-mern.vercel.app/](https://opta-hire-ai-recruitment-fyp-app-mern.vercel.app/)
+- **Server URL:** [https://opta-hire-ai-recruitment-fyp-app-server.vercel.app/](https://opta-hire-ai-recruitment-fyp-app-server.vercel.app/)
+
 ## Features
 
 ### 1. Job Posting & Management
