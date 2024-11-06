@@ -5,7 +5,7 @@
 <br/>
 <div align="center">
   <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern">
-    <img src="/client/public/images/logo.png" alt="Logo" width="80" height="80">
+    <img src="/client/src/assets/images/logo.png" alt="Logo" width="100" height="100">
   </a>
 
   <h3 align="center">OptaHire</h3>
