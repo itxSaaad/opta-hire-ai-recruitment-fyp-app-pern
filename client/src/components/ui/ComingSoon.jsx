@@ -41,7 +41,7 @@ export default function ComingSoon({
         <img
           src={logoSrc}
           alt="Spinning Logo"
-          className="w-60 h-60 animate-loader"
+          className="w-60 h-60 animate-loaderAlt"
         />
         <h1 className="text-4xl font-bold text-darkText mb-4">Coming Soon!</h1>
         <p className="text-lg text-darkText opacity-80 mb-8">
