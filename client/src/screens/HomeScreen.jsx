@@ -4,7 +4,7 @@ export default function HomeScreen() {
   return (
     <>
       <Helmet>
-        <title>Home - OptaHire</title>
+        <title>OptaHire - Optimizing your Recruitment Journey</title>
         <meta
           name="description"
           content="OptaHire is an innovative recruitment platform that connects job seekers with employers. Find your next job today!"
