@@ -1,0 +1,28 @@
+import { Helmet } from 'react-helmet-async';
+
+export default function HomeScreen() {
+  return (
+    <>
+      <Helmet>
+        <title>Home - OptaHire</title>
+        <meta
+          name="description"
+          content="OptaHire is an innovative recruitment platform that connects job seekers with employers. Find your next job today!"
+        />
+      </Helmet>
+      <main className="relative flex flex-col items-center justify-center min-h-screen text-center">
+        <h1 className="absolute text-[20vw] font-extrabold text-primary opacity-10 flex items-center justify-center">
+          OptaHire
+        </h1>
+
+        <h2 className="text-4xl font-bold text-darkText mb-4">
+          Welcome to OptaHire!
+        </h2>
+        <p className="text-lg text-darkText opacity-80 mb-8">
+          OptaHire is an innovative recruitment platform that connects job
+          seekers with employers. Find your next job today!
+        </p>
+      </main>
+    </>
+  );
+}
