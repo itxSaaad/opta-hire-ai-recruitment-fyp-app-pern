@@ -24,7 +24,7 @@ const Features = [
 ];
 
 const Feature = ({ icon, title, description }) => (
-  <div className="p-6 bg-white bg-opacity-20 rounded-lg shadow-lg text-left transform transition-transform hover:scale-105 hover:shadow-xl duration-300">
+  <div className="p-6 bg-primary bg-opacity-10 rounded-lg shadow-lg text-left transform transition-transform hover:scale-105 hover:shadow-xl duration-300">
     <div className="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center mb-4">
       {icon}
     </div>
@@ -36,7 +36,7 @@ const Feature = ({ icon, title, description }) => (
 export default function ForRecruitersSection() {
   return (
     <section
-      className="relative bg-gradient-to-tl from-secondary via-primary to-secondary text-white py-20 px-6 sm:px-12"
+      className="relative text-white py-20 px-6 sm:px-12"
       id="for-recruiters"
     >
       <header className="text-center mb-12">

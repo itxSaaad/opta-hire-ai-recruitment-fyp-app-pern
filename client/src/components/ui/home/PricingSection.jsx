@@ -3,10 +3,10 @@ import { FaDollarSign, FaHandshake } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const PricingCard = ({ icon: Icon, title, description }) => (
-  <div className="bg-primary text-white rounded-xl p-8 shadow-lg">
+  <div className="bg-primary text-white rounded-xl p-8 shadow-lg flex flex-col items-center">
     <Icon className="text-5xl mb-4" />
     <h3 className="text-2xl font-semibold">{title}</h3>
-    <p className="text-gray-300 mt-2">{description}</p>
+    <p className="text-gray-300 mt-2 text-center">{description}</p>
   </div>
 );
 
@@ -33,7 +33,7 @@ const PricingSection = () => (
       things simple and transparent. We take just a minor fee to help facilitate
       connections between recruiters and interviewers.
     </p>
-    <div className="flex justify-center items-center space-x-8 mb-8">
+    <div className="flex flex-col sm:flex-row justify-center items-center space-y-8 sm:space-y-0 sm:space-x-8 mb-8">
       <PricingCard
         icon={FaDollarSign}
         title="Affordable Fees"
