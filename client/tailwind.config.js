@@ -11,6 +11,12 @@ export default {
         darkText: '#E0E0E0',
       },
       animation: {
+        fadeIn: 'fadeIn 1.5s ease-in',
+        slideUp: 'slideUp 0.6s ease-out',
+        slideIn: 'slideIn 1s ease-out',
+        slideOut: 'slideOut 1s ease-in',
+        slideInLeft: 'slideInLeft 1s ease-out',
+        slideOutLeft: 'slideOutLeft 1s ease-in',
         loader:
           'fadeIn 0.3s ease-in, spin 3s linear infinite, scale 0.3s ease-in',
         loaderAlt: 'fade-in-scale-spin 2s ease-in-out infinite',
@@ -44,6 +50,18 @@ export default {
         slideOut: {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(100%)' },
+        },
+        slideInLeft: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        slideOutLeft: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(20px)', opacity: 0 },
+          '100%': { transform: 'translateY(0)', opacity: 1 },
         },
       },
     },

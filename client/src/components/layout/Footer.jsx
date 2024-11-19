@@ -3,26 +3,10 @@ import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const socials = [
-  {
-    href: 'https://www.facebook.com',
-    label: 'Facebook',
-    Icon: FaFacebook,
-  },
-  {
-    href: 'https://www.instagram.com',
-    label: 'Instagram',
-    Icon: FaInstagram,
-  },
-  {
-    href: 'https://www.linkedin.com',
-    label: 'LinkedIn',
-    Icon: FaLinkedin,
-  },
-  {
-    href: 'https://www.twitter.com',
-    label: 'Twitter',
-    Icon: FaTwitter,
-  },
+  { href: 'https://www.facebook.com', label: 'Facebook', Icon: FaFacebook },
+  { href: 'https://www.instagram.com', label: 'Instagram', Icon: FaInstagram },
+  { href: 'https://www.linkedin.com', label: 'LinkedIn', Icon: FaLinkedin },
+  { href: 'https://www.twitter.com', label: 'Twitter', Icon: FaTwitter },
 ];
 
 const SocialIcon = ({ href, label, Icon }) => (
@@ -31,7 +15,7 @@ const SocialIcon = ({ href, label, Icon }) => (
     target="_blank"
     rel="noopener noreferrer"
     aria-label={label}
-    className="text-primary hover:text-primaryLight transition hover:text-secondary hover:scale-110"
+    className="text-gray-300 hover:text-primary transition duration-300 transform hover:rotate-6 hover:scale-110"
   >
     <Icon size={20} />
   </Link>
@@ -39,7 +23,7 @@ const SocialIcon = ({ href, label, Icon }) => (
 
 export default function Footer() {
   return (
-    <footer className="text-darkText p-4 container mx-auto flex flex-row items-center justify-between space-y-2 md:space-y-0">
+    <footer className="text-darkText py-4 px-4 md:px-8 flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">
       <div className="text-xs md:text-sm text-gray-400">
         &copy; {new Date().getFullYear()} OptaHire. All Rights Reserved.
       </div>

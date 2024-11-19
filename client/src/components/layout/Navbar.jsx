@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import Logo from '../../assets/images/logo.png';
 
@@ -15,13 +15,33 @@ const NavLinks = [
 export default function Navbar() {
   const [isHover, setIsHover] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const { pathname } = useLocation();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-darkBackground text-darkText transition-all p-4 ">
+    <header
+      className={`fixed top-0 left-0 w-full z-50 transition-all p-4 ${
+        isScrolled ? 'bg-darkBackground' : 'bg-transparent md:bg-transparent'
+      } text-darkText`}
+    >
       <nav className="flex justify-between items-center">
         <Link
           to="/"
@@ -41,15 +61,15 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center space-x-4">
           {NavLinks.map((link, index) => (
-            <NavLink
+            <a
               key={index}
-              to={link.link}
+              href={link.link}
               className={`text-md hover:text-primary transition duration-500 ease-in-out ${
                 link.link === pathname ? 'text-primary' : ''
               }`}
             >
               {link.title}
-            </NavLink>
+            </a>
           ))}
         </div>
 
@@ -78,16 +98,16 @@ export default function Navbar() {
             }`}
           >
             {NavLinks.map((link, index) => (
-              <NavLink
+              <a
                 key={index}
-                to={link.link}
+                href={link.link}
                 className={`block text-md hover:text-primary transition duration-300 ease-in-out px-4 py-2 ${
                   link.link === pathname ? 'text-primary' : 'text-darkText'
                 }`}
                 onClick={toggleMenu}
               >
                 {link.title}
-              </NavLink>
+              </a>
             ))}
             <Link
               to="/login"
