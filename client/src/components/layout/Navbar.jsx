@@ -5,17 +5,26 @@ import { Link, useLocation } from 'react-router-dom';
 import Logo from '../../assets/images/logo.png';
 
 const NavLinks = [
-  { title: 'Jobs', link: '/jobs' },
-  { title: 'Pricing', link: '/#pricing' },
-  { title: 'For Recruiters', link: '/#for-recruiters' },
-  { title: 'For Interviewers', link: '/#for-interviewers' },
-  { title: 'About', link: '/#about' },
+  { title: 'Jobs', link: '/jobs', sectionId: null },
+  {
+    title: 'For Recruiters',
+    link: '/#for-recruiters',
+    sectionId: '#for-recruiters',
+  },
+  {
+    title: 'For Interviewers',
+    link: '/#for-interviewers',
+    sectionId: '#for-interviewers',
+  },
+  { title: 'Pricing', link: '/#pricing', sectionId: '#pricing' },
+  { title: 'About', link: '/#about', sectionId: '#about' },
 ];
 
 export default function Navbar() {
   const [isHover, setIsHover] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
 
   const { pathname } = useLocation();
 
@@ -23,18 +32,45 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
+      if (window.scrollY > 0) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
       }
+
+      const sections = document.querySelectorAll('section');
+      let currentSection;
+
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        if (
+          rect.top <= window.innerHeight / 2 &&
+          rect.bottom >= window.innerHeight / 2
+        ) {
+          currentSection = `#${section.id}`;
+        }
+      });
+
+      const activeNavItem = NavLinks.find(
+        (navItem) => navItem.sectionId === currentSection
+      )?.title;
+
+      setActiveSection(activeNavItem);
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    if (pathname === '/jobs') {
+      setActiveSection('Jobs');
+    }
+  }, [pathname]);
 
   return (
     <header
@@ -65,7 +101,7 @@ export default function Navbar() {
               key={index}
               href={link.link}
               className={`text-md hover:text-primary transition duration-500 ease-in-out ${
-                link.link === pathname ? 'text-primary' : ''
+                link.title === activeSection ? 'text-primary' : ''
               }`}
             >
               {link.title}
@@ -102,7 +138,9 @@ export default function Navbar() {
                 key={index}
                 href={link.link}
                 className={`block text-md hover:text-primary transition duration-300 ease-in-out px-4 py-2 ${
-                  link.link === pathname ? 'text-primary' : 'text-darkText'
+                  link.title === activeSection
+                    ? 'text-primary'
+                    : 'text-darkText'
                 }`}
                 onClick={toggleMenu}
               >
