@@ -16,7 +16,7 @@ export default function HeroSection() {
           <span className="text-secondary">OptaHire</span>
         </h1>
         <h2 className="text-darkText text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold drop-shadow-lg">
-          The Utimate Hiring Platform
+          The Ultimate Hiring Platform
         </h2>
         <p className="text-darkText text-lg sm:text-xl md:text-2xl mt-4 drop-shadow-md mx-auto max-w-2xl">
           Empowering recruiters to connect, interview, and select candidates

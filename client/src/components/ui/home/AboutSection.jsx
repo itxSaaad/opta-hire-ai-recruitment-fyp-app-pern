@@ -18,7 +18,7 @@ InfoCard.propTypes = {
 const AboutSection = () => (
   <section
     className="relative text-white py-20 px-6 sm:px-12"
-    id="about-us"
+    id="about"
     aria-labelledby="about-us-heading"
   >
     <h2

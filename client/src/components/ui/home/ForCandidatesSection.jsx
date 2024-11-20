@@ -44,7 +44,7 @@ Feature.propTypes = {
 };
 
 const SectionHeader = () => (
-  <div className="lg:w-1/2 lg:pl-10">
+  <div className="lg:w-1/2 lg:pl-10 mb-12 lg:mb-0">
     <h2 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight">
       Unlock Your Potential with{' '}
       <span className="text-secondary">OptaHire</span>
@@ -77,7 +77,8 @@ export default function ForCandidatesSection() {
       id="for-candidates"
     >
       <div className="container mx-auto flex flex-col lg:flex-row items-center">
-        <div className="lg:w-1/2 mb-12 lg:mb-0">
+        <SectionHeader />
+        <div className="lg:w-1/2 order-last lg:order-first">
           <img
             src="https://img.freepik.com/premium-vector/online-job-search-concept-group-people-are-looking-job-selection-resumes-interviews-via-internet_688351-112.jpg"
             alt="For Candidates"
@@ -85,7 +86,6 @@ export default function ForCandidatesSection() {
             loading="lazy"
           />
         </div>
-        <SectionHeader />
       </div>
     </section>
   );
