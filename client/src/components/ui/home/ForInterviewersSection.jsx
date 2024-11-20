@@ -78,7 +78,7 @@ export default function ForInterviewersSection() {
         <SectionHeader />
         <div className="lg:w-1/2 mt-12 lg:mt-0">
           <img
-            src="https://img.freepik.com/free-vector/abstract-illustration-online-job-interview_23-2148636291.jpg"
+            src="https://img.freepik.com/free-vector/choice-worker-concept_23-2148627427.jpg"
             alt="Illustration of interviewers collaborating"
             className="rounded-xl shadow-lg w-full"
             loading="lazy"
