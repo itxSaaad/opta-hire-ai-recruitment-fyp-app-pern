@@ -15,10 +15,10 @@ export default function HeroSection() {
           Simplifying Hiring with{' '}
           <span className="text-secondary">OptaHire</span>
         </h1>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl opacity-80 font-extrabold drop-shadow-lg">
+        <h2 className="text-darkText text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold drop-shadow-lg">
           The Utimate Hiring Platform
         </h2>
-        <p className="text-lg sm:text-xl md:text-2xl mt-4 drop-shadow-md mx-auto max-w-2xl">
+        <p className="text-darkText text-lg sm:text-xl md:text-2xl mt-4 drop-shadow-md mx-auto max-w-2xl">
           Empowering recruiters to connect, interview, and select candidates
           seamlessly.
         </p>

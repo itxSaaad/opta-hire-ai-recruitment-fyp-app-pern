@@ -15,7 +15,7 @@ const SocialIcon = ({ href, label, Icon }) => (
     target="_blank"
     rel="noopener noreferrer"
     aria-label={label}
-    className="text-gray-300 hover:text-primary transition duration-300 transform hover:rotate-6 hover:scale-110"
+    className="text-darkText hover:text-primary transition duration-300 transform hover:rotate-6 hover:scale-110"
   >
     <Icon size={20} />
   </Link>
@@ -24,7 +24,7 @@ const SocialIcon = ({ href, label, Icon }) => (
 export default function Footer() {
   return (
     <footer className="text-darkText py-4 px-4 md:px-8 flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">
-      <div className="text-xs md:text-sm text-gray-400">
+      <div className="text-xs md:text-sm text-darkText">
         &copy; {new Date().getFullYear()} OptaHire. All Rights Reserved.
       </div>
 

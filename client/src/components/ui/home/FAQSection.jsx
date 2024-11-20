@@ -4,7 +4,7 @@ import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 const FAQItem = ({ question, answer, id, isOpen, onClick }) => {
   return (
-    <div className="border-b border-gray-700 py-4">
+    <div className="border-b border-darkText py-4">
       <button
         onClick={() => onClick(id)}
         className="flex items-center justify-between w-full text-left text-lg sm:text-xl font-semibold text-white focus:outline-none hover:text-secondary transition-all"
@@ -21,7 +21,7 @@ const FAQItem = ({ question, answer, id, isOpen, onClick }) => {
       {isOpen && (
         <p
           id={`faq-answer-${id}`}
-          className="mt-3 text-gray-300 text-base sm:text-lg opacity-100 translate-y-0 transition-all duration-300 ease-in-out"
+          className="mt-3 text-darkText text-base sm:text-lg opacity-100 translate-y-0 transition-all duration-300 ease-in-out"
           aria-live="polite"
         >
           {answer}
@@ -80,7 +80,7 @@ export default function FAQSection() {
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-lg sm:text-xl text-gray-300">
+          <p className="text-lg sm:text-xl text-darkText">
             Find answers to some of the most common questions about OptaHire.
           </p>
         </div>

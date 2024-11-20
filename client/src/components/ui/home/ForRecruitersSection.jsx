@@ -29,7 +29,7 @@ const Feature = ({ icon, title, description }) => (
       {icon}
     </div>
     <h3 className="text-xl font-semibold mb-2">{title}</h3>
-    <p className="text-lg text-gray-300">{description}</p>
+    <p className="text-lg text-darkText">{description}</p>
   </div>
 );
 

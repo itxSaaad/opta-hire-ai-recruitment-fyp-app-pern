@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 
+import Navbar from '../components/layout/Navbar';
 import AboutSection from '../components/ui/home/AboutSection';
 import FAQSection from '../components/ui/home/FAQSection';
 import ForCandidatesSection from '../components/ui/home/ForCandidatesSection';
@@ -18,6 +19,7 @@ export default function HomeScreen() {
           content="OptaHire is an innovative recruitment platform that connects job seekers with employers. Find your next job today!"
         />
       </Helmet>
+      <Navbar />
       <HeroSection />
       <ForRecruitersSection />
       <ForInterviewersSection />

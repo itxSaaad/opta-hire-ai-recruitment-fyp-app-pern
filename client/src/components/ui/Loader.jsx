@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 
 import Logo from '../../assets/images/logo.png';
-export function Loader({ logoSrc = Logo, altText = 'Loading...' }) {
+
+export default function Loader({ logoSrc = Logo, altText = 'Loading...' }) {
   return (
     <section className="flex justify-center items-center h-full w-full">
       <img src={logoSrc} alt={altText} className="animate-loader" />

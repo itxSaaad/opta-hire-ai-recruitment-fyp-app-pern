@@ -6,7 +6,7 @@ const PricingCard = ({ icon: Icon, title, description }) => (
   <div className="bg-primary bg-opacity-10 text-white rounded-xl p-8 shadow-lg flex flex-col items-center">
     <Icon className="text-5xl mb-4" />
     <h3 className="text-2xl font-semibold">{title}</h3>
-    <p className="text-gray-300 mt-2 text-center">{description}</p>
+    <p className="text-darkText mt-2 text-center">{description}</p>
   </div>
 );
 

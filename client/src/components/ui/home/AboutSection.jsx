@@ -5,7 +5,7 @@ const InfoCard = ({ icon: Icon, title, children }) => (
   <article className="text-center lg:text-left lg:w-1/3">
     <Icon className="text-5xl text-primary mb-4" />
     <h3 className="text-2xl font-semibold">{title}</h3>
-    <p className="text-gray-300 mt-2">{children}</p>
+    <p className="text-darkText mt-2">{children}</p>
   </article>
 );
 
