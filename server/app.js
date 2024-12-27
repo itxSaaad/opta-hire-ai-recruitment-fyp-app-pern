@@ -57,22 +57,21 @@ const swaggerOptions = {
         'The OptaHire API is a RESTful API that provides access to a wide range of services and resources tailored for optimizing talent acquisition. It is designed to be fast, reliable, and easy to use. Built using Node.js, Express.js, and MongoDB, the API is hosted on Vercel and fully documented using Swagger. It includes detailed information about each endpoint, such as request and response formats, authentication requirements, and example responses. The API aims to provide an intuitive interface, enabling developers to get started quickly. It is scalable, supporting high traffic levels and numerous users, and secure, featuring authentication and authorization mechanisms along with rate limiting and input validation to protect against common security threats. Additionally, the API ensures reliability through monitoring and logging, maintaining high availability and performance.',
       contact: {
         name: 'OptaHire Team',
-        url: 'https://optahire.com',
-        email: 'support@optahire.com',
+        url: 'https://opta-hire-fyp-app-client.vercel.app',
       },
     },
     servers: [
       {
         url: 'http://localhost:5000',
-        description: 'Development server',
+        description: 'Local Development server',
       },
       {
-        url: 'https://optahire-main-server-expressjs.vercel.app',
-        description: 'Vercel Production server',
+        url: 'https://develop-opta-hire-fyp-app-server.vercel.app',
+        description: 'Vercel Development Server',
       },
       {
-        url: 'https://api.optahire.com',
-        description: 'Production',
+        url: 'https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com',
+        description: 'Heroku Production Server',
       },
     ],
   },

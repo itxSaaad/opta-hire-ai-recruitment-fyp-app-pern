@@ -36,6 +36,8 @@
 - [OptaHire - Optimizing Your Recruitment Journey](#optahire---optimizing-your-recruitment-journey)
   - [Table Of Contents](#table-of-contents)
   - [About The Project](#about-the-project)
+    - [Production URLs](#production-urls)
+    - [Development URLs](#development-urls)
   - [Features](#features)
     - [1. Job Posting \& Management](#1-job-posting--management)
     - [2. AI Resume Filtering](#2-ai-resume-filtering)
@@ -58,8 +60,15 @@
 
 OptaHire revolutionizes hiring for busy professionals and businesses by enabling efficient recruitment through AI-powered tools. Recruiters can post jobs, connect with industry-experienced interviewers, schedule video interviews, and get AI-generated summaries for candidate evaluation. Designed for reliability and scalability, OptaHire aims to optimize recruitment with cutting-edge technologies.
 
-- **Client URL:** [https://opta-hire-ai-recruitment-fyp-app-mern.vercel.app/](https://opta-hire-ai-recruitment-fyp-app-mern.vercel.app/)
-- **Server URL:** [https://opta-hire-ai-recruitment-fyp-app-server.vercel.app/](https://opta-hire-ai-recruitment-fyp-app-server.vercel.app/)
+### Production URLs
+
+- **Client URL:** [https://opta-hire-fyp-app-client.vercel.app](https://opta-hire-fyp-app-client.vercel.app/)
+- **Server URL:** [https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com](https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com)
+
+### Development URLs
+
+- **Client URL:** [https://develop-opta-hire-fyp-app-client.vercel.app](https://opta-hire-fyp-app-client.vercel.app/)
+- **Server URL:** [https://develop-opta-hire-fyp-app-server.vercel.app](https://opta-hire-fyp-app-server.vercel.app/)
 
 ## Features
 
