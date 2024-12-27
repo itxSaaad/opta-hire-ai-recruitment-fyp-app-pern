@@ -3,16 +3,26 @@
   "version": "1.0.0",
   "description": "AI-driven recruitment platform powered by the MERN stack for streamlined hiring and interviewing processes.",
   "main": "server/app.js",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
+  },
   "scripts": {
-    "server": "nodemon server/app --prefix server",
-    "client": "npm run dev --prefix client",
+    "server": "npm run dev -w server",
+    "client": "npm run dev -w client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install": "cd client && npm install && cd .. && cd server && npm install && cd ..",
-    "data:import": "node server/seeder",
-    "data:destroy": "node server/seeder -d",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:all": "npm install",
+    "data:import": "npm run seeder -w server",
+    "data:destroy": "npm run seeder -- -d -w server",
     "lint": "eslint .",
-    "build": "cd client && npm run build"
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "heroku-postbuild": "npm install -w server"
   },
   "repository": {
     "type": "git",
