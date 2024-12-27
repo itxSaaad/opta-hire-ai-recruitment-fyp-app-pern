@@ -1,14 +1,16 @@
-import colors from 'colors';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import express from 'express';
-import rateLimiter from 'express-rate-limit';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import path from 'path';
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-import xss from 'xss-clean';
+const colors = require('colors');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const express = require('express');
+const rateLimiter = require('express-rate-limit');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+const xss = require('xss-clean');
+const { Sequelize } = require('sequelize');
+
+const db = require('./models');
 
 dotenv.config();
 
@@ -16,8 +18,6 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 5000;
 
 const app = express();
-
-const __dirname = path.resolve();
 
 app.set('trust proxy', 1);
 
