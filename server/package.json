@@ -1,8 +1,12 @@
 {
-  "name": "opta-hire-ai-recruitment-fyp-app-server",
+  "name": "server",
   "version": "1.0.0",
   "main": "app.js",
   "type": "module",
+  "engines": {
+    "node": "22.x",
+    "npm": "10.x"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
