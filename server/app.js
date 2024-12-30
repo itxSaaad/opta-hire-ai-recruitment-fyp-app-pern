@@ -8,9 +8,8 @@ const morgan = require('morgan');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const xss = require('xss-clean');
-const { Sequelize } = require('sequelize');
 
-const db = require('./models');
+const { connectDB } = require('./models');
 
 dotenv.config();
 
@@ -45,6 +44,10 @@ app.use(xss());
 
 if (NODE_ENV === 'development') {
   app.use(morgan('dev'));
+}
+
+if (NODE_ENV === 'production') {
+  app.use(morgan('combined'));
 }
 
 const swaggerOptions = {
@@ -102,35 +105,33 @@ app.get('/', (req, res) => {
 
 const startServer = async () => {
   try {
+    await connectDB();
     app.listen(PORT, () => {
+      console.log('\n' + '='.repeat(86).yellow);
+      console.log(`🚀 SERVER STATUS`.bold.yellow);
+      console.log('='.repeat(86).yellow);
+      console.log(`✅ Status:     Server is running`.green);
+      console.log(`🔗 Port:       ${PORT}`.cyan);
+      console.log(`🌍 Mode:       ${NODE_ENV}`.yellow);
+      console.log(`⏰ Timestamp:  ${new Date().toLocaleString()}`.magenta);
+      console.log(`📍 Local URL:  http://localhost:${PORT}`.cyan);
+      console.log(`📘 API Docs:   http://localhost:${PORT}/api-docs`.magenta);
+      console.log('-'.repeat(86).yellow);
       console.log(
-        `======================================================================================`
+        `💡 Tips:       Clean code is the foundation of solid projects`.green
       );
       console.log(
-        `🚀 Server running on Port ${PORT} in ${NODE_ENV} Mode!`.yellow.bold,
-        `\n🔗 CTRL + Click on`,
-        `http://localhost:${PORT}`.underline.cyan,
-        `to open in your browser.`
+        `👥 Support:    Reach out to the team or check documentation`.cyan
       );
-      console.log(
-        `\n📘 API documentation available at`,
-        `http://localhost:${PORT}/api-docs`.underline.magenta,
-        `- explore the routes and dive deep!`
-      );
-      console.log(
-        `\n💡 Remember: Clean code is the foundation of solid projects. Strive for clarity and simplicity!`
-          .green
-      );
-      console.log(
-        `\n👥 Need support? Feel free to reach out to the team or check the documentation!`
-          .blue
-      );
-      console.log(
-        `--------------------------------------------------------------------------------------`
-      );
+      console.log('='.repeat(86).yellow);
     });
   } catch (error) {
-    console.error(`❌ Error starting the server: ${error.message}`.red);
+    console.error('\n' + '='.repeat(86).red);
+    console.error(`❌ SERVER STARTUP ERROR`.red.bold);
+    console.error('='.repeat(86).red);
+    console.error(`📌 Error Type: ${error.name}`.red);
+    console.error(`💬 Message:    ${error.message}`.red);
+    console.error('='.repeat(86).red);
     process.exit(1);
   }
 };
