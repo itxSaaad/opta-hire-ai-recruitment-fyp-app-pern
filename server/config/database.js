@@ -1,4 +1,7 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+const pg = require('pg');
+
+dotenv.config();
 
 module.exports = {
   development: {
@@ -14,6 +17,7 @@ module.exports = {
           ? { require: true, rejectUnauthorized: false }
           : undefined,
     },
+    dialectModule: pg,
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
   },
   test: {
@@ -29,6 +33,7 @@ module.exports = {
         rejectUnauthorized: false,
       },
     },
+    dialectModule: pg,
   },
   production: {
     username: process.env.DB_USERNAME,
@@ -43,6 +48,7 @@ module.exports = {
         rejectUnauthorized: false,
       },
     },
+    dialectModule: pg,
     logging: false,
   },
 };

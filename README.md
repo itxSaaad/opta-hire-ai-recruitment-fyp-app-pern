@@ -67,8 +67,8 @@ OptaHire revolutionizes hiring for busy professionals and businesses by enabling
 
 ### Development URLs
 
-- **Client URL:** [https://develop-opta-hire-fyp-app-client.vercel.app](https://opta-hire-fyp-app-client.vercel.app/)
-- **Server URL:** [https://develop-opta-hire-fyp-app-server.vercel.app](https://opta-hire-fyp-app-server.vercel.app/)
+- **Client URL:** [https://opta-hire-develop-client.vercel.app](https://opta-hire-develop-client.vercel.app)
+- **Server URL:** [https://opta-hire-develop-server.vercel.app](https://opta-hire-develop-server.vercel.app)
 
 ## Features
 

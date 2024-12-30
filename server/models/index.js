@@ -3,7 +3,7 @@ const path = require('path');
 const { Sequelize } = require('sequelize');
 const process = require('process');
 
-const config = require(path.join(__dirname, '/../config/database.js'))[
+const config = require(path.join(__dirname, '/../config/database'))[
   process.env.NODE_ENV || 'development'
 ];
 
@@ -53,14 +53,14 @@ const connectDB = async () => {
     console.log('\n' + '='.repeat(86).blue);
     console.log(`🌐 DATABASE CONNECTION STATUS`.bold.blue);
     console.log('='.repeat(86).blue);
-    console.log(`✅ Connection: PostgreSQL Database`.green);
+    console.log(
+      `✅ Connection: ${config.dialect} connection established!`.green
+    );
     console.log(`🔗 Host:       ${sequelize.config.host}`.cyan);
     console.log(`📦 Database:   ${sequelize.config.database}`.cyan);
     console.log(`👤 Username:   ${sequelize.config.username}`.cyan);
     console.log(`⏰ Timestamp:  ${new Date().toLocaleString()}`.magenta);
-    console.log(
-      `🌍 Node ENV:   ${process.env.NODE_ENV || 'development'}`.yellow
-    );
+    console.log(`🌍 Node ENV:   ${process.env.NODE_ENV}`.yellow);
     console.log('-'.repeat(86).blue);
 
     // Sync database with models
