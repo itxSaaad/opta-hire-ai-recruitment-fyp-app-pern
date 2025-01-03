@@ -9,12 +9,14 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const xss = require('xss-clean');
 
-const { db, connectDB } = require('./models');
+const db = require('./models');
 
 const {
   errorHandler,
   notFoundHandler,
 } = require('./middlewares/error.middleware');
+
+const userRoutes = require('./routes/user.routes');
 
 dotenv.config();
 
@@ -108,12 +110,13 @@ app.get('/', (req, res) => {
   );
 });
 
+app.use('/api/v1/users', userRoutes);
+
 app.use(notFoundHandler);
 app.use(errorHandler);
 
 const startServer = async () => {
   try {
-    await connectDB();
     app.listen(PORT, () => {
       console.log('\n' + '='.repeat(86).yellow);
       console.log(`🚀 SERVER STATUS`.bold.yellow);
