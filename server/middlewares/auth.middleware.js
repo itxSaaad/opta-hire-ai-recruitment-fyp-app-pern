@@ -2,6 +2,8 @@ const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 const jwt = require('jsonwebtoken');
 
+const { User } = require('../models');
+
 const protect = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -19,7 +21,9 @@ const protect = asyncHandler(async (req, res, next) => {
         process.env.JWT_SECRET || 'your-secret-key'
       );
 
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await User.findByPk(decoded.id, {
+        attributes: { exclude: ['password'] },
+      });
 
       if (!req.user) {
         res.status(StatusCodes.UNAUTHORIZED);

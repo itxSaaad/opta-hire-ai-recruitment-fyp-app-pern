@@ -1,7 +1,5 @@
-const dotenv = require('dotenv');
+require('dotenv').config();
 const pg = require('pg');
-
-dotenv.config();
 
 module.exports = {
   development: {
@@ -9,13 +7,13 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    use_env_variable: process.env.DATABASE_URL,
+    database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
-      ssl:
-        process.env.NODE_ENV === 'production'
-          ? { require: true, rejectUnauthorized: false }
-          : undefined,
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
     },
     dialectModule: pg,
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
@@ -25,7 +23,7 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    use_env_variable: process.env.DATABASE_URL,
+    database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
       ssl: {
@@ -40,7 +38,7 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    use_env_variable: process.env.DATABASE_URL,
+    database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
       ssl: {
