@@ -9,7 +9,14 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const xss = require('xss-clean');
 
-const { connectDB } = require('./models');
+const db = require('./models');
+
+const {
+  errorHandler,
+  notFoundHandler,
+} = require('./middlewares/error.middleware');
+
+const userRoutes = require('./routes/user.routes');
 
 dotenv.config();
 
@@ -103,16 +110,20 @@ app.get('/', (req, res) => {
   );
 });
 
+app.use('/api/v1/users', userRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
+
 const startServer = async () => {
   try {
-    await connectDB();
     app.listen(PORT, () => {
       console.log('\n' + '='.repeat(86).yellow);
       console.log(`🚀 SERVER STATUS`.bold.yellow);
       console.log('='.repeat(86).yellow);
       console.log(`✅ Status:     Server is running`.green);
       console.log(`🔗 Port:       ${PORT}`.cyan);
-      console.log(`🌍 Mode:       ${NODE_ENV}`.yellow);
+      console.log(`🌍 Node ENV:   ${NODE_ENV}`.yellow);
       console.log(`⏰ Timestamp:  ${new Date().toLocaleString()}`.magenta);
       console.log(`📍 Local URL:  http://localhost:${PORT}`.cyan);
       console.log(`📘 API Docs:   http://localhost:${PORT}/api-docs`.magenta);
@@ -132,6 +143,7 @@ const startServer = async () => {
     console.error(`📌 Error Type: ${error.name}`.red);
     console.error(`💬 Message:    ${error.message}`.red);
     console.error('='.repeat(86).red);
+    db.close();
     process.exit(1);
   }
 };

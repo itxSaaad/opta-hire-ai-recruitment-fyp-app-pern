@@ -1,4 +1,5 @@
 require('dotenv').config();
+const pg = require('pg');
 
 module.exports = {
   development: {
@@ -6,14 +7,15 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    use_env_variable: process.env.DATABASE_URL,
+    database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
-      ssl:
-        process.env.NODE_ENV === 'production'
-          ? { require: true, rejectUnauthorized: false }
-          : undefined,
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
     },
+    dialectModule: pg,
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
   },
   test: {
@@ -21,7 +23,7 @@ module.exports = {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    use_env_variable: process.env.DATABASE_URL,
+    database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
       ssl: {
@@ -29,13 +31,14 @@ module.exports = {
         rejectUnauthorized: false,
       },
     },
+    dialectModule: pg,
   },
   production: {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
-    use_env_variable: process.env.DATABASE_URL,
+    database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
       ssl: {
@@ -43,6 +46,7 @@ module.exports = {
         rejectUnauthorized: false,
       },
     },
+    dialectModule: pg,
     logging: false,
   },
 };
