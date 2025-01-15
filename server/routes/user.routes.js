@@ -22,7 +22,7 @@ const {
 
 const router = Router();
 
-router.route('/').get(protect, authorizeRoles('admin'), getUsers);
+router.route('/').get(protect, authorizeRoles('isAdmin'), getUsers);
 
 router
   .route('/profile')
@@ -32,14 +32,14 @@ router
 
 router
   .route('/:id')
-  .get(protect, authorizeRoles('admin'), getUserById)
-  .put(protect, authorizeRoles('admin'), updateUserById)
-  .delete(protect, authorizeRoles('admin'), deleteUserById);
+  .get(protect, authorizeRoles('isAdmin'), getUserById)
+  .put(protect, authorizeRoles('isAdmin'), updateUserById)
+  .delete(protect, authorizeRoles('isAdmin'), deleteUserById);
 
 router.delete(
   '/:id/permanent',
   protect,
-  authorizeRoles('admin'),
+  authorizeRoles('isAdmin'),
   deleteUserPermById
 );
 

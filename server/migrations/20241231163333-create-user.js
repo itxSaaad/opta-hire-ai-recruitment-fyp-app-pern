@@ -40,6 +40,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      otpExpires: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       isVerified: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,

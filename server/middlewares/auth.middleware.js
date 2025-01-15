@@ -41,9 +41,12 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-const authorizeRoles = (...roles) => {
+const authorizeRoles = (...flags) => {
   return asyncHandler(async (req, res, next) => {
-    if (roles.includes(req.user.role)) {
+    const user = req.user;
+    const hasRequiredFlag = requiredFlags.some((flag) => user[flag] === true);
+
+    if (hasRequiredFlag) {
       next();
     } else {
       return res.status(StatusCodes.FORBIDDEN).json({

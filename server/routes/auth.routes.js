@@ -6,11 +6,14 @@ const {
   logoutUser,
   refreshToken,
   registerUser,
+  forgotPassword,
   resetPassword,
+  regenerateOTP,
 } = require('../controllers/auth.controllers');
 
 /**
  * @swagger
+ *
  * tags:
  *   name: Authorization
  *   description: User authorization operations
@@ -40,6 +43,10 @@ router.route('/refresh-token').post(refreshToken);
 
 router.route('/register').post(registerUser);
 
+router.route('/forgot-password').post(limiter, forgotPassword);
+
 router.route('/reset-password').post(limiter, resetPassword);
+
+router.route('/regenerate-otp').post(limiter, regenerateOTP);
 
 module.exports = router;
