@@ -19,10 +19,11 @@ module.exports = (sequelize, DataTypes) => {
   User.init(
     {
       id: {
-        allowNull: false,
-        autoIncrement: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        type: DataTypes.INTEGER,
+        allowNull: false,
+        unique: true,
       },
       firstName: {
         type: DataTypes.STRING,
@@ -48,6 +49,15 @@ module.exports = (sequelize, DataTypes) => {
           isAlpha: { msg: 'Last name must contain only letters' },
         },
       },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: { msg: 'Email already exists' },
+        validate: {
+          isEmail: { msg: 'Please enter a valid email address' },
+          notEmpty: { msg: 'Email is required' },
+        },
+      },
       phone: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -64,15 +74,6 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: { msg: 'Email already exists' },
-        validate: {
-          isEmail: { msg: 'Please enter a valid email address' },
-          notEmpty: { msg: 'Email is required' },
-        },
-      },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -84,16 +85,37 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      role: {
-        type: DataTypes.ENUM('admin', 'recruiter', 'interviewer', 'candidate'),
-        allowNull: false,
-        defaultValue: 'candidate',
-        validate: {
-          isIn: {
-            args: [['admin', 'recruiter', 'interviewer', 'candidate']],
-            msg: 'Invalid role specified',
-          },
-        },
+      otp: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isLinkedinVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isAdmin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isRecruiter: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isInterviewer: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isCandidate: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      isTopRated: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
     },
     {

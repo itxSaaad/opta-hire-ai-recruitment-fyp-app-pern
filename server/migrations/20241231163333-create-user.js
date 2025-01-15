@@ -4,12 +4,15 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
+    await queryInterface.sequelize.query(
+      'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+    );
     await queryInterface.createTable('Users', {
       id: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.literal('uuid_generate_v4()'),
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
       },
       firstName: {
         type: Sequelize.STRING,
@@ -19,12 +22,12 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      phone: {
+      email: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
       },
-      email: {
+      phone: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
@@ -33,10 +36,37 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      role: {
-        type: Sequelize.ENUM('admin', 'recruiter', 'candidate', 'interviewer'),
-        allowNull: false,
-        defaultValue: 'candidate',
+      otp: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      isVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      isLinkedinVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      isAdmin: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      isRecruiter: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      isInterviewer: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      isCandidate: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+      },
+      isTopRated: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       createdAt: {
         allowNull: false,
