@@ -128,5 +128,21 @@ module.exports = (sequelize, DataTypes) => {
     return bcrypt.compare(password, this.password);
   };
 
+  User.prototype.generateOTP = async function () {
+    const OTP_LENGTH = 6;
+
+    do {
+      const otp = Array.from({ length: OTP_LENGTH }, () =>
+        Math.floor(Math.random() * 10)
+      ).join('');
+
+      const existingUser = await User.findOne({ where: { otp } });
+
+      if (!existingUser) {
+        return otp;
+      }
+    } while (true);
+  };
+
   return User;
 };

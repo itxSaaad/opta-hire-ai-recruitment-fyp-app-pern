@@ -5,6 +5,8 @@ const { StatusCodes } = require('http-status-codes');
 
 const { User } = require('../models');
 
+const sendEmail = require('../utils/nodemailer.utils');
+
 /**
  * @desc Logs in a user.
  *
@@ -191,6 +193,20 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existingUser) {
     res.status(StatusCodes.CONFLICT);
     throw new Error('User already exists.');
+  }
+
+  const verficationOTP = user.generateOTP();
+
+  const isEmailSent = await sendEmail({
+    from: process.env.SMTP_EMAIL,
+    to: user.email,
+    subject: 'Account Verification',
+    html: `<h1>Your OTP is ${verficationOTP}</h1>`,
+  });
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Email could not be sent.');
   }
 
   const user = await User.create({
