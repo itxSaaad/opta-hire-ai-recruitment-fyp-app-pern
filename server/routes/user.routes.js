@@ -3,10 +3,7 @@ const { Router } = require('express');
 const { protect, authorizeRoles } = require('../middlewares/auth.middleware');
 
 const {
-  loginUser,
-  registerUser,
   getUserProfile,
-  resetPassword,
   updateUserProfile,
   deleteUser,
   getUsers,
@@ -22,15 +19,10 @@ const {
  *   name: Users
  *   description: User management operations
  */
+
 const router = Router();
 
 router.route('/').get(protect, authorizeRoles('admin'), getUsers);
-
-router.route('/login').post(loginUser);
-
-router.route('/register').post(registerUser);
-
-router.route('/reset-password').post(resetPassword);
 
 router
   .route('/profile')

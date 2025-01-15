@@ -112,9 +112,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  User.prototype.generateAuthToken = function () {
-    return jwt.sign({ id: this.id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
+  User.prototype.generateAccessToken = function () {
+    return jwt.sign({ id: this.id }, process.env.JWT_ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
+    });
+  };
+
+  User.prototype.generateRefreshToken = function () {
+    return jwt.sign({ id: this.id }, process.env.JWT_REFRESH_TOKEN_SECRET, {
+      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
     });
   };
 

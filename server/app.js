@@ -1,10 +1,12 @@
 const colors = require('colors');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const express = require('express');
 const rateLimiter = require('express-rate-limit');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const { StatusCodes } = require('http-status-codes');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const xss = require('xss-clean');
@@ -16,6 +18,7 @@ const {
   notFoundHandler,
 } = require('./middlewares/error.middleware');
 
+const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 
 dotenv.config();
@@ -32,6 +35,15 @@ app.use(
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: 'Too many requests from this IP, please try again later.',
+    handler: (req, res, next, options) => {
+      res.status(429).json({
+        success: false,
+        message: 'Too many requests from this IP, please try again later.',
+        timestamp: new Date().toISOString(),
+      });
+    },
+    standardHeaders: true,
+    legacyHeaders: true,
   })
 );
 
@@ -40,14 +52,27 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(helmet());
 
+const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
+  'http://localhost:5173',
+];
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: (origin, callback) => {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
 app.use(xss());
+
+app.use(cookieParser());
 
 if (NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -94,9 +119,9 @@ if (NODE_ENV === 'development') {
 }
 
 app.get('/', (req, res) => {
-  res.send(
+  res.status(StatusCodes.OK).send(
     `<section style="font-family: 'Hanken-Grotesk', sans-serif; text-align: center; padding: 40px; background-color: white;">
-      <h1 style="color: #1d509a; font-size: 3em;">Welcome to <a href="https://optahire.com">OptaHire</a>!</h1>
+      <h1 style="color: #1d509a; font-size: 3em;">Welcome to <a href="https://opta-hire-fyp-app-client.vercel.app">OptaHire</a>!</h1>
       <h3 style="color: #05baf0;">Optimizing Talent for a Brighter Future</h3>
       <p style="font-size: 1.2em; color: #1d509a;">Your API is up and running smoothly, ready to transform hiring and talent acquisition!</p>
       <div style="margin-top: 40px;">
@@ -110,7 +135,32 @@ app.get('/', (req, res) => {
   );
 });
 
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+
+// app.all('*', (req, res) => {
+//   res.status(StatusCodes.NOT_FOUND);
+//   if (req.accepts('html')) {
+//     res.send(`
+//     <section style="font-family: 'Hanken-Grotesk', sans-serif; text-align: center; padding: 40px; background-color: white;">
+//     <h1 style="color: #ff0000; font-size: 3em;">404 - Page Not Found</h1>
+//     <h3 style="color: #ff6347;">Oops! The page you are looking for does not exist.</h3>
+//     <p style="font-size: 1.2em; color: #333;">It seems we can't find what you're looking for. Try going back to the homepage or contact support if the problem persists.</p>
+//     <div style="margin-top: 40px;">
+//       <a href="/" style="font-size: 1.5em; font-weight: bold; color: #05baf0;">Go to Homepage</a>
+//     </div>
+//     <footer style="margin-top: 50px; font-size: 0.9em; color: #1d509a;">
+//       <p>Need assistance? Reach out to our support team for help.</p>
+//       <p>Happy coding from the OptaHire Team! 🌐✨</p>
+//     </footer>
+//     </section>
+//   `);
+//   } else if (req.accepts('json')) {
+//     notFoundHandler(req, res);
+//   } else {
+//     notFoundHandler(req, res);
+//   }
+// });
 
 app.use(notFoundHandler);
 app.use(errorHandler);
