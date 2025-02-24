@@ -5,10 +5,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#0EB0E3',
-        secondary: '#3946AE',
-        darkBackground: '#121212',
-        darkText: '#E0E0E0',
+        light: {
+          primary: '#0EB0E3',
+          secondary: '#3946AE',
+          background: '#FFFFFF',
+          text: '#1A1A1A',
+          surface: '#F5F5F5',
+          border: '#E0E0E0',
+        },
+        dark: {
+          primary: '#0EB0E3',
+          secondary: '#3946AE',
+          background: '#121212',
+          text: '#ffffff',
+          surface: '#1E1E1E',
+          border: '#2D2D2D',
+        },
       },
       animation: {
         fadeIn: 'fadeIn 1.5s ease-in',
