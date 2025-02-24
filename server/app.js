@@ -54,6 +54,7 @@ app.use(helmet());
 
 const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
   'http://localhost:5173',
+  'http://localhost:5000',
 ];
 
 const corsOptions = {
@@ -89,7 +90,7 @@ const swaggerOptions = {
       title: 'OptaHire API',
       version: '1.0.0',
       description:
-        'The OptaHire API is a RESTful API that provides access to a wide range of services and resources tailored for optimizing talent acquisition. It is designed to be fast, reliable, and easy to use. Built using Node.js, Express.js, and MongoDB, the API is hosted on Vercel and fully documented using Swagger. It includes detailed information about each endpoint, such as request and response formats, authentication requirements, and example responses. The API aims to provide an intuitive interface, enabling developers to get started quickly. It is scalable, supporting high traffic levels and numerous users, and secure, featuring authentication and authorization mechanisms along with rate limiting and input validation to protect against common security threats. Additionally, the API ensures reliability through monitoring and logging, maintaining high availability and performance.',
+        'OptaHire API is a RESTful API for the OptaHire application, a talent acquisition and hiring platform.',
       contact: {
         name: 'OptaHire Team',
         url: 'https://opta-hire-fyp-app-client.vercel.app',
@@ -101,7 +102,7 @@ const swaggerOptions = {
         description: 'Local Development server',
       },
       {
-        url: 'https://develop-opta-hire-fyp-app-server.vercel.app',
+        url: 'https://opta-hire-develop-server.vercel.app',
         description: 'Vercel Development Server',
       },
       {
@@ -137,30 +138,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
-
-// app.all('*', (req, res) => {
-//   res.status(StatusCodes.NOT_FOUND);
-//   if (req.accepts('html')) {
-//     res.send(`
-//     <section style="font-family: 'Hanken-Grotesk', sans-serif; text-align: center; padding: 40px; background-color: white;">
-//     <h1 style="color: #ff0000; font-size: 3em;">404 - Page Not Found</h1>
-//     <h3 style="color: #ff6347;">Oops! The page you are looking for does not exist.</h3>
-//     <p style="font-size: 1.2em; color: #333;">It seems we can't find what you're looking for. Try going back to the homepage or contact support if the problem persists.</p>
-//     <div style="margin-top: 40px;">
-//       <a href="/" style="font-size: 1.5em; font-weight: bold; color: #05baf0;">Go to Homepage</a>
-//     </div>
-//     <footer style="margin-top: 50px; font-size: 0.9em; color: #1d509a;">
-//       <p>Need assistance? Reach out to our support team for help.</p>
-//       <p>Happy coding from the OptaHire Team! 🌐✨</p>
-//     </footer>
-//     </section>
-//   `);
-//   } else if (req.accepts('json')) {
-//     notFoundHandler(req, res);
-//   } else {
-//     notFoundHandler(req, res);
-//   }
-// });
 
 app.use(notFoundHandler);
 app.use(errorHandler);

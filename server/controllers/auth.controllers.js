@@ -318,8 +318,8 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('Email could not be sent.');
   }
 
-  const optExpiresIn = new Date();
-  optExpiresIn.setMinutes(optExpiresIn.getMinutes() + 10);
+  const otpExpiresIn = new Date();
+  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
 
   const user = await User.create({
     firstName,
@@ -328,7 +328,7 @@ const registerUser = asyncHandler(async (req, res) => {
     phone,
     password,
     otp: verficationOTP,
-    optExpires: optExpiresIn,
+    optExpires: otpExpiresIn,
     isVerified: false,
     isLinkedinVerified: false,
     ...userFlags,
@@ -498,11 +498,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new Error('Email could not be sent.');
   }
 
-  const optExpiresIn = new Date();
-  optExpiresIn.setMinutes(optExpiresIn.getMinutes() + 10);
+  const otpExpiresIn = new Date();
+  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
 
   user.otp = resetPasswordOTP;
-  user.optExpires = optExpiresIn;
+  user.optExpires = otpExpiresIn;
   await user.save();
 
   res.status(StatusCodes.OK).json({
@@ -515,7 +515,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 /**
  * @desc Reset user's password.
  *
- * @route POST /api/v1/auth/reset-password
+ * @route PATCH /api/v1/auth/reset-password
  * @access Private
  *
  * @param {Object} req - The request object containing email, OTP, and new password.
@@ -523,6 +523,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
  * @returns {Promise<void>}
  * @throws {Error} If the email, OTP, or password is missing, or if the email is invalid, or if the OTP is invalid.
  */
+
 const resetPassword = asyncHandler(async (req, res) => {
   const { email, otp, password } = req.body;
 
@@ -779,11 +780,11 @@ const regenerateOTP = asyncHandler(async (req, res) => {
     throw new Error('Email could not be sent.');
   }
 
-  const optExpiresIn = new Date();
-  optExpiresIn.setMinutes(optExpiresIn.getMinutes() + 10);
+  const otpExpiresIn = new Date();
+  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
 
   user.otp = verficationOTP;
-  user.optExpires = optExpiresIn;
+  user.optExpires = otpExpiresIn;
   await user.save();
 
   res.status(StatusCodes.OK).json({

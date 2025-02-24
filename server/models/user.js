@@ -13,6 +13,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+
+      User.hasOne(models.Profile, {
+        foreignKey: 'userId',
+        as: 'profile',
+        onDelete: 'CASCADE',
+      });
     }
   }
 
@@ -138,22 +144,49 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  /**
+   * Generates an access token for the user using the
+   * provided JWT secret and expiration time.
+   *
+   * @returns {string} The generated access token.
+   */
   User.prototype.generateAccessToken = function () {
     return jwt.sign({ id: this.id }, process.env.JWT_ACCESS_TOKEN_SECRET, {
       expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
     });
   };
 
+  /**
+   * Generates a refresh token for the user using the
+   * provided JWT secret and expiration time.
+   *
+   * @returns {string} The generated refresh token.
+   */
   User.prototype.generateRefreshToken = function () {
     return jwt.sign({ id: this.id }, process.env.JWT_REFRESH_TOKEN_SECRET, {
       expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
     });
   };
 
+  /**
+   * Validates a user's password by comparing it with the stored hashed password using bcrypt.
+   *
+   * @param {string} password The password to validate.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to `true` if the password is valid, or `false` otherwise.
+   */
   User.prototype.validatePassword = async function (password) {
     return bcrypt.compare(password, this.password);
   };
 
+  /**
+   * Generates a unique one-time password (OTP) for the user by randomly
+   * generating a number of a specified length and checking if it already exists
+   * in the database. If the generated OTP already exists, it will be
+   * re-generated until a unique one is found.
+   *
+   * @returns {string} The generated OTP.
+   */
   User.prototype.generateOTP = async function () {
     const OTP_LENGTH = 6;
 

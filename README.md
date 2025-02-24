@@ -145,36 +145,55 @@ OptaHire revolutionizes hiring for busy professionals and businesses by enabling
 1. Clone the repo
 
    ```sh
-   git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-mern.git
+    git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-mern.git
    ```
 
-2. Install NPM packages
+2. Install NPM packages from client and server directories
 
    ```sh
-   npm install
+    npm install
    ```
 
-3. Create a `.env` file in the root directory and add the following
+3. Create a `.env` file in the server directory and add the following
 
    ```sh
-   NODE_ENV = development
-   PORT = 5000
-   MONGO_URI = <your_mongodb_uri>
-   JWT_SECRET = <your_jwt_secret>
-   SALT = <your_salt>
+    NODE_ENV = development
+    PORT = 5000
+    CORS_ORIGIN = <your_client_url>
+    DATABASE_URL = <your_postgres_database_url>
+    DB_USERNAME = <your_database_username>
+    DB_PASSWORD = <your_database_password
+    DB_DATABASE = <your_database_name>
+    DB_HOST = <your_database_host>
+    DB_PORT = <your_database_port>
+    JWT_ACCESS_TOKEN_SECRET = <your_access_token_secret>
+    JWT_REFRESH_TOKEN_SECRET = <your_refresh_token_secret>
+    JWT_ACCESS_TOKEN_EXPIRY = 15m
+    JWT_REFRESH_TOKEN_EXPIRY = 7d
+    NODEMAILER_SMTP_SERVICE = <your_smtp_service>
+    NODEMAILER_SMTP_HOST = <your_smtp_host>
+    NODEMAILER_SMTP_PORT = <your_smtp_port>
+    NODEMAILER_SMTP_EMAIL = <your_smtp_email>
+    NODEMAILER_SMTP_PASSWORD = <your_smtp_password>
    ```
 
 4. Create a `.env` file in the client directory and add the following
 
    ```sh
-   VITE_SERVER_URL = <your_server_url>
-   VITE_CLIENT_URL = <your_client_url>
+    VITE_SERVER_URL = <your_server_url>
+    VITE_CLIENT_URL = <your_client_url>
    ```
 
-5. Run the app
+5. Run the client from client directory
 
    ```sh
-   npm run dev
+    npm run dev
+   ```
+
+6. Run the server from server directory
+
+   ```sh
+    npm run dev
    ```
 
 ## Roadmap
