@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
-import Loader from '../components/ui/Loader';
+import Loader from '../components/Loader';
 
 const InputField = ({ id, type, label, value, onChange }) => (
   <div className="relative mb-6">
@@ -36,11 +36,12 @@ InputField.propTypes = {
 };
 
 export default function LoginScreen() {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -126,7 +127,7 @@ export default function LoginScreen() {
                 <p className="text-darkText">
                   Don&apos;t have an account?{' '}
                   <Link
-                    to="/register"
+                    to="/auth/register"
                     className="text-primary hover:text-secondary transition-all duration-200"
                   >
                     Register
@@ -137,6 +138,7 @@ export default function LoginScreen() {
           )}
         </div>
       </section>
+      <ScrollRestoration />
     </>
   );
 }

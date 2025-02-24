@@ -24,26 +24,28 @@ const Features = [
 ];
 
 const Feature = ({ icon, title, description }) => (
-  <div className="p-6 bg-primary bg-opacity-10 rounded-lg shadow-lg text-left transform transition-transform hover:scale-105 hover:shadow-xl duration-300">
-    <div className="w-16 h-16 rounded-full bg-secondary text-white flex items-center justify-center mb-4">
+  <div className="p-6 bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg text-left transform transition-transform hover:scale-105 hover:shadow-xl duration-300">
+    <div className="w-16 h-16 rounded-full bg-light-secondary dark:bg-dark-secondary text-white flex items-center justify-center mb-4">
       {icon}
     </div>
-    <h3 className="text-xl font-semibold mb-2">{title}</h3>
-    <p className="text-lg text-darkText">{description}</p>
+    <h3 className="text-xl font-semibold mb-2 text-light-text dark:text-dark-text">
+      {title}
+    </h3>
+    <p className="text-lg text-light-text dark:text-dark-text">{description}</p>
   </div>
 );
 
 export default function ForRecruitersSection() {
   return (
     <section
-      className="relative text-white py-20 px-6 sm:px-12"
+      className="relative bg-light-background dark:bg-dark-background py-20 px-6 sm:px-12"
       id="for-recruiters"
     >
       <header className="text-center mb-12">
-        <h2 className="text-4xl sm:text-5xl font-bold mb-4 animate-slideUp">
+        <h2 className="text-4xl sm:text-5xl font-bold mb-4 animate-slideUp text-light-text dark:text-dark-text">
           For Recruiters
         </h2>
-        <p className="text-lg sm:text-xl mb-6 max-w-3xl mx-auto animate-slideUp">
+        <p className="text-lg sm:text-xl mb-6 max-w-3xl mx-auto animate-slideUp text-light-text dark:text-dark-text">
           <span className="underline">OptaHire</span> empowers recruiters to
           hire faster and smarter by connecting them with professional
           interviewers who screen candidates effectively.
@@ -58,8 +60,8 @@ export default function ForRecruitersSection() {
 
       <div className="text-center mt-10 animate-slideUp">
         <Link
-          to="/recruiter/register"
-          className="inline-block text-lg bg-secondary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary"
+          to="/auth/register"
+          className="inline-block text-lg bg-light-secondary dark:bg-dark-secondary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
         >
           Get Started Now
         </Link>

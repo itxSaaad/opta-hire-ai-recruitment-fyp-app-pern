@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
-import Loader from '../components/ui/Loader';
+import Loader from '../components/Loader';
 
 import {
   validateConfirmPassword,
@@ -45,15 +45,6 @@ const InputField = ({
     )}
   </div>
 );
-
-InputField.propTypes = {
-  id: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  validationMessage: PropTypes.string,
-};
 
 export default function RegisterScreen() {
   const navigate = useNavigate();
@@ -224,7 +215,7 @@ export default function RegisterScreen() {
                 <p className="text-darkText">
                   Already have an account?{' '}
                   <Link
-                    to="/login"
+                    to="/auth/login"
                     className="text-primary hover:text-secondary transition-all duration-200"
                   >
                     Login
@@ -235,6 +226,16 @@ export default function RegisterScreen() {
           )}
         </div>
       </section>
+      <ScrollRestoration />
     </>
   );
 }
+
+InputField.propTypes = {
+  id: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  validationMessage: PropTypes.string,
+};

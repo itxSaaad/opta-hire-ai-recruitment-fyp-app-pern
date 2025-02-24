@@ -3,10 +3,12 @@ import { FaDollarSign, FaHandshake } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const PricingCard = ({ icon: Icon, title, description }) => (
-  <div className="bg-primary bg-opacity-10 text-white rounded-xl p-8 shadow-lg flex flex-col items-center">
+  <div className="bg-light-primary dark:bg-dark-primary bg-opacity-10 dark:bg-opacity-10 text-light-text dark:text-dark-text rounded-xl p-8 shadow-lg flex flex-col items-center">
     <Icon className="text-5xl mb-4" />
     <h3 className="text-2xl font-semibold">{title}</h3>
-    <p className="text-darkText mt-2 text-center">{description}</p>
+    <p className="text-light-text dark:text-dark-text mt-2 text-center">
+      {description}
+    </p>
   </div>
 );
 
@@ -18,7 +20,7 @@ PricingCard.propTypes = {
 
 const PricingSection = () => (
   <section
-    className="relative text-white text-center py-20 px-6 sm:px-12"
+    className="relative text-light-text dark:text-dark-text text-center py-20 px-6 sm:px-12"
     id="pricing"
     aria-labelledby="pricing-heading"
   >
@@ -29,9 +31,13 @@ const PricingSection = () => (
       Simple, Transparent Pricing
     </h2>
     <p className="text-lg sm:text-xl mb-8">
-      At <span className="text-primary">OptaHire</span>, we believe in keeping
-      things simple and transparent. We take just a minor fee to help facilitate
-      connections between recruiters and interviewers.
+      At{' '}
+      <span className="text-light-primary dark:text-dark-primary">
+        OptaHire
+      </span>
+      , we believe in keeping things simple and transparent. We take just a
+      minor fee to help facilitate connections between recruiters and
+      interviewers.
     </p>
     <div className="flex flex-col sm:flex-row justify-center items-center space-y-8 sm:space-y-0 sm:space-x-8 mb-8">
       <PricingCard
@@ -50,8 +56,8 @@ const PricingSection = () => (
       right talent with the right opportunities.
     </p>
     <Link
-      to="/recruiter/register"
-      className="inline-block text-lg bg-secondary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary"
+      to="/auth/register"
+      className="inline-block text-lg bg-light-secondary dark:bg-dark-secondary text-light-background dark:text-dark-text px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
     >
       Start Today
     </Link>

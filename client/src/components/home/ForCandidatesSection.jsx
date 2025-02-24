@@ -4,19 +4,25 @@ import { Link } from 'react-router-dom';
 
 const features = [
   {
-    icon: <FaUserTie className="text-4xl text-primary" />,
+    icon: (
+      <FaUserTie className="text-4xl text-light-primary dark:text-dark-primary" />
+    ),
     title: 'Personalized Opportunities',
     description:
       'Get job opportunities tailored to your skills and preferences to help you land your dream role.',
   },
   {
-    icon: <FaChartLine className="text-4xl text-primary" />,
+    icon: (
+      <FaChartLine className="text-4xl text-light-primary dark:text-dark-primary" />
+    ),
     title: 'Grow Professionally',
     description:
       'Gain insights and feedback from professional interviewers to refine your skills and ace interviews.',
   },
   {
-    icon: <FaHandshake className="text-4xl text-primary" />,
+    icon: (
+      <FaHandshake className="text-4xl text-light-primary dark:text-dark-primary" />
+    ),
     title: 'Build Strong Connections',
     description:
       'Connect with top recruiters and industry experts to expand your professional network.',
@@ -26,13 +32,15 @@ const features = [
 const Feature = ({ icon, title, description }) => (
   <article className="flex items-start space-x-4">
     <div className="flex-shrink-0">
-      <div className="w-14 h-14 flex items-center justify-center bg-primary bg-opacity-10 rounded-full">
+      <div className="w-14 h-14 flex items-center justify-center bg-light-primary bg-opacity-10 dark:bg-dark-primary dark:bg-opacity-10 rounded-full">
         {icon}
       </div>
     </div>
     <div>
-      <h3 className="text-xl font-semibold text-white">{title}</h3>
-      <p className="text-darkText mt-2">{description}</p>
+      <h3 className="text-xl font-semibold text-light-text dark:text-dark-text">
+        {title}
+      </h3>
+      <p className="text-light-text dark:text-dark-text mt-2">{description}</p>
     </div>
   </article>
 );
@@ -45,11 +53,13 @@ Feature.propTypes = {
 
 const SectionHeader = () => (
   <div className="lg:w-1/2 lg:pl-10 mb-12 lg:mb-0">
-    <h2 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight">
+    <h2 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight text-light-text dark:text-dark-text">
       Unlock Your Potential with{' '}
-      <span className="text-secondary">OptaHire</span>
+      <span className="text-light-secondary dark:text-dark-secondary">
+        OptaHire
+      </span>
     </h2>
-    <p className="text-lg sm:text-xl mb-8">
+    <p className="text-lg sm:text-xl mb-8 text-light-text dark:text-dark-text">
       Whether you&apos;re starting your career or looking for your next big
       role, we connect you with personalized opportunities, expert guidance, and
       top recruiters.
@@ -61,8 +71,8 @@ const SectionHeader = () => (
     </div>
     <div className="mt-10">
       <Link
-        to="/register"
-        className="inline-block text-lg bg-secondary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary"
+        to="/auth/register"
+        className="inline-block text-lg bg-light-secondary dark:bg-dark-secondary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
       >
         Join as a Candidate
       </Link>
@@ -73,7 +83,7 @@ const SectionHeader = () => (
 export default function ForCandidatesSection() {
   return (
     <section
-      className="relative text-white py-20 px-6 sm:px-12"
+      className="relative bg-light-background dark:bg-dark-background py-20 px-6 sm:px-12"
       id="for-candidates"
     >
       <div className="container mx-auto flex flex-col lg:flex-row items-center">
