@@ -10,22 +10,47 @@ import {
 
 import './index.css';
 
-import App from './App.jsx';
-import ComingSoon from './screens/ComingSoon.jsx';
-import HomeScreen from './screens/HomeScreen.jsx';
-import NotFoundScreen from './screens/NotFoundScreen.jsx';
+import ComingSoon from './pages/ComingSoon.jsx';
+import HomeScreen from './pages/HomeScreen.jsx';
+import LoginScreen from './pages/LoginScreen.jsx';
+import NotFoundScreen from './pages/NotFoundScreen.jsx';
+import RegisterScreen from './pages/RegisterScreen.jsx';
+
+import CandidateLayout from './layouts/CandidateLayout';
+import InterviewerLayout from './layouts/InterviewerLayout';
+import MainLayout from './layouts/MainLayout';
+import RecruiterLayout from './layouts/RecruiterLayout';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route element={<App />}>
-      <Route index element={<HomeScreen />} />
-      <Route path="coming-soon" element={<ComingSoon />} />
-      <Route path="login" element={<ComingSoon />} />
-      <Route path="register" element={<ComingSoon />} />
-      <Route path="jobs" element={<ComingSoon />} />
-      <Route path="recruiter/*" element={<ComingSoon />} />
-      <Route path="interviewer/*" element={<ComingSoon />} />
+    <Route path="/">
+      <Route path="auth">
+        <Route path="login" element={<LoginScreen />} />
+        <Route path="register" element={<RegisterScreen />} />
+      </Route>
+
+      <Route element={<MainLayout />}>
+        <Route index element={<HomeScreen />} />
+        <Route path="jobs" element={<ComingSoon />} />
+      </Route>
+
+      <Route path="recruiter" element={<RecruiterLayout />}>
+        <Route index element={<ComingSoon />} />
+        <Route path="*" element={<ComingSoon />} />
+      </Route>
+
+      <Route path="interviewer" element={<InterviewerLayout />}>
+        <Route index element={<ComingSoon />} />
+        <Route path="*" element={<ComingSoon />} />
+      </Route>
+
+      <Route path="candidate" element={<CandidateLayout />}>
+        <Route index element={<ComingSoon />} />
+        <Route path="*" element={<ComingSoon />} />
+      </Route>
+
       <Route path="*" element={<NotFoundScreen />} />
+      <Route path="coming-soon" element={<ComingSoon />} />
     </Route>
   )
 );
