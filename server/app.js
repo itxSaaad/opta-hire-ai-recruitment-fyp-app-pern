@@ -139,7 +139,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/resumes', resumeRoutes);
+app.use('/api/v1/resume', resumeRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
