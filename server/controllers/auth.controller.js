@@ -227,7 +227,30 @@ const registerUser = asyncHandler(async (req, res) => {
       break;
   }
 
-  const verficationOTP = user.generateOTP();
+  const user = await User.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    password,
+    isVerified: false,
+    isLinkedinVerified: false,
+    ...userFlags,
+  });
+
+  if (!user) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Registration failed.');
+  }
+
+  const verficationOTP = await user.generateOTP();
+  const otpExpiresIn = new Date();
+  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
+
+  user.otp = verficationOTP;
+  user.otpExpires = otpExpiresIn;
+
+  await user.save();
 
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
@@ -318,27 +341,6 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('Email could not be sent.');
   }
 
-  const otpExpiresIn = new Date();
-  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
-
-  const user = await User.create({
-    firstName,
-    lastName,
-    email,
-    phone,
-    password,
-    otp: verficationOTP,
-    optExpires: otpExpiresIn,
-    isVerified: false,
-    isLinkedinVerified: false,
-    ...userFlags,
-  });
-
-  if (!user) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Registration failed.');
-  }
-
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
 
@@ -407,7 +409,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new Error('User not found.');
   }
 
-  const resetPasswordOTP = user.generateOTP();
+  const resetPasswordOTP = await user.generateOTP();
 
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
@@ -502,7 +504,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
   otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
 
   user.otp = resetPasswordOTP;
-  user.optExpires = otpExpiresIn;
+  user.otpExpires = otpExpiresIn;
+
   await user.save();
 
   res.status(StatusCodes.OK).json({
@@ -566,6 +569,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = password;
   user.otp = null;
   user.optExpires = null;
+
   await user.save();
 
   const isEmailSent = await sendEmail({
@@ -689,7 +693,7 @@ const regenerateOTP = asyncHandler(async (req, res) => {
     throw new Error('User not found.');
   }
 
-  const verficationOTP = user.generateOTP();
+  const verficationOTP = await user.generateOTP();
 
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
@@ -784,7 +788,8 @@ const regenerateOTP = asyncHandler(async (req, res) => {
   otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
 
   user.otp = verficationOTP;
-  user.optExpires = otpExpiresIn;
+  user.otpExpires = otpExpiresIn;
+
   await user.save();
 
   res.status(StatusCodes.OK).json({
