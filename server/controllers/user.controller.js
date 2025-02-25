@@ -131,6 +131,12 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
 
   await user.save();
 
+  const profile = await Profile.findOne({ where: { userId: user.id } });
+
+  if (!profile) {
+    await Profile.create({ userId: user.id });
+  }
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Email verified successfully.',
@@ -265,7 +271,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc Gets the user profile.
+ * @desc Gets the User Profile.
  *
  * @route GET /api/v1/users/profile
  * @access Private
@@ -307,7 +313,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc Updates the user profile.
+ * @desc Updates the User Profile.
  *
  * @route PUT /api/v1/users/profile
  * @access Private
@@ -371,7 +377,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
  * @throws {Error} If the user is not found.
  */
 
-const deleteUser = asyncHandler(async (req, res) => {
+const deleteUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.user.id);
 
   if (!user) {
@@ -469,7 +475,7 @@ const deleteUser = asyncHandler(async (req, res) => {
  * @returns {Promise<void>}
  */
 
-const getUsers = asyncHandler(async (req, res) => {
+const getAllUsersProfile = asyncHandler(async (req, res) => {
   const query = {};
 
   if (req.query.role) {
@@ -510,7 +516,7 @@ const getUsers = asyncHandler(async (req, res) => {
  * @returns {Promise<void>}
  */
 
-const getUserById = asyncHandler(async (req, res) => {
+const getUserProfileById = asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.params.id, {
     attributes: { exclude: ['password'] },
   });
@@ -540,7 +546,7 @@ const getUserById = asyncHandler(async (req, res) => {
  * @throws {Error} If the user is not found.
  */
 
-const updateUserById = asyncHandler(async (req, res) => {
+const updateUserProfileById = asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.params.id, {
     attributes: { exclude: ['password'] },
   });
@@ -780,12 +786,12 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
 module.exports = {
   verifyUserEmail,
   updateUserPassword,
-  deleteUser,
   getUserProfile,
   updateUserProfile,
-  getUsers,
-  getUserById,
-  updateUserById,
+  deleteUserProfile,
+  getAllUsersProfile,
+  getUserProfileById,
+  updateUserProfileById,
   deleteUserById,
   deleteUserPermById,
 };

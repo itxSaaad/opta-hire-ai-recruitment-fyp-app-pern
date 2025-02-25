@@ -20,6 +20,7 @@ const {
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
+const resumeRoutes = require('./routes/resume.routes');
 
 dotenv.config();
 
@@ -138,6 +139,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/resumes', resumeRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
