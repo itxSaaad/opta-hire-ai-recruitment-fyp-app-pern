@@ -44,7 +44,7 @@ const protect = asyncHandler(async (req, res, next) => {
 const authorizeRoles = (...flags) => {
   return asyncHandler(async (req, res, next) => {
     const user = req.user;
-    const hasRequiredFlag = requiredFlags.some((flag) => user[flag] === true);
+    const hasRequiredFlag = flags.some((flag) => user[flag] === true);
 
     if (hasRequiredFlag) {
       next();

@@ -40,21 +40,27 @@ const createUserResume = asyncHandler(async (req, res) => {
   }
 
   const validatedData = {
-    title: validateString(title, 'Title', 3, 100),
-    summary: validateString(summary, 'Summary', 10, 1000),
+    title: title ? validateString(title, 'Title', 3, 100) : null,
+    summary: summary ? validateString(summary, 'Summary', 10, 1000) : null,
     headline: headline ? validateString(headline, 'Headline', 3, 200) : null,
-    skills: validateArray(skills, 'Skills', 1, 20),
-    experience: validateArray(experience, 'Experience', 1, 10),
-    education: validateArray(education, 'Education', 1, 5),
+    skills: skills ? validateArray(skills, 'Skills', 1, 20) : null,
+    experience: experience
+      ? validateString(experience, 'Experience', 10, 5000)
+      : null,
+    education: education
+      ? validateString(education, 'Education', 10, 2000)
+      : null,
     industry: industry ? validateString(industry, 'Industry', 2, 100) : null,
     availability: availability
       ? validateString(availability, 'Availability', 2, 50)
       : null,
     company: company ? validateString(company, 'Company', 2, 100) : null,
     achievements: achievements
-      ? validateArray(achievements, 'Achievements', 0, 10)
-      : [],
-    portfolio: portfolio ? validateArray(portfolio, 'Portfolio', 0, 10) : [],
+      ? validateString(achievements, 'Achievements', 0, 1000)
+      : null,
+    portfolio: portfolio
+      ? validateString(portfolio, 'Portfolio', 0, 255)
+      : null,
     userId,
   };
 
@@ -140,21 +146,27 @@ const updateUserResume = asyncHandler(async (req, res) => {
   }
 
   const validatedData = {
-    title: validateString(title, 'Title', 3, 100),
-    summary: validateString(summary, 'Summary', 10, 1000),
+    title: title ? validateString(title, 'Title', 3, 100) : null,
+    summary: summary ? validateString(summary, 'Summary', 10, 1000) : null,
     headline: headline ? validateString(headline, 'Headline', 3, 200) : null,
-    skills: validateArray(skills, 'Skills', 1, 20),
-    experience: validateArray(experience, 'Experience', 1, 10),
-    education: validateArray(education, 'Education', 1, 5),
+    skills: skills ? validateArray(skills, 'Skills', 1, 20) : null,
+    experience: experience
+      ? validateString(experience, 'Experience', 10, 5000)
+      : null,
+    education: education
+      ? validateString(education, 'Education', 10, 2000)
+      : null,
     industry: industry ? validateString(industry, 'Industry', 2, 100) : null,
     availability: availability
       ? validateString(availability, 'Availability', 2, 50)
       : null,
     company: company ? validateString(company, 'Company', 2, 100) : null,
     achievements: achievements
-      ? validateArray(achievements, 'Achievements', 0, 10)
-      : [],
-    portfolio: portfolio ? validateArray(portfolio, 'Portfolio', 0, 10) : [],
+      ? validateString(achievements, 'Achievements', 0, 1000)
+      : null,
+    portfolio: portfolio
+      ? validateString(portfolio, 'Portfolio', 0, 255)
+      : null,
     userId,
   };
 
