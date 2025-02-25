@@ -10,12 +10,12 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
-
+      // One-to-One with Profile
       Profile.belongsTo(models.User, {
         foreignKey: 'userId',
         as: 'user',
         onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
       });
     }
   }
@@ -79,6 +79,13 @@ module.exports = (sequelize, DataTypes) => {
       userId: {
         type: DataTypes.UUID,
         allowNull: false,
+        references: {
+          model: 'Users',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+        unique: true,
       },
     },
     {

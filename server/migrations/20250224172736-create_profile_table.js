@@ -72,6 +72,7 @@ module.exports = {
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
+        unique: true,
       },
       createdAt: {
         allowNull: false,

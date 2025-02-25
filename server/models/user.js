@@ -12,11 +12,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
-
+      // One-to-One with Profile
       User.hasOne(models.Profile, {
         foreignKey: 'userId',
         as: 'profile',
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       });
     }
@@ -94,6 +94,12 @@ module.exports = (sequelize, DataTypes) => {
       otp: {
         type: DataTypes.STRING,
         allowNull: true,
+        validate: {
+          is: {
+            args: /^\d{6}$/,
+            msg: 'OTP must be exactly 6 digits',
+          },
+        },
       },
       otpExpires: {
         type: DataTypes.DATE,

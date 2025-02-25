@@ -58,6 +58,14 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
 
   user.isVerified = true;
 
+  const existingProfile = await Profile.findOne({ where: { userId: user.id } });
+
+  if (!existingProfile) {
+    await Profile.create({ userId: user.id });
+  }
+
+  await user.save();
+
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
     to: user.email,
@@ -129,14 +137,6 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
     throw new Error('Email could not be sent.');
   }
 
-  await user.save();
-
-  const profile = await Profile.findOne({ where: { userId: user.id } });
-
-  if (!profile) {
-    await Profile.create({ userId: user.id });
-  }
-
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Email verified successfully.',
@@ -190,6 +190,8 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   }
 
   user.password = newPassword;
+
+  await user.save();
 
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
@@ -260,8 +262,6 @@ const updateUserPassword = asyncHandler(async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error('Email could not be sent.');
   }
-
-  await user.save();
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -602,6 +602,13 @@ const deleteUserById = asyncHandler(async (req, res) => {
     throw new Error('User not found.');
   }
 
+  const isDestroyed = await user.destroy();
+
+  if (!isDestroyed) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('User could not be deleted.');
+  }
+
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
     to: user.email,
@@ -672,8 +679,6 @@ const deleteUserById = asyncHandler(async (req, res) => {
     throw new Error('Email could not be sent.');
   }
 
-  await user.destroy();
-
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'User deleted successfully.',
@@ -702,6 +707,13 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
     throw new Error('User not found.');
+  }
+
+  const isDestroyed = await user.destroy({ force: true });
+
+  if (!isDestroyed) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('User could not be deleted.');
   }
 
   const isEmailSent = await sendEmail({
@@ -773,8 +785,6 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error('Email could not be sent.');
   }
-
-  await user.destroy({ force: true });
 
   res.status(StatusCodes.OK).json({
     success: true,
