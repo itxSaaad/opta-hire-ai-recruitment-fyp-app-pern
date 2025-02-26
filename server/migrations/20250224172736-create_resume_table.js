@@ -8,7 +8,7 @@ module.exports = {
       'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
     );
 
-    await queryInterface.createTable('Profiles', {
+    await queryInterface.createTable('Resumes', {
       id: {
         allowNull: false,
         primaryKey: true,
@@ -89,6 +89,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Profiles');
+    await queryInterface.dropTable('Resumes');
   },
 };

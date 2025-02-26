@@ -12,10 +12,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // One-to-One with Profile
-      User.hasOne(models.Profile, {
+      // One-to-One with Resume
+      User.hasOne(models.Resume, {
         foreignKey: 'userId',
-        as: 'profile',
+        as: 'resume',
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       });

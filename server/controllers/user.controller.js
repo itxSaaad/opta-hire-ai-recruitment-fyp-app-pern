@@ -2,7 +2,7 @@ const emailValidator = require('email-validator');
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 
-const { User, Profile } = require('../models');
+const { User, Resume } = require('../models');
 
 const sendEmail = require('../utils/nodemailer.utils');
 
@@ -58,10 +58,10 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
 
   user.isVerified = true;
 
-  const existingProfile = await Profile.findOne({ where: { userId: user.id } });
+  const existingProfile = await Resume.findOne({ where: { userId: user.id } });
 
   if (!existingProfile) {
-    await Profile.create({ userId: user.id });
+    await Resume.create({ userId: user.id });
   }
 
   await user.save();

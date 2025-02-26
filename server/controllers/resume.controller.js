@@ -1,14 +1,14 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 
-const { User, Profile } = require('../models');
+const { User, Resume } = require('../models');
 
 const { validateString, validateArray } = require('../utils/validation.utils');
 
 /**
  * @desc Creates the User Resume.
  *
- * @route POST /api/v1/resume
+ * @route POST /api/v1/resumes
  * @access Private
  *
  * @param {Object} req - The request object.
@@ -64,18 +64,18 @@ const createUserResume = asyncHandler(async (req, res) => {
     userId,
   };
 
-  const existingProfile = await Profile.findOne({ where: { userId } });
+  const existingProfile = await Resume.findOne({ where: { userId } });
 
   if (existingProfile) {
     res.status(StatusCodes.CONFLICT);
-    throw new Error('Profile already exists for this user.');
+    throw new Error('Resume already exists for this user.');
   }
 
-  const profile = await Profile.create(validatedData);
+  const profile = await Resume.create(validatedData);
 
   res.status(StatusCodes.CREATED).json({
     success: true,
-    message: 'Profile created successfully.',
+    message: 'Resume created successfully.',
     profile,
     timestamp: new Date().toISOString(),
   });
@@ -84,7 +84,7 @@ const createUserResume = asyncHandler(async (req, res) => {
 /**
  * @desc Gets the User Resume.
  *
- * @route GET /api/v1/resume/user
+ * @route GET /api/v1/resumes/user
  * @access Private
  *
  * @param {Object} req - The request object.
@@ -96,16 +96,16 @@ const createUserResume = asyncHandler(async (req, res) => {
 const getUserResume = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 
-  const profile = await Profile.findOne({ where: { userId } });
+  const profile = await Resume.findOne({ where: { userId } });
 
   if (!profile) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Profile not found for this user.');
+    throw new Error('Resume not found for this user.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Profile retrieved successfully.',
+    message: 'Resume retrieved successfully.',
     profile,
     timestamp: new Date().toISOString(),
   });
@@ -114,7 +114,7 @@ const getUserResume = asyncHandler(async (req, res) => {
 /**
  * @desc Updates the User Resume.
  *
- * @route PUT /api/v1/resume/user
+ * @route PUT /api/v1/resumes/user
  * @access Private
  *
  * @param {Object} req - The request object.
@@ -170,18 +170,18 @@ const updateUserResume = asyncHandler(async (req, res) => {
     userId,
   };
 
-  const profile = await Profile.findOne({ where: { userId } });
+  const profile = await Resume.findOne({ where: { userId } });
 
   if (!profile) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Profile not found for this user.');
+    throw new Error('Resume not found for this user.');
   }
 
   await profile.update(validatedData);
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Profile updated successfully.',
+    message: 'Resume updated successfully.',
     profile,
     timestamp: new Date().toISOString(),
   });
@@ -190,7 +190,7 @@ const updateUserResume = asyncHandler(async (req, res) => {
 /**
  * @desc Deletes the user profile.
  *
- * @route DELETE /api/v1/resume/user
+ * @route DELETE /api/v1/resumes/user
  * @access Private
  *
  * @param {Object} req - The request object.
@@ -202,18 +202,18 @@ const updateUserResume = asyncHandler(async (req, res) => {
 const deleteUserResume = asyncHandler(async (req, res) => {
   const userId = req.user.id;
 
-  const profile = await Profile.findOne({ where: { userId } });
+  const profile = await Resume.findOne({ where: { userId } });
 
   if (!profile) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Profile not found for this user.');
+    throw new Error('Resume not found for this user.');
   }
 
   await profile.destroy();
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Profile deleted successfully.',
+    message: 'Resume deleted successfully.',
     timestamp: new Date().toISOString(),
   });
 });
@@ -221,7 +221,7 @@ const deleteUserResume = asyncHandler(async (req, res) => {
 /**
  * @desc Gets All Resumes.
  *
- * @route GET /api/v1/resume
+ * @route GET /api/v1/resumes
  * @access Private And Admin
  *
  * @param {Object} req - The request object.
@@ -231,7 +231,7 @@ const deleteUserResume = asyncHandler(async (req, res) => {
  */
 
 const getAllUserResumes = asyncHandler(async (req, res) => {
-  const profiles = await Profile.findAll({
+  const profiles = await Resume.findAll({
     include: [
       {
         model: User,

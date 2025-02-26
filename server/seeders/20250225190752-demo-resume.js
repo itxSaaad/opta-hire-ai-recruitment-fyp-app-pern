@@ -17,7 +17,7 @@ module.exports = {
       return acc;
     }, {});
 
-    const profiles = [
+    const resumes = [
       {
         title: 'Interviewer Title',
         summary: 'Profile summary for the interviewer.',
@@ -88,7 +88,7 @@ module.exports = {
       },
     ];
 
-    await queryInterface.bulkInsert('Profiles', profiles, {});
+    await queryInterface.bulkInsert('Resumes', resumes, {});
   },
 
   async down(queryInterface, Sequelize) {
@@ -106,7 +106,7 @@ module.exports = {
       return acc;
     }, {});
 
-    await queryInterface.bulkDelete('Profiles', {
+    await queryInterface.bulkDelete('Resumes', {
       userId: {
         [Sequelize.Op.in]: Object.values(userMap),
       },
