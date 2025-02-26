@@ -29,14 +29,16 @@ const InputField = ({
       value={value}
       onChange={onChange}
       placeholder=""
-      className={`w-full p-4 bg-darkBackground border ${
-        validationMessage ? 'border-red-500' : 'border-darkText'
-      } rounded-lg text-darkText focus:ring-2 focus:ring-primary focus:outline-none peer transition-all duration-300`}
+      className={`w-full p-4 bg-light-background dark:bg-dark-background border ${
+        validationMessage
+          ? 'border-red-500'
+          : 'border-light-border dark:border-dark-border'
+      } rounded-lg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none peer transition-all duration-300`}
       required
     />
     <label
       htmlFor={id}
-      className="absolute left-4 top-4 text-darkText text-sm transition-all duration-300 transform -translate-y-1/2 scale-75 origin-top-left peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-4 peer-focus:text-normal peer-focus:text-primary"
+      className="absolute left-4 top-4 text-light-text dark:text-dark-text text-sm transition-all duration-300 transform -translate-y-1/2 scale-75 origin-top-left peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-4 peer-focus:text-normal peer-focus:text-light-primary dark:peer-focus:text-dark-primary"
     >
       {label}
     </label>
@@ -131,21 +133,21 @@ export default function RegisterScreen() {
       <section className="min-h-screen flex items-center justify-center py-16 px-4">
         <Link
           to="/"
-          className="absolute top-4 left-4 text-darkText hover:text-primary transition-all"
+          className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
         >
           <FaArrowLeft className="inline-block -mt-1 mr-2" />
           Back to Home
         </Link>
 
-        <div className="bg-primary bg-opacity-10 rounded-xl shadow-lg p-6 sm:p-8 lg:p-10 max-w-md sm:max-w-lg lg:max-w-xl w-full relative animate-fadeIn">
+        <div className="bg-light-background/80 dark:bg-dark-background/80 backdrop-blur-lg rounded-xl shadow-xl p-8 sm:p-10 lg:p-12 max-w-md sm:max-w-lg lg:max-w-xl w-full relative animate-fadeIn">
           {loading ? (
             <Loader />
           ) : (
             <>
-              <h2 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-4 sm:mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold text-center text-light-primary dark:text-dark-primary mb-4 sm:mb-6">
                 Create an Account
               </h2>
-              <p className="text-center text-darkText mb-6 sm:mb-8">
+              <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
                 Please fill in the details to create your account.
               </p>
 
@@ -204,7 +206,7 @@ export default function RegisterScreen() {
                 />
                 <button
                   type="submit"
-                  className="w-full bg-primary text-white py-2 sm:py-3 rounded-lg font-semibold text-lg hover:bg-secondary transition-all duration-300 shadow-md"
+                  className="w-full bg-light-primary dark:bg-dark-primary text-white py-2 sm:py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 shadow-md"
                   disabled={loading}
                 >
                   Register
@@ -212,11 +214,11 @@ export default function RegisterScreen() {
               </form>
 
               <div className="text-center mt-4 sm:mt-6">
-                <p className="text-darkText">
+                <p className="text-light-text dark:text-dark-text">
                   Already have an account?{' '}
                   <Link
                     to="/auth/login"
-                    className="text-primary hover:text-secondary transition-all duration-200"
+                    className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
                   >
                     Login
                   </Link>

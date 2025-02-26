@@ -6,23 +6,39 @@ import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
 import Loader from '../components/Loader';
 
-const InputField = ({ id, type, label, value, onChange }) => (
-  <div className="relative mb-6">
+import { validateEmail, validatePassword } from '../utils/validations';
+
+const InputField = ({
+  id,
+  type,
+  label,
+  value,
+  onChange,
+  validationMessage,
+}) => (
+  <div className="relative w-full">
     <input
       type={type}
       id={id}
-      placeholder=""
       value={value}
       onChange={onChange}
-      className="w-full p-4 bg-darkBackground border border-darkText rounded-lg text-darkText focus:ring-2 focus:ring-primary focus:outline-none peer transition-all duration-300"
+      placeholder=""
+      className={`w-full p-4 bg-light-background dark:bg-dark-background border ${
+        validationMessage
+          ? 'border-red-500'
+          : 'border-light-border dark:border-dark-border'
+      } rounded-lg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none peer transition-all duration-300`}
       required
     />
     <label
       htmlFor={id}
-      className="absolute left-4 top-4 text-darkText text-sm transition-all duration-300 transform -translate-y-1/2 scale-75 origin-top-left peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-4 peer-focus:text-normal peer-focus:text-primary"
+      className="absolute left-4 top-4 text-light-text dark:text-dark-text text-sm transition-all duration-300 transform -translate-y-1/2 scale-75 origin-top-left peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-4 peer-focus:text-normal peer-focus:text-light-primary dark:peer-focus:text-dark-primary"
     >
       {label}
     </label>
+    {validationMessage && (
+      <p className="absolute text-red-500 text-sm mt-1">{validationMessage}</p>
+    )}
   </div>
 );
 
@@ -30,21 +46,57 @@ InputField.propTypes = {
   id: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  placeholder: PropTypes.string,
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
+  validationMessage: PropTypes.string,
 };
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+  });
 
   const navigate = useNavigate();
 
+  const handleChange = (field, value) => {
+    switch (field) {
+      case 'email':
+        setEmail(value);
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          email: validateEmail(value),
+        }));
+        break;
+      case 'password':
+        setPassword(value);
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          password: validatePassword(value),
+        }));
+        break;
+      default:
+        break;
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+
+    if (emailError || passwordError) {
+      setErrors({
+        email: emailError,
+        password: passwordError,
+      });
+      return;
+    }
+
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -61,24 +113,25 @@ export default function LoginScreen() {
           content="Login to your OptaHire account to access your job applications, interviews, and more."
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-16 px-4">
+      <section className="min-h-screen flex items-center justify-center py-16 px-4 bg-light-background dark:bg-dark-background">
         <Link
           to="/"
-          className="absolute top-4 left-4 text-darkText hover:text-primary transition-all"
+          className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
         >
           <FaArrowLeft className="inline-block -mt-1 mr-2" />
           Back to Home
         </Link>
 
-        <div className="bg-primary bg-opacity-10 rounded-xl shadow-lg p-6 sm:p-8 lg:p-10 max-w-md sm:max-w-lg lg:max-w-xl w-full relative animate-fadeIn">
+        <div className="bg-light-background/80 dark:bg-dark-background/80 backdrop-blur-lg rounded-xl shadow-xl p-8 sm:p-10 lg:p-12 max-w-md sm:max-w-lg lg:max-w-xl w-full relative animate-fadeIn">
           {loading ? (
             <Loader />
           ) : (
             <>
-              <h2 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-4 sm:mb-6">
+              <h2 className="text-3xl sm:text-4xl font-bold text-center text-light-primary dark:text-dark-primary mb-4 sm:mb-6">
                 Welcome Back!
               </h2>
-              <p className="text-center text-darkText mb-6 sm:mb-8">
+
+              <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
                 Please login to continue to your account.
               </p>
 
@@ -86,37 +139,30 @@ export default function LoginScreen() {
                 <InputField
                   id="email"
                   type="email"
-                  label="Email Address"
+                  label="Email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  validationMessage={errors.email}
                 />
                 <InputField
                   id="password"
                   type="password"
                   label="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  validationMessage={errors.password}
                 />
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center text-darkText">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="mr-2 transition-all duration-200"
-                    />
-                    Remember Me
-                  </label>
+                <div className="flex items-center justify-end space-x-2">
                   <Link
                     to="/forgot-password"
-                    className="text-primary hover:text-secondary transition-all duration-200"
+                    className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
                   >
                     Forgot your password?
                   </Link>
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary text-white py-2 sm:py-3 rounded-lg font-semibold text-lg hover:bg-secondary transition-all duration-300 shadow-md"
+                  className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl"
                   disabled={loading}
                 >
                   Login
@@ -124,11 +170,11 @@ export default function LoginScreen() {
               </form>
 
               <div className="text-center mt-4 sm:mt-6">
-                <p className="text-darkText">
+                <p className="text-light-text dark:text-dark-text">
                   Don&apos;t have an account?{' '}
                   <Link
                     to="/auth/register"
-                    className="text-primary hover:text-secondary transition-all duration-200"
+                    className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
                   >
                     Register
                   </Link>
