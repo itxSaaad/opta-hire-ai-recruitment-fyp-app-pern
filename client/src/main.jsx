@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
+import { Provider } from 'react-redux';
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -9,6 +10,7 @@ import {
 } from 'react-router-dom';
 
 import './index.css';
+import store from './store.js';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import HomeScreen from './pages/HomeScreen.jsx';
@@ -58,7 +60,9 @@ const router = createBrowserRouter(
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
-      <RouterProvider router={router} />
+      <Provider store={store}>
+        <RouterProvider router={router} />
+      </Provider>
     </HelmetProvider>
   </StrictMode>
 );
