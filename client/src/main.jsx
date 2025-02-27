@@ -10,6 +10,7 @@ import {
 } from 'react-router-dom';
 
 import './index.css';
+import ThemeProvider from './provider/ThemeProvider.jsx';
 import store from './store.js';
 
 import ComingSoon from './pages/ComingSoon.jsx';
@@ -61,7 +62,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
       <Provider store={store}>
-        <RouterProvider router={router} />
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
       </Provider>
     </HelmetProvider>
   </StrictMode>
