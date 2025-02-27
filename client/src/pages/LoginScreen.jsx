@@ -2,11 +2,16 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
 import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
+import ErrorMsg from '../components/ErrorMsg';
 import Loader from '../components/Loader';
 
 import { validateEmail, validatePassword } from '../utils/validations';
+
+import { useLoginMutation } from '../features/auth/authApi';
+import { setUserInfo, updateAccessToken } from '../features/auth/authSlice';
 
 const InputField = ({
   id,
@@ -54,13 +59,15 @@ InputField.propTypes = {
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({
     email: '',
     password: '',
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [login, { isLoading, error }] = useLoginMutation();
 
   const handleChange = (field, value) => {
     switch (field) {
@@ -83,7 +90,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const emailError = validateEmail(email);
@@ -97,13 +104,11 @@ export default function LoginScreen() {
       return;
     }
 
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate('/dashboard');
-    }, 2000);
+    const result = await login({ email, password }).unwrap();
+    dispatch(setUserInfo(result.user));
+    dispatch(updateAccessToken(result.accessToken));
+    navigate('/dashboard');
   };
-
   return (
     <>
       <Helmet>
@@ -123,7 +128,7 @@ export default function LoginScreen() {
         </Link>
 
         <div className="bg-light-background/80 dark:bg-dark-background/80 backdrop-blur-lg rounded-xl shadow-xl p-8 sm:p-10 lg:p-12 max-w-md sm:max-w-lg lg:max-w-xl w-full relative animate-fadeIn">
-          {loading ? (
+          {isLoading ? (
             <Loader />
           ) : (
             <>
@@ -134,6 +139,8 @@ export default function LoginScreen() {
               <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
                 Please login to continue to your account.
               </p>
+
+              {error && <ErrorMsg errorMsg={error.data.message} />}
 
               <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
                 <InputField
@@ -163,7 +170,7 @@ export default function LoginScreen() {
                 <button
                   type="submit"
                   className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl"
-                  disabled={loading}
+                  disabled={isLoading}
                 >
                   Login
                 </button>
