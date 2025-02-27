@@ -6,6 +6,9 @@ import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
 import Loader from '../components/Loader';
 
+import { useRegisterMutation } from '../features/auth/authApi';
+import { setUserInfo, updateAccessToken } from '../features/auth/authSlice';
+
 import {
   validateConfirmPassword,
   validateEmail,
@@ -13,6 +16,8 @@ import {
   validatePassword,
   validatePhone,
 } from '../utils/validations';
+import { useDispatch } from 'react-redux';
+import ErrorMsg from '../components/ErrorMsg';
 
 const InputField = ({
   id,
@@ -49,14 +54,13 @@ const InputField = ({
 );
 
 export default function RegisterScreen() {
-  const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+
   const [errors, setErrors] = useState({
     firstName: '',
     lastName: '',
@@ -65,6 +69,11 @@ export default function RegisterScreen() {
     password: '',
     confirmPassword: '',
   });
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [register, { isLoading, error }] = useRegisterMutation();
 
   const handleChange = (field, value) => {
     switch (field) {
@@ -100,7 +109,7 @@ export default function RegisterScreen() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {
       firstName: validateName(firstName),
@@ -112,13 +121,17 @@ export default function RegisterScreen() {
     };
     setErrors(newErrors);
 
-    if (Object.values(newErrors).every((error) => error === '')) {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        navigate('/dashboard');
-      }, 2000);
-    }
+    const result = await register({
+      firstName,
+      lastName,
+      phone,
+      email,
+      password,
+      role: 'candidate',
+    }).unwrap();
+    dispatch(setUserInfo(result.user));
+    dispatch(updateAccessToken(result.accessToken));
+    navigate('/dashboard');
   };
 
   return (
@@ -140,7 +153,7 @@ export default function RegisterScreen() {
         </Link>
 
         <div className="bg-light-background/80 dark:bg-dark-background/80 backdrop-blur-lg rounded-xl shadow-xl p-8 sm:p-10 lg:p-12 max-w-md sm:max-w-lg lg:max-w-xl w-full relative animate-fadeIn">
-          {loading ? (
+          {isLoading ? (
             <Loader />
           ) : (
             <>
@@ -150,6 +163,7 @@ export default function RegisterScreen() {
               <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
                 Please fill in the details to create your account.
               </p>
+              {error && <ErrorMsg errorMsg={error.data.message} />}
 
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="flex flex-col sm:flex-row space-y-8 sm:space-y-0 sm:space-x-4">
@@ -207,7 +221,7 @@ export default function RegisterScreen() {
                 <button
                   type="submit"
                   className="w-full bg-light-primary dark:bg-dark-primary text-white py-2 sm:py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 shadow-md"
-                  disabled={loading}
+                  disabled={isLoading}
                 >
                   Register
                 </button>

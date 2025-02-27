@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 
-import axiosBaseQueryWithReauth from '../../api/axiosbaseQueryWithReauth';
+import axiosBaseQueryWithReauth from '../../api/axiosBaseQueryWithReauth';
 
 const ENDPOINTS = {
   LOGIN: '/auth/login',
