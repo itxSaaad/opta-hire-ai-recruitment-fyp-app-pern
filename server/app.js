@@ -26,6 +26,7 @@ dotenv.config();
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 5000;
+const SERVER_URL = process.env.SERVER_URL || 'http://localhost:5000';
 
 const app = express();
 
@@ -137,6 +138,14 @@ app.get('/', (req, res) => {
   );
 });
 
+app.get('/api/v1/test', (req, res) => {
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'API is working perfectly!',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
@@ -163,8 +172,8 @@ const startServer = async () => {
       console.log(`🔗 Port:       ${PORT}`.cyan);
       console.log(`🌍 Node ENV:   ${NODE_ENV}`.yellow);
       console.log(`⏰ Timestamp:  ${new Date().toLocaleString()}`.magenta);
-      console.log(`📍 Local URL:  http://localhost:${PORT}`.cyan);
-      console.log(`📘 API Docs:   http://localhost:${PORT}/api-docs`.magenta);
+      console.log(`📍 Local URL:  ${SERVER_URL}`.cyan);
+      console.log(`📘 API Docs:   ${SERVER_URL}/api-docs`.magenta);
       console.log('-'.repeat(86).yellow);
       console.log(
         `💡 Tips:       Clean code is the foundation of solid projects`.green
