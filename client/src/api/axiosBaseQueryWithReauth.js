@@ -1,5 +1,5 @@
-import { axiosBaseQuery } from './axiosBaseQuery';
-import { updateAccessToken, logoutUser } from '../features/user/userSlice';
+import { logoutUser, updateAccessToken } from '../features/auth/authSlice';
+import axiosBaseQuery from './axiosBaseQuery';
 
 const baseQuery = axiosBaseQuery({
   baseUrl: import.meta.env.VITE_SERVER_URL
@@ -7,7 +7,7 @@ const baseQuery = axiosBaseQuery({
     : 'http://localhost:5000/api/v1',
 });
 
-export const baseQueryWithReauth = async (args, api, extraOptions) => {
+const axiosBaseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
   if (result.error && result.error.status === 401) {
@@ -21,7 +21,6 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
       const newAccessToken = refreshResult.data.accessToken;
 
       api.dispatch(updateAccessToken(newAccessToken));
-      localStorage.setItem('accessToken', newAccessToken);
 
       result = await baseQuery(args, api, extraOptions);
     } else {
@@ -30,3 +29,5 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
   }
   return result;
 };
+
+export default axiosBaseQueryWithReauth;
