@@ -4,8 +4,8 @@ import Logo from '../assets/images/logo.png';
 
 export default function Loader({ logoSrc = Logo, altText = 'Loading...' }) {
   return (
-    <section className="flex justify-center items-center h-full w-full bg-light-background dark:bg-dark-background">
-      <img src={logoSrc} alt={altText} className="animate-loader" />
+    <section className="w-full bg-light-background dark:bg-dark-background flex justify-center items-center">
+      <img src={logoSrc} alt={altText} className="h-2/3 w-2/3 animate-loader" />
     </section>
   );
 }
