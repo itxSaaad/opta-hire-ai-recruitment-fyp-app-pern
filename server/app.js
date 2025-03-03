@@ -54,14 +54,14 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(helmet());
 
-const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
+const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
   'http://localhost:5173',
   'http://localhost:5000',
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
