@@ -41,10 +41,10 @@ export const authApi = createApi({
       invalidatesTags: ['Auth'],
     }),
     forgotPassword: builder.mutation({
-      query: (email) => ({
+      query: (data) => ({
         url: ENDPOINTS.FORGOT_PASSWORD,
         method: 'POST',
-        data: { email },
+        data: data,
       }),
     }),
     resetPassword: builder.mutation({
@@ -55,10 +55,10 @@ export const authApi = createApi({
       }),
     }),
     regenerateOTP: builder.mutation({
-      query: (email) => ({
+      query: (data) => ({
         url: ENDPOINTS.REGENERATE_OTP,
         method: 'POST',
-        data: { email },
+        data: data,
       }),
     }),
   }),
