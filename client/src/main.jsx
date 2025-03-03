@@ -1,30 +1,29 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
-import { Provider } from "react-redux";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
+import { Provider } from 'react-redux';
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
   RouterProvider,
-} from "react-router-dom";
+} from 'react-router-dom';
 
-import "./index.css";
-import ThemeProvider from "./provider/ThemeProvider.jsx";
-import store from "./store.js";
+import './index.css';
+import ThemeProvider from './provider/ThemeProvider.jsx';
+import store from './store.js';
 
-import ComingSoon from "./pages/ComingSoon.jsx";
-import HomeScreen from "./pages/HomeScreen.jsx";
-import LoginScreen from "./pages/LoginScreen.jsx";
-import NotFoundScreen from "./pages/NotFoundScreen.jsx";
-import RegisterScreen from "./pages/RegisterScreen.jsx";
-import ForgotPwdScreen from "./pages/ForgotPwdScreen.jsx";
-import ChangePwdScreen from "./pages/ChangePwdScreen.jsx";
+import ComingSoon from './pages/ComingSoon.jsx';
+import HomeScreen from './pages/HomeScreen.jsx';
+import LoginScreen from './pages/LoginScreen.jsx';
+import NotFoundScreen from './pages/NotFoundScreen.jsx';
+import RegisterScreen from './pages/RegisterScreen.jsx';
+import ResetPwdScreen from './pages/ResetPwdScreen.jsx';
 
-import CandidateLayout from "./layouts/CandidateLayout";
-import InterviewerLayout from "./layouts/InterviewerLayout";
-import MainLayout from "./layouts/MainLayout";
-import RecruiterLayout from "./layouts/RecruiterLayout";
+import CandidateLayout from './layouts/CandidateLayout';
+import InterviewerLayout from './layouts/InterviewerLayout';
+import MainLayout from './layouts/MainLayout';
+import RecruiterLayout from './layouts/RecruiterLayout';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
@@ -33,8 +32,6 @@ const router = createBrowserRouter(
         <Route path="register" element={<RegisterScreen />} />
       </Route>
 
-      <Route path="forgot-password" element={<ForgotPwdScreen />} />
-      <Route path="change-password" element={<ChangePwdScreen />} />
       <Route element={<MainLayout />}>
         <Route index element={<HomeScreen />} />
         <Route path="jobs" element={<ComingSoon />} />
@@ -57,11 +54,12 @@ const router = createBrowserRouter(
 
       <Route path="*" element={<NotFoundScreen />} />
       <Route path="coming-soon" element={<ComingSoon />} />
+      <Route path="reset-password" element={<ResetPwdScreen />} />
     </Route>
   )
 );
 
-createRoot(document.getElementById("root")).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
       <Provider store={store}>

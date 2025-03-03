@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft } from 'react-icons/fa';
@@ -7,54 +6,12 @@ import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
 import ErrorMsg from '../components/ErrorMsg';
 import Loader from '../components/Loader';
+import InputField from '../components/ui/mainLayout/InputField';
 
 import { validateEmail, validatePassword } from '../utils/validations';
 
 import { useLoginMutation } from '../features/auth/authApi';
 import { setUserInfo, updateAccessToken } from '../features/auth/authSlice';
-
-const InputField = ({
-  id,
-  type,
-  label,
-  value,
-  onChange,
-  validationMessage,
-}) => (
-  <div className="relative w-full">
-    <input
-      type={type}
-      id={id}
-      value={value}
-      onChange={onChange}
-      placeholder=""
-      className={`w-full p-4 bg-light-background dark:bg-dark-background border ${
-        validationMessage
-          ? 'border-red-500'
-          : 'border-light-border dark:border-dark-border'
-      } rounded-lg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none peer transition-all duration-300`}
-      required
-    />
-    <label
-      htmlFor={id}
-      className="absolute left-4 top-4 text-light-text dark:text-dark-text text-sm transition-all duration-300 transform -translate-y-1/2 scale-75 origin-top-left peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-4 peer-focus:text-normal peer-focus:text-light-primary dark:peer-focus:text-dark-primary"
-    >
-      {label}
-    </label>
-    {validationMessage && (
-      <p className="absolute text-red-500 text-sm mt-1">{validationMessage}</p>
-    )}
-  </div>
-);
-
-InputField.propTypes = {
-  id: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  validationMessage: PropTypes.string,
-};
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -118,7 +75,7 @@ export default function LoginScreen() {
           content="Login to your OptaHire account to access your job applications, interviews, and more."
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-16 px-4 bg-light-background dark:bg-dark-background">
+      <section className="min-h-screen flex items-center justify-center py-14 px-4 bg-light-background dark:bg-dark-background">
         <Link
           to="/"
           className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
@@ -127,7 +84,7 @@ export default function LoginScreen() {
           Back to Home
         </Link>
 
-        <div className="bg-light-background/80 dark:bg-dark-background/80 backdrop-blur-lg rounded-xl shadow-xl p-8 sm:p-10 lg:p-12 max-w-md sm:max-w-lg lg:max-w-xl w-full relative animate-fadeIn">
+        <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
           {isLoading ? (
             <Loader />
           ) : (
@@ -161,7 +118,7 @@ export default function LoginScreen() {
                 />
                 <div className="flex items-center justify-end space-x-2">
                   <Link
-                    to="/forgot-password"
+                    to="/reset-password"
                     className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
                   >
                     Forgot your password?
