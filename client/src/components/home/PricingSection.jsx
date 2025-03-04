@@ -3,9 +3,14 @@ import { FaDollarSign, FaHandshake } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const PricingCard = ({ icon: Icon, title, description }) => (
-  <div className="bg-light-primary dark:bg-dark-primary bg-opacity-10 dark:bg-opacity-10 text-light-text dark:text-dark-text rounded-xl p-8 shadow-lg flex flex-col items-center">
-    <Icon className="text-5xl mb-4" />
-    <h3 className="text-2xl font-semibold">{title}</h3>
+  <div className="bg-light-primary dark:bg-dark-primary bg-opacity-10 dark:bg-opacity-10 text-light-text dark:text-dark-text rounded-xl p-8 shadow-lg flex flex-col items-center transition-all duration-300 hover:bg-opacity-20 dark:hover:bg-opacity-20 hover:shadow-xl focus-within:ring-2 focus-within:ring-light-secondary dark:focus-within:ring-dark-secondary">
+    <Icon className="text-5xl mb-4 transition-transform duration-300 hover:scale-110" />
+    <h3
+      className="text-2xl font-semibold hover:text-light-secondary dark:hover:text-dark-secondary 
+      transition-colors duration-300"
+    >
+      {title}
+    </h3>
     <p className="text-light-text dark:text-dark-text mt-2 text-center">
       {description}
     </p>

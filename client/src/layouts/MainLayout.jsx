@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FaArrowUp } from 'react-icons/fa';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 
@@ -8,20 +8,24 @@ import Navbar from '../components/ui/mainLayout/Navbar';
 export default function MainLayout() {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
-  const handleScroll = () => {
-    if (window.scrollY > 500) {
-      setShowScrollToTop(true);
-    } else {
-      setShowScrollToTop(false);
-    }
-  };
+  const scrollHandler = useCallback(() => {
+    setShowScrollToTop(window.scrollY > 500);
+  }, []);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          scrollHandler();
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-  }, []);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [scrollHandler]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });

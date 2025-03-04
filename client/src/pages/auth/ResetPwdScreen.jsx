@@ -20,7 +20,7 @@ export default function ResetPwdScreen() {
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(true);
   const [errors, setErrors] = useState({
     email: '',
     otp: '',
@@ -41,7 +41,7 @@ export default function ResetPwdScreen() {
     const emailError = validateEmail(email);
 
     if (emailError) {
-      setErrors({ email: emailError });
+      setErrors((prev) => ({ ...prev, email: emailError }));
       return;
     }
 
@@ -207,29 +207,27 @@ export default function ResetPwdScreen() {
                   </>
                 ) : (
                   <>
-                    {isOtpSent && (
-                      <div className="flex justify-start mb-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsOtpSent(false);
-                            setOtp('');
-                            setNewPassword('');
-                            setConfirmPassword('');
-                            setErrors({
-                              email: '',
-                              otp: '',
-                              newPassword: '',
-                              confirmPassword: '',
-                            });
-                          }}
-                          className="text-sm text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all flex items-center"
-                        >
-                          <FaArrowLeft className="mr-2" />
-                          Change Email
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex justify-start mb-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsOtpSent(false);
+                          setOtp('');
+                          setNewPassword('');
+                          setConfirmPassword('');
+                          setErrors({
+                            email: '',
+                            otp: '',
+                            newPassword: '',
+                            confirmPassword: '',
+                          });
+                        }}
+                        className="text-sm text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all flex items-center"
+                      >
+                        <FaArrowLeft className="mr-2" />
+                        Change Email
+                      </button>
+                    </div>
                     <InputField
                       id="otp"
                       type="text"

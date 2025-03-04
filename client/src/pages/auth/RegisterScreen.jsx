@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
 import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
+import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
 import { useRegisterMutation } from '../../features/auth/authApi';
 import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
 
-import { useDispatch } from 'react-redux';
-import ErrorMsg from '../../components/ErrorMsg';
 import {
   validateConfirmPassword,
   validateEmail,
@@ -24,6 +24,8 @@ export default function RegisterScreen() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  // Set default role to empty string so user must select one.
+  const [role, setRole] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -34,6 +36,7 @@ export default function RegisterScreen() {
     email: '',
     password: '',
     confirmPassword: '',
+    role: '',
   });
 
   const navigate = useNavigate();
@@ -61,7 +64,11 @@ export default function RegisterScreen() {
         break;
       case 'password':
         setPassword(value);
-        setErrors((prev) => ({ ...prev, password: validatePassword(value) }));
+        setErrors((prev) => ({
+          ...prev,
+          password: validatePassword(value),
+          confirmPassword: validateConfirmPassword(confirmPassword, value),
+        }));
         break;
       case 'confirmPassword':
         setConfirmPassword(value);
@@ -77,6 +84,8 @@ export default function RegisterScreen() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate each field, including role.
     const newErrors = {
       firstName: validateName(firstName),
       lastName: validateName(lastName),
@@ -84,20 +93,29 @@ export default function RegisterScreen() {
       email: validateEmail(email),
       password: validatePassword(password),
       confirmPassword: validateConfirmPassword(confirmPassword, password),
+      role: role ? '' : 'Please select a role.',
     };
+
     setErrors(newErrors);
 
-    const result = await register({
-      firstName,
-      lastName,
-      phone,
-      email,
-      password,
-      role: 'candidate',
-    }).unwrap();
-    dispatch(setUserInfo(result.user));
-    dispatch(updateAccessToken(result.accessToken));
-    navigate('/dashboard');
+    const hasErrors = Object.values(newErrors).some((err) => err);
+    if (hasErrors) return;
+
+    try {
+      const result = await register({
+        firstName,
+        lastName,
+        phone,
+        email,
+        password,
+        role,
+      }).unwrap();
+      dispatch(setUserInfo(result.user));
+      dispatch(updateAccessToken(result.accessToken));
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Registration failed:', err);
+    }
   };
 
   return (
@@ -109,7 +127,7 @@ export default function RegisterScreen() {
           content="Register for an OptaHire account to start applying for jobs and managing your applications."
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-16 px-4">
+      <section className="min-h-screen flex items-center justify-center py-16 px-4 bg-light-background dark:bg-dark-background">
         <Link
           to="/"
           className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
@@ -131,8 +149,8 @@ export default function RegisterScreen() {
               </p>
               {error && <ErrorMsg errorMsg={error.data.message} />}
 
-              <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="flex flex-col sm:flex-row space-y-8 sm:space-y-0 sm:space-x-4">
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="grid grid-cols-1 sm:gap-1 sm:grid-cols-2">
                   <InputField
                     id="firstName"
                     type="text"
@@ -149,15 +167,38 @@ export default function RegisterScreen() {
                     onChange={(e) => handleChange('lastName', e.target.value)}
                     validationMessage={errors.lastName}
                   />
+                  <div className="mb-6">
+                    <select
+                      id="role"
+                      value={role}
+                      onChange={(e) => {
+                        setRole(e.target.value);
+                        setErrors((prev) => ({ ...prev, role: '' }));
+                      }}
+                      className="w-full p-4 bg-light-background dark:bg-dark-background border border-light-border dark:border-dark-border rounded-lg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none transition-all duration-300"
+                    >
+                      <option value="" disabled>
+                        Select Role
+                      </option>
+                      <option value="candidate">Candidate</option>
+                      <option value="recruiter">Recruiter</option>
+                      <option value="interviewer">Interviewer</option>
+                    </select>
+                    {errors.role && (
+                      <p className="text-red-500 text-sm mt-1">{errors.role}</p>
+                    )}
+                  </div>
+
+                  <InputField
+                    id="phone"
+                    type="tel"
+                    label="Phone Number"
+                    value={phone}
+                    onChange={(e) => handleChange('phone', e.target.value)}
+                    validationMessage={errors.phone}
+                  />
                 </div>
-                <InputField
-                  id="phone"
-                  type="tel"
-                  label="Phone Number"
-                  value={phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  validationMessage={errors.phone}
-                />
+
                 <InputField
                   id="email"
                   type="email"
@@ -166,6 +207,7 @@ export default function RegisterScreen() {
                   onChange={(e) => handleChange('email', e.target.value)}
                   validationMessage={errors.email}
                 />
+
                 <InputField
                   id="password"
                   type="password"

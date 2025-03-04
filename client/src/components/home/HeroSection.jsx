@@ -2,15 +2,15 @@ import Logo from '../../assets/images/logo.png';
 
 export default function HeroSection() {
   return (
-    <section className="relative h-screen flex items-center justify-center pt-20 px-6 sm:px-10">
-      <div className="absolute inset-0 bg-cover bg-center z-0 animate-fadeIn">
-        <img
-          src={Logo}
-          alt="OptaHire Logo"
-          className="h-full w-full object-cover opacity-50"
-        />
-      </div>
-      <div className="relative z-10 text-center dark:text-dark-text text-light-text animate-fadeIn">
+    <section
+      className="relative h-screen flex items-center justify-center pt-20 px-6 sm:px-10"
+      style={{
+        background: `url(${Logo}) no-repeat center center/cover`,
+      }}
+    >
+      <div className="absolute inset-0 bg-white dark:bg-dark-background opacity-50 z-0" />
+
+      <div className="relative z-10 text-center text-light-text dark:text-dark-text animate-fadeIn">
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold drop-shadow-lg">
           Simplifying Hiring with{' '}
           <span className="text-light-secondary dark:text-dark-secondary">

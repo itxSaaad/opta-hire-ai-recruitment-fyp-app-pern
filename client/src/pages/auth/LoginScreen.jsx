@@ -16,34 +16,18 @@ import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [errors, setErrors] = useState({ email: '', password: '' });
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const [login, { isLoading, error }] = useLoginMutation();
 
   const handleChange = (field, value) => {
-    switch (field) {
-      case 'email':
-        setEmail(value);
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          email: validateEmail(value),
-        }));
-        break;
-      case 'password':
-        setPassword(value);
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          password: validatePassword(value),
-        }));
-        break;
-      default:
-        break;
+    if (field === 'email') {
+      setEmail(value);
+      setErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+    } else if (field === 'password') {
+      setPassword(value);
+      setErrors((prev) => ({ ...prev, password: validatePassword(value) }));
     }
   };
 
@@ -54,18 +38,20 @@ export default function LoginScreen() {
     const passwordError = validatePassword(password);
 
     if (emailError || passwordError) {
-      setErrors({
-        email: emailError,
-        password: passwordError,
-      });
+      setErrors({ email: emailError, password: passwordError });
       return;
     }
 
-    const result = await login({ email, password }).unwrap();
-    dispatch(setUserInfo(result.user));
-    dispatch(updateAccessToken(result.accessToken));
-    navigate('/dashboard');
+    try {
+      const result = await login({ email, password }).unwrap();
+      dispatch(setUserInfo(result.user));
+      dispatch(updateAccessToken(result.accessToken));
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login failed:', err);
+    }
   };
+
   return (
     <>
       <Helmet>
@@ -92,14 +78,17 @@ export default function LoginScreen() {
               <h2 className="text-3xl sm:text-4xl font-bold text-center text-light-primary dark:text-dark-primary mb-4 sm:mb-6">
                 Welcome Back!
               </h2>
-
               <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
                 Please login to continue to your account.
               </p>
 
               {error && <ErrorMsg errorMsg={error.data.message} />}
 
-              <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+              <form
+                className="space-y-4 sm:space-y-6"
+                onSubmit={handleSubmit}
+                noValidate
+              >
                 <InputField
                   id="email"
                   type="email"
@@ -116,7 +105,7 @@ export default function LoginScreen() {
                   onChange={(e) => handleChange('password', e.target.value)}
                   validationMessage={errors.password}
                 />
-                <div className="flex items-center justify-end space-x-2">
+                <div className="flex items-center justify-end">
                   <Link
                     to="/auth/reset-password"
                     className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
@@ -126,8 +115,8 @@ export default function LoginScreen() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl"
                   disabled={isLoading}
+                  className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl"
                 >
                   Login
                 </button>
