@@ -4,14 +4,14 @@ import { FaArrowLeft } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../components/ErrorMsg';
-import Loader from '../components/Loader';
-import InputField from '../components/ui/mainLayout/InputField';
+import ErrorMsg from '../../components/ErrorMsg';
+import Loader from '../../components/Loader';
+import InputField from '../../components/ui/mainLayout/InputField';
 
-import { validateEmail, validatePassword } from '../utils/validations';
+import { validateEmail, validatePassword } from '../../utils/validations';
 
-import { useLoginMutation } from '../features/auth/authApi';
-import { setUserInfo, updateAccessToken } from '../features/auth/authSlice';
+import { useLoginMutation } from '../../features/auth/authApi';
+import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -118,7 +118,7 @@ export default function LoginScreen() {
                 />
                 <div className="flex items-center justify-end space-x-2">
                   <Link
-                    to="/reset-password"
+                    to="/auth/reset-password"
                     className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
                   >
                     Forgot your password?

@@ -3,21 +3,21 @@ import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
-import Loader from '../components/Loader';
-import InputField from '../components/ui/mainLayout/InputField';
+import Loader from '../../components/Loader';
+import InputField from '../../components/ui/mainLayout/InputField';
 
-import { useRegisterMutation } from '../features/auth/authApi';
-import { setUserInfo, updateAccessToken } from '../features/auth/authSlice';
+import { useRegisterMutation } from '../../features/auth/authApi';
+import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
 
 import { useDispatch } from 'react-redux';
-import ErrorMsg from '../components/ErrorMsg';
+import ErrorMsg from '../../components/ErrorMsg';
 import {
   validateConfirmPassword,
   validateEmail,
   validateName,
   validatePassword,
   validatePhone,
-} from '../utils/validations';
+} from '../../utils/validations';
 
 export default function RegisterScreen() {
   const [firstName, setFirstName] = useState('');

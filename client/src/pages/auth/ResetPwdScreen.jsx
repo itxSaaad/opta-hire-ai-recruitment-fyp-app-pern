@@ -3,17 +3,17 @@ import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft, FaEnvelope, FaKey } from 'react-icons/fa';
 import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../components/ErrorMsg';
-import Loader from '../components/Loader';
-import InputField from '../components/ui/mainLayout/InputField';
+import ErrorMsg from '../../components/ErrorMsg';
+import Loader from '../../components/Loader';
+import InputField from '../../components/ui/mainLayout/InputField';
 
-import { validateEmail, validatePassword } from '../utils/validations';
+import { validateEmail, validatePassword } from '../../utils/validations';
 
 import {
   useForgotPasswordMutation,
   useRegenerateOTPMutation,
   useResetPasswordMutation,
-} from '../features/auth/authApi';
+} from '../../features/auth/authApi';
 
 export default function ResetPwdScreen() {
   const [email, setEmail] = useState('');
