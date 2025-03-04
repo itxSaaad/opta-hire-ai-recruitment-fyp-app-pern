@@ -3,7 +3,9 @@ import { Outlet, ScrollRestoration } from 'react-router-dom';
 import Footer from '../components/ui/mainLayout/Footer';
 import Navbar from '../components/ui/mainLayout/Navbar';
 
-export default function RecruiterLayout() {
+import IsAuth from '../hoc/isAuth';
+
+function RecruiterLayout() {
   return (
     <>
       <Navbar />
@@ -13,3 +15,7 @@ export default function RecruiterLayout() {
     </>
   );
 }
+
+const ProtectedRecruiterLayout = IsAuth(RecruiterLayout);
+
+export default ProtectedRecruiterLayout;
