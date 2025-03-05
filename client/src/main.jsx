@@ -46,6 +46,7 @@ import JobsScreen from './pages/JobsScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
+import NotFoundScreen from './pages/NotFoundScreen.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -76,12 +77,14 @@ const router = createBrowserRouter(
       </Route>
 
       <Route path="auth">
+        <Route index element={<NotFoundScreen />} />
         <Route path="login" element={<LoginScreen />} />
         <Route path="register" element={<RegisterScreen />} />
         <Route path="reset-password" element={<ResetPwdScreen />} />
         <Route path="verify" element={<VerifyProfileScreen />} />
       </Route>
 
+      <Route path="*" element={<NotFoundScreen />} />
       <Route path="coming-soon" element={<ComingSoon />} />
     </Route>
   )

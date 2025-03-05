@@ -8,10 +8,12 @@ import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
+import IsAuth from '../../hoc/IsAuth';
+
 import { useRegenerateOTPMutation } from '../../features/auth/authApi';
 import { logoutUser } from '../../features/auth/authSlice';
 
-export default function VerifyProfileScreen() {
+function VerifyProfileScreen() {
   const [otp, setOtp] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -128,3 +130,7 @@ export default function VerifyProfileScreen() {
     </>
   );
 }
+
+const VerifyProfileScreenWithAuth = IsAuth(VerifyProfileScreen);
+
+export default VerifyProfileScreenWithAuth;
