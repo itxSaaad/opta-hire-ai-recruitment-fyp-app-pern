@@ -101,7 +101,7 @@ export default function ResetPwdScreen() {
     }
 
     try {
-      await resetPassword({ email, otp, newPassword }).unwrap();
+      await resetPassword({ email, otp, password: newPassword }).unwrap();
       navigate('/auth/login');
     } catch (err) {
       setErrors((prev) => ({
