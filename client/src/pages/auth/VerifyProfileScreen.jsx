@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,6 +9,8 @@ import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
 import IsAuth from '../../hoc/IsAuth';
+
+import { getExpectedRoute } from '../../utils/helpers';
 
 import { useRegenerateOTPMutation } from '../../features/auth/authApi';
 import { logoutUser } from '../../features/auth/authSlice';
@@ -29,6 +31,16 @@ function VerifyProfileScreen() {
   const [regenerateOTP, { isLoading: isResendingOtp, error: resendError }] =
     useRegenerateOTPMutation();
 
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth/login');
+    }
+
+    return () => {
+      setErrorMsg('');
+    };
+  }, [user, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,7 +56,8 @@ function VerifyProfileScreen() {
       // dispatch(setUserInfo(result.user)); // Update the store with verified status.
 
       // For now, assume verification succeeds:
-      navigate('/dashboard');
+      const expectedRoute = getExpectedRoute(user);
+      navigate(expectedRoute);
     } catch (err) {
       setErrorMsg(err.data?.message || 'Verification failed.');
     }
@@ -52,7 +65,9 @@ function VerifyProfileScreen() {
 
   const handleResendOtp = async () => {
     try {
-      await regenerateOTP({ email: user.email }).unwrap();
+      if (user?.email) {
+        await regenerateOTP({ email: user.email }).unwrap();
+      }
     } catch (err) {
       setErrorMsg(err.data?.message || 'Failed to resend OTP.');
     }
@@ -82,8 +97,9 @@ function VerifyProfileScreen() {
           <h2 className="text-3xl sm:text-4xl font-bold text-center text-light-primary dark:text-dark-primary mb-4">
             Verify Your Email
           </h2>
+
           <p className="text-center text-light-text dark:text-dark-text mb-6">
-            An OTP has been sent to <strong>{user.email}</strong>. Please enter
+            An OTP has been sent to <strong>{user?.email}</strong>. Please enter
             the OTP below to verify your email.
           </p>
 

@@ -11,6 +11,7 @@ import InputField from '../../components/ui/mainLayout/InputField';
 import { useRegisterMutation } from '../../features/auth/authApi';
 import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
 
+import { getExpectedRoute } from '../../utils/helpers';
 import {
   validateConfirmPassword,
   validateEmail,
@@ -24,7 +25,6 @@ export default function RegisterScreen() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  // Set default role to empty string so user must select one.
   const [role, setRole] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -85,7 +85,6 @@ export default function RegisterScreen() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate each field, including role.
     const newErrors = {
       firstName: validateName(firstName),
       lastName: validateName(lastName),
@@ -110,9 +109,13 @@ export default function RegisterScreen() {
         password,
         role,
       }).unwrap();
+
       dispatch(setUserInfo(result.user));
       dispatch(updateAccessToken(result.accessToken));
-      navigate('/dashboard');
+
+      const expectedRoute = getExpectedRoute(result.user);
+
+      navigate(expectedRoute);
     } catch (err) {
       console.error('Registration failed:', err);
     }

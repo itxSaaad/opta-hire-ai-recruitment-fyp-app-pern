@@ -8,6 +8,7 @@ import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
+import { getExpectedRoute } from '../../utils/helpers';
 import { validateEmail, validatePassword } from '../../utils/validations';
 
 import { useLoginMutation } from '../../features/auth/authApi';
@@ -17,8 +18,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const [login, { isLoading, error }] = useLoginMutation();
 
   const handleChange = (field, value) => {
@@ -44,9 +47,13 @@ export default function LoginScreen() {
 
     try {
       const result = await login({ email, password }).unwrap();
+
       dispatch(setUserInfo(result.user));
       dispatch(updateAccessToken(result.accessToken));
-      navigate('/dashboard');
+
+      const expectedRoute = getExpectedRoute(result.user);
+
+      navigate(expectedRoute);
     } catch (err) {
       console.error('Login failed:', err);
     }

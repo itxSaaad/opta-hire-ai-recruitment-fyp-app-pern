@@ -51,7 +51,7 @@ const createJob = asyncHandler(async (req, res) => {
       ? validateString(description, 'Description', 10, 5000)
       : null,
     requirements: requirements
-      ? JSON.Stringify(validateArray(requirements, 'Requirements', 1, 20))
+      ? JSON.stringify(validateArray(requirements, 'Requirements', 1, 20))
       : null,
     salaryRange: salaryRange
       ? validateString(salaryRange, 'Salary Range', 2, 100)
@@ -69,6 +69,15 @@ const createJob = asyncHandler(async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Job could not be created');
   }
+
+  const requirementsArray =
+    typeof job.requirements === 'string'
+      ? JSON.parse(job.requirements)
+      : job.requirements;
+
+  const requirementsJoined = Array.isArray(requirementsArray)
+    ? requirementsArray.join(', ')
+    : requirementsArray;
 
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
@@ -131,9 +140,9 @@ const createJob = asyncHandler(async (req, res) => {
               <br />
               <strong>Job Title:</strong> ${job.title}<br />
               <strong>Job Description:</strong> ${job.description}<br />
-              <strong>Job Requirements:</strong> ${job.requirements.join(
-                ', '
-              )}<br />
+              <strong>Job Requirements:</strong> ${
+                requirementsJoined || 'No requirements specified'
+              }<br />
               <strong>Job Salary Range:</strong> ${job.salaryRange}<br />
               <strong>Job Category:</strong> ${job.category}<br />
               <strong>Job Location:</strong> ${job.location}<br />
@@ -289,7 +298,7 @@ const updateJob = asyncHandler(async (req, res) => {
       ? validateString(description, 'Description', 10, 5000)
       : null,
     requirements: requirements
-      ? JSON.Stringify(validateArray(requirements, 'Requirements', 1, 20))
+      ? JSON.stringify(validateArray(requirements, 'Requirements', 1, 20))
       : null,
     salaryRange: salaryRange
       ? validateString(salaryRange, 'Salary Range', 2, 100)
@@ -304,6 +313,15 @@ const updateJob = asyncHandler(async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Job could not be updated');
   }
+
+  const requirementsArray =
+    typeof updatedJob.requirements === 'string'
+      ? JSON.parse(updatedJob.requirements)
+      : updatedJob.requirements;
+
+  const requirementsJoined = Array.isArray(requirementsArray)
+    ? requirementsArray.join(', ')
+    : requirementsArray;
 
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
@@ -366,9 +384,9 @@ const updateJob = asyncHandler(async (req, res) => {
               <br />
               <strong>Job Title:</strong> ${job.title}<br />
               <strong>Job Description:</strong> ${job.description}<br />
-              <strong>Job Requirements:</strong> ${job.requirements.join(
-                ', '
-              )}<br />
+              <strong>Job Requirements:</strong> ${
+                requirementsJoined || 'No requirements specified'
+              }<br />
               <strong>Job Salary Range:</strong> ${job.salaryRange}<br />
               <strong>Job Category:</strong> ${job.category}<br />
               <strong>Job Location:</strong> ${job.location}<br />
