@@ -79,13 +79,17 @@ const createJob = asyncHandler(async (req, res) => {
     ? requirementsArray.join(', ')
     : requirementsArray;
 
+  const jobData = {
+    ...job.dataValues,
+    requirements: requirementsJoined,
+  };
+
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
-    to: recruiter.email,
+    to: jobData.recruiter.email,
     subject: 'OptaHire - New Job Created',
     html: `<html>
-        <head>
-          <style>
+        <style>
             body {
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               background-color: #f8f9fa;
@@ -118,6 +122,17 @@ const createJob = asyncHandler(async (req, res) => {
               color: #4a5568;
               margin: 16px 0;
             }
+            .job-details {
+              background-color: #f1f7ff;
+              font-size: 32px;
+              font-weight: bold;
+              color: #1a73e8;
+              text-align: center;
+              margin: 24px 0;
+              padding: 16px;
+              border-radius: 8px;
+              letter-spacing: 4px;
+            }
             .footer {
               text-align: center;
               margin-top: 32px;
@@ -127,31 +142,28 @@ const createJob = asyncHandler(async (req, res) => {
               font-size: 14px;
             }
           </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">
-              Hello ${recruiter.firstName} ${recruiter.lastName},<br />
-              <br />
-              Your New Job has been created successfully.<br />
-              <br />
-              <strong>Job Title:</strong> ${job.title}<br />
-              <strong>Job Description:</strong> ${job.description}<br />
-              <strong>Job Requirements:</strong> ${
-                requirementsJoined || 'No requirements specified'
-              }<br />
-              <strong>Job Salary Range:</strong> ${job.salaryRange}<br />
-              <strong>Job Category:</strong> ${job.category}<br />
-              <strong>Job Location:</strong> ${job.location}<br />
-              <br />
-              Thank you for using OptaHire.
-            </p>
-            <p class="footer">
-              &copy; ${new Date().getFullYear()} OptaHire. All rights reserved.
-            </p>
+          <body>
+            <div class="container">
+              <div class="logo">
+                <h1 class="header">OptaHire</h1>
+              </div>
+              <p class="message">Hello ${jobData.recruiter.firstName},</p>
+              <p class="message">You have successfully created a new job listing on OptaHire.</p>
+              <div class="job-details">
+                <strong>Job Title:</strong> ${jobData.title}<br />
+                <strong>Job Description:</strong> ${jobData.description}<br />
+                <strong>Job Requirements:</strong> ${
+                  jobData.requirements || 'No requirements specified'
+                }<br />
+                <strong>Job Salary Range:</strong> ${jobData.salaryRange}<br />
+                <strong>Job Category:</strong> ${jobData.category}<br />
+                <strong>Job Location:</strong> ${jobData.location}<br />
+              </div>
+              <p class="message">Thank you for using OptaHire.</p>
+              <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
+                <p>Optimizing Your Recruitement Journey.</p>
+              </div>
           </div>
         </body>
       </html>`,
@@ -165,7 +177,7 @@ const createJob = asyncHandler(async (req, res) => {
   res.status(StatusCodes.CREATED).json({
     success: true,
     message: 'Job created successfully',
-    job,
+    job: jobData,
     timestamp: new Date().toISOString(),
   });
 });
@@ -213,11 +225,27 @@ const getAllJobs = asyncHandler(async (req, res) => {
     throw new Error('No jobs found');
   }
 
+  const jobsData = jobs.map((job) => {
+    const requirementsArray =
+      typeof job.requirements === 'string'
+        ? JSON.parse(job.requirements)
+        : job.requirements;
+
+    const requirementsJoined = Array.isArray(requirementsArray)
+      ? requirementsArray.join(', ')
+      : requirementsArray;
+
+    return {
+      ...job.dataValues,
+      requirements: requirementsJoined,
+    };
+  });
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Jobs retrieved successfully',
     count: jobs.length,
-    jobs,
+    jobs: jobsData,
     timestamp: new Date().toISOString(),
   });
 });
@@ -252,10 +280,24 @@ const getJobById = asyncHandler(async (req, res) => {
     throw new Error('Job not found');
   }
 
+  const requirementsArray =
+    typeof job.requirements === 'string'
+      ? JSON.parse(job.requirements)
+      : job.requirements;
+
+  const requirementsJoined = Array.isArray(requirementsArray)
+    ? requirementsArray.join(', ')
+    : requirementsArray;
+
+  const jobData = {
+    ...job.dataValues,
+    requirements: requirementsJoined,
+  };
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Job retrieved successfully',
-    job,
+    job: jobData,
     timestamp: new Date().toISOString(),
   });
 });
@@ -328,9 +370,8 @@ const updateJob = asyncHandler(async (req, res) => {
     to: job.recruiter.email,
     subject: 'OptaHire - Job Updated',
     html: `<html>
-        <head>
-          <style>
-            body {
+        <style>
+          body {
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               background-color: #f8f9fa;
               color: #2c3e50;
@@ -362,6 +403,17 @@ const updateJob = asyncHandler(async (req, res) => {
               color: #4a5568;
               margin: 16px 0;
             }
+            .job-details {
+              background-color: #f1f7ff;
+              font-size: 32px;
+              font-weight: bold;
+              color: #1a73e8;
+              text-align: center;
+              margin: 24px 0;
+              padding: 16px;
+              border-radius: 8px;
+              letter-spacing: 4px;
+            }
             .footer {
               text-align: center;
               margin-top: 32px;
@@ -370,32 +422,33 @@ const updateJob = asyncHandler(async (req, res) => {
               color: #718096;
               font-size: 14px;
             }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">
-              Hello ${job.recruiter.firstName} ${job.recruiter.lastName},<br />
-              <br />
-              Your Job has been updated successfully.<br />
-              <br />
-              <strong>Job Title:</strong> ${job.title}<br />
-              <strong>Job Description:</strong> ${job.description}<br />
-              <strong>Job Requirements:</strong> ${
-                requirementsJoined || 'No requirements specified'
-              }<br />
-              <strong>Job Salary Range:</strong> ${job.salaryRange}<br />
-              <strong>Job Category:</strong> ${job.category}<br />
-              <strong>Job Location:</strong> ${job.location}<br />
-              <br />
-              Thank you for using OptaHire.
-            </p>
-            <p class="footer">
-              &copy; ${new Date().getFullYear()} OptaHire. All rights reserved.
-            </p>
+        </style>
+          <body>
+            <div class="container">
+              <div class="logo">
+                <h1 class="header">OptaHire</h1>
+              </div>
+              <p class="message">Hello ${job.recruiter.firstName},</p>
+              <p class="message">Your job listing on OptaHire has been updated.</p>
+              <div class="job-details">
+                <strong>Job Title:</strong> ${updatedJob.title}<br />
+                <strong>Job Description:</strong> ${
+                  updatedJob.description
+                }<br />
+                <strong>Job Requirements:</strong> ${
+                  requirementsJoined || 'No requirements specified'
+                }<br />
+                <strong>Job Salary Range:</strong> ${
+                  updatedJob.salaryRange
+                }<br />
+                <strong>Job Category:</strong> ${updatedJob.category}<br />
+                <strong>Job Location:</strong> ${updatedJob.location}<br />
+              </div>
+              <p class="message">Thank you for using OptaHire.</p>
+              <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
+                <p>Optimizing Your Recruitement Journey.</p>
+              </div>
           </div>
         </body>
       </html>`,
@@ -406,10 +459,15 @@ const updateJob = asyncHandler(async (req, res) => {
     throw new Error('Email could not be sent.');
   }
 
+  const jobData = {
+    ...updatedJob.dataValues,
+    requirements: requirementsJoined,
+  };
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Job updated successfully',
-    job,
+    job: jobData,
     timestamp: new Date().toISOString(),
   });
 });
@@ -451,13 +509,26 @@ const deleteJob = asyncHandler(async (req, res) => {
     throw new Error('Job could not be deleted');
   }
 
+  const requirementsArray =
+    typeof job.requirements === 'string'
+      ? JSON.parse(job.requirements)
+      : job.requirements;
+
+  const requirementsJoined = Array.isArray(requirementsArray)
+    ? requirementsArray.join(', ')
+    : requirementsArray;
+
+  const jobData = {
+    ...job.dataValues,
+    requirements: requirementsJoined,
+  };
+
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Deleted',
     html: `<html>
-        <head>
-          <style>
+        <style>
             body {
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               background-color: #f8f9fa;
@@ -490,6 +561,17 @@ const deleteJob = asyncHandler(async (req, res) => {
               color: #4a5568;
               margin: 16px 0;
             }
+            .job-details {
+              background-color: #f1f7ff;
+              font-size: 32px;
+              font-weight: bold;
+              color: #1a73e8;
+              text-align: center;
+              margin: 24px 0;
+              padding: 16px;
+              border-radius: 8px;
+              letter-spacing: 4px;
+            }
             .footer {
               text-align: center;
               margin-top: 32px;
@@ -499,33 +581,30 @@ const deleteJob = asyncHandler(async (req, res) => {
               font-size: 14px;
             }
           </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">
-              Hello ${job.recruiter.firstName} ${job.recruiter.lastName},<br />
-              <br />
-              Your Job has been deleted successfully.<br />
-              <br />
-              <strong>Job Title:</strong> ${job.title}<br />
-              <strong>Job Description:</strong> ${job.description}<br />
-              <strong>Job Requirements:</strong> ${job.requirements.join(
-                ', '
-              )}<br />
-              <strong>Job Salary Range:</strong> ${job.salaryRange}<br />
-              <strong>Job Category:</strong> ${job.category}<br />
-              <strong>Job Location:</strong> ${job.location}<br />
-              <br />
-              Thank you for using OptaHire.
-            </p>
-            <p class="footer">
-              &copy; ${new Date().getFullYear()} OptaHire. All rights reserved.
-            </p>  
-          </div>
-        </body>
+          <body>
+            <div class="container">
+              <div class="logo">
+                <h1 class="header">OptaHire</h1>
+              </div>
+              <p class="message">Hello ${job.recruiter.firstName},</p>
+              <p class="message">Your job listing on OptaHire has been deleted.</p>
+              <div class="job-details">
+                <strong>Job Title:</strong> ${jobData.title}<br />
+                <strong>Job Description:</strong> ${jobData.description}<br />
+                <strong>Job Requirements:</strong> ${
+                  jobData.requirements || 'No requirements specified'
+                }<br />
+                <strong>Job Salary Range:</strong> ${jobData.salaryRange}<br />
+                <strong>Job Category:</strong> ${jobData.category}<br />  
+                <strong>Job Location:</strong> ${jobData.location}<br />
+              </div>
+              <p class="message">Thank you for using OptaHire.</p>  
+              <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
+                <p>Optimizing Your Recruitement Journey.</p>
+              </div>
+          </div>  
+        </body> 
       </html>`,
   });
 
