@@ -21,6 +21,7 @@ const {
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const resumeRoutes = require('./routes/resume.routes');
+const jobRoutes = require('./routes/job.routes');
 
 dotenv.config();
 
@@ -149,13 +150,13 @@ app.get('/api/v1/test', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
-// app.use('/api/v1/jobs', jobRoutes);
+app.use('/api/v1/jobs', jobRoutes);
 // app.use('/api/v1/applications', applicationRoutes);
-// app.use('/api/v1/interviews', interviewRoutes);
 // app.use('/api/v1/chatrooms', chatroomRoutes);
 // app.use('/api/v1/videos', videoRoutes);
-// app.use('/api/v1/ratings', ratingRoutes);
 // app.use('/api/v1/contracts', contractRoutes);
+// app.use('/api/v1/interviews', interviewRoutes);
+// app.use('/api/v1/ratings', ratingRoutes);
 // app.use('/api/v1/transactions', transactionRoutes);
 // app.use('/api/v1/payments', paymentRoutes);
 
