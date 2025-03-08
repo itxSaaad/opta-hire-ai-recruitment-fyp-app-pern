@@ -7,8 +7,7 @@ const {
   getApplicationById,
   updateApplication,
   deleteApplication,
-  getCandidateApplications,
-  getJobApplications,
+  getApplicationsByJobId,
 } = require('../controllers/application.controller');
 
 const router = Router();
@@ -16,7 +15,7 @@ const router = Router();
 router
   .route('/')
   .post(protect, authorizeRoles('isCandidate'), createApplication)
-  .get(protect, authorizeRoles('isRecruiter', 'isAdmin'), getAllApplications);
+  .get(protect, getAllApplications);
 
 router
   .route('/:id')
@@ -25,17 +24,10 @@ router
   .delete(protect, authorizeRoles('isAdmin'), deleteApplication);
 
 router.get(
-  '/candidate',
-  protect,
-  authorizeRoles('isCandidate'),
-  getCandidateApplications
-);
-
-router.get(
-  '/applications/job/:jobId',
+  '/job/:jobId',
   protect,
   authorizeRoles('isRecruiter', 'isAdmin'),
-  getJobApplications
+  getApplicationsByJobId
 );
 
 module.exports = router;

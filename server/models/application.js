@@ -1,16 +1,21 @@
 'use strict';
+
 const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Application extends Model {
     static associate(models) {
-      Application.belongsTo(models.Job, { foreignKey: 'jobId', as: 'job' });
+      Application.belongsTo(models.Job, {
+        foreignKey: 'jobId',
+        as: 'job',
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      });
       Application.belongsTo(models.User, {
         foreignKey: 'candidateId',
         as: 'candidate',
-      });
-      Application.hasOne(models.Interview, {
-        foreignKey: 'applicationId',
-        as: 'interview',
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       });
     }
   }
@@ -19,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
+        allowNull: false,
         primaryKey: true,
       },
       status: DataTypes.STRING,
