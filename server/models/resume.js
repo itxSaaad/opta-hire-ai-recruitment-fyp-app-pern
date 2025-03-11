@@ -4,13 +4,7 @@ const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class Resume extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // One-to-One with Resume
       Resume.belongsTo(models.User, {
         foreignKey: 'userId',
         as: 'user',
@@ -27,54 +21,125 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
         allowNull: false,
+        unique: true,
       },
       title: {
         type: DataTypes.STRING,
-        allowNull: true,
+        validate: {
+          len: {
+            args: [2, 100],
+            msg: 'Title must be between 2 and 100 characters',
+          },
+        },
       },
       summary: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        validate: {
+          len: {
+            args: [50, 500],
+            msg: 'Summary must be between 50 and 500 characters',
+          },
+        },
       },
       headline: {
         type: DataTypes.STRING,
-        allowNull: true,
+        validate: {
+          len: {
+            args: [10, 150],
+            msg: 'Headline must be between 10 and 150 characters',
+          },
+        },
       },
       skills: {
         type: DataTypes.ARRAY(DataTypes.STRING),
-        allowNull: true,
+        validate: {
+          isValidSkillsArray(value) {
+            if (!Array.isArray(value)) {
+              throw new Error('Skills must be an array');
+            }
+            if (value.length < 1) {
+              throw new Error('At least one skill is required');
+            }
+            if (value.length > 20) {
+              throw new Error('Maximum 20 skills allowed');
+            }
+          },
+        },
       },
       experience: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        validate: {
+          notEmpty: {
+            msg: 'Experience details are required',
+          },
+        },
       },
       education: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        validate: {
+          notEmpty: {
+            msg: 'Education details are required',
+          },
+        },
       },
       industry: {
         type: DataTypes.STRING,
-        allowNull: true,
+        validate: {
+          len: {
+            args: [2, 50],
+            msg: 'Industry must be between 2 and 50 characters',
+          },
+        },
       },
       availability: {
         type: DataTypes.STRING,
-        allowNull: true,
+        validate: {
+          isIn: {
+            args: [
+              ['Immediate', 'Two weeks', 'One month', 'More than a month'],
+            ],
+            msg: 'Invalid availability status',
+          },
+        },
       },
       company: {
         type: DataTypes.STRING,
-        allowNull: true,
+        validate: {
+          len: {
+            args: [2, 100],
+            msg: 'Company name must be between 2 and 100 characters',
+          },
+        },
       },
       achievements: {
         type: DataTypes.TEXT,
-        allowNull: true,
+        validate: {
+          len: {
+            args: [0, 1000],
+            msg: 'Achievements must not exceed 1000 characters',
+          },
+        },
       },
       rating: {
         type: DataTypes.FLOAT,
-        allowNull: true,
+        validate: {
+          min: {
+            args: [0],
+            msg: 'Rating cannot be less than 0',
+          },
+          max: {
+            args: [5],
+            msg: 'Rating cannot be more than 5',
+          },
+        },
       },
       portfolio: {
         type: DataTypes.STRING,
-        allowNull: true,
+        validate: {
+          isUrl: {
+            msg: 'Portfolio must be a valid URL',
+          },
+        },
       },
       userId: {
         type: DataTypes.UUID,
