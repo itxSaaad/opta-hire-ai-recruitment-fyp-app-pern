@@ -26,11 +26,43 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4,
         allowNull: false,
         primaryKey: true,
+        unique: true,
       },
-      status: DataTypes.STRING,
-      applicationDate: DataTypes.DATE,
-      jobId: DataTypes.UUID,
-      candidateId: DataTypes.UUID,
+      status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: { msg: 'Status is required' },
+          isIn: {
+            args: [['applied', 'shortlisted', 'rejected', 'hired']],
+            msg: 'Invalid application status',
+          },
+        },
+        defaultValue: 'pending',
+      },
+      applicationDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+        validate: {
+          notEmpty: { msg: 'Application date is required' },
+          isDate: { msg: 'Invalid date format' },
+        },
+      },
+      jobId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        validate: {
+          notEmpty: { msg: 'Job ID is required' },
+        },
+      },
+      candidateId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        validate: {
+          notEmpty: { msg: 'Candidate ID is required' },
+        },
+      },
     },
     {
       sequelize,

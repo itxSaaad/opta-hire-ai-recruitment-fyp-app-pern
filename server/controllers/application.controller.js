@@ -59,29 +59,91 @@ const createApplication = asyncHandler(async (req, res) => {
     to: job.recruiter.email,
     subject: 'OptaHire - New Application Received',
     html: `<html>
-            <style>
-                body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; color: #2c3e50; }
-                .container { max-width: 600px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
-                .header { font-size: 28px; font-weight: 600; text-align: center; color: #1a73e8; margin-bottom: 20px; }
-                .app-details { background-color: #f1f7ff; font-size: 20px; font-weight: bold; color: #1a73e8; text-align: center; margin: 24px 0; padding: 16px; border-radius: 8px; }
-                .footer { text-align: center; margin-top: 32px; padding-top: 16px; border-top: 1px solid #edf2f7; color: #718096; font-size: 14px; }
-            </style>
+            <head>
+              <style>
+                body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background-color: #f8f9fa;
+                  color: #2c3e50;
+                  margin: 0;
+                  padding: 0;
+                }
+                .container {
+                  max-width: 600px;
+                  margin: 20px auto;
+                  background-color: #ffffff;
+                  padding: 30px;
+                  border-radius: 12px;
+                  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+                }
+                .logo {
+                  text-align: center;
+                  margin-bottom: 24px;
+                }
+                .header {
+                  font-size: 28px;
+                  font-weight: 600;
+                  text-align: center;
+                  color: #1a73e8;
+                  margin-bottom: 20px;
+                }
+                .app-details {
+                  background-color: #f1f7ff;
+                  font-size: 32px;
+                  font-weight: bold;
+                  color: #1a73e8;
+                  text-align: center;
+                  margin: 24px 0;
+                  padding: 16px;
+                  border-radius: 8px;
+                  letter-spacing: 4px;
+                }
+                .message {
+                  font-size: 16px;
+                  line-height: 1.6;
+                  color: #4a5568;
+                  margin: 16px 0;
+                }
+                .warning {
+                  font-size: 14px;
+                  color: #e74c3c;
+                  margin-top: 16px;
+                }
+                .footer {
+                  text-align: center;
+                  margin-top: 32px;
+                  padding-top: 16px;
+                  border-top: 1px solid #edf2f7;
+                  color: #718096;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
             <body>
-                <div class="container">
-                    <div class="header">OptaHire</div>
-                    <p>Hello ${job.recruiter.name},</p>
-                    <p>A new application has been received for the job <strong>${job.title}</strong>.</p>
-                    <div class="app-details">
-                        <p><strong>Candidate:</strong> ${candidate.name}</p><br/>
-                        <p><strong>Email:</strong> ${candidate.email}</p><br/>
-                        <p><strong>Job Title:</strong> ${job.title}</p><br/>
-                        <p><strong>Company:</strong> ${job.company}</p><br/>
-                        <p><strong>Location:</strong> ${job.location}</p><br/>
-                        <p><strong>Salary:</strong> ${job.salary}</p><br/>
-                        <p><strong>Application Date:</strong> ${application.applicationDate}</p>
-                    </div>
-                    <div class="footer">This is an automated email. Please do not reply to this email.</div>
+              <div class="container">
+                <div class="logo">
+                  <h1 class="header">OptaHire</h1>
                 </div>
+                <p class="message">Hello ${job.recruiter.name},</p>
+                <p class="message">A new application has been received for the job <strong>${
+                  job.title
+                }</strong>.</p>
+                <div class="app-details">
+                  <p class="message">Candidate: ${candidate.name}</p>
+                  <p class="message">Email: ${candidate.email}</p>
+                  <p class="message">Application Date: ${
+                    application.applicationDate
+                  }</p>
+                  <p class="message">Status: ${application.status}</p>
+                </div>
+                <p class="message">You can view the application by logging into your account.</p>
+                <p class="message">Thank you for using OptaHire.</p>
+                <p class="warning">This is an auto-generated email. Please do not reply.</p>
+                <div class="footer">
+                  <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
+                  <p>Optimizing Your Recruitement Journey.</p>
+                </div>
+              </div>
             </body>
         </html>`,
   });
@@ -146,7 +208,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
       ],
       where: {
         status: {
-          [Op.or]: ['shortlisted', 'accepted'],
+          [Op.or]: ['shortlisted'],
         },
       },
     });
@@ -254,6 +316,13 @@ const getApplicationById = asyncHandler(async (req, res) => {
 const updateApplication = asyncHandler(async (req, res) => {
   const { status } = req.body;
 
+  const validStatuses = ['applied', 'shortlisted', 'rejected', 'hired'];
+
+  if (!validStatuses.includes(status)) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Invalid application status');
+  }
+
   const application = await Application.findByPk(req.params.id, {
     include: [{ model: User, as: 'candidate' }, { model: Job }],
   });
@@ -282,29 +351,92 @@ const updateApplication = asyncHandler(async (req, res) => {
     to: application.candidate.email,
     subject: 'OptaHire - Application Status Update',
     html: `<html>
-                <style>
-                    body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; color: #2c3e50; }
-                    .container { max-width: 600px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
-                    .header { font-size: 28px; font-weight: 600; text-align: center; color: #1a73e8; margin-bottom: 20px; }
-                    .app-details { background-color: #f1f7ff; font-size: 20px; font-weight: bold; color: #1a73e8; text-align: center; margin: 24px 0; padding: 16px; border-radius: 8px; }
-                    .footer { text-align: center; margin-top: 32px; padding-top: 16px; border-top: 1px solid #edf2f7; color: #718096; font-size: 14px; }
-                </style>
-                <body>
-                    <div class="container">
-                        <div class="header">OptaHire</div>
-                        <p>Hello ${application.candidate.name},</p>
-                        <p>Your application for the job <strong>${application.job.title}</strong> has been <strong>${status}</strong>.</p>
-                        <div class="app-details">
-                            <p><strong>Job Title:</strong> ${application.job.title}</p><br/>
-                            <p><strong>Company:</strong> ${application.job.company}</p><br/>
-                            <p><strong>Location:</strong> ${application.job.location}</p><br/>
-                            <p><strong>Status:</strong> ${status}</p><br/>
-                        </div>
-                        <div class="footer">This is an automated email. Please do not reply to this email.</div>
-                    </div>
-                </body>
-            </html>`,
+            <head>
+              <style>
+                body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background-color: #f8f9fa;
+                  color: #2c3e50;
+                  margin: 0;
+                  padding: 0;
+                }
+                .container {
+                  max-width: 600px;
+                  margin: 20px auto;
+                  background-color: #ffffff;
+                  padding: 30px;
+                  border-radius: 12px;
+                  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+                }
+                .logo {
+                  text-align: center;
+                  margin-bottom: 24px;
+                }
+                .header {
+                  font-size: 28px;
+                  font-weight: 600;
+                  text-align: center;
+                  color: #1a73e8;
+                  margin-bottom: 20px;
+                }
+                .app-details {
+                  background-color: #f1f7ff;
+                  font-size: 32px;
+                  font-weight: bold;
+                  color: #1a73e8;
+                  text-align: center;
+                  margin: 24px 0;
+                  padding: 16px;
+                  border-radius: 8px;
+                  letter-spacing: 4px;
+                }
+                .message {
+                  font-size: 16px;
+                  line-height: 1.6;
+                  color: #4a5568;
+                  margin: 16px 0;
+                }
+                .warning {
+                  font-size: 14px;
+                  color: #e74c3c;
+                  margin-top: 16px;
+                }
+                .footer {
+                  text-align: center;
+                  margin-top: 32px;
+                  padding-top: 16px;
+                  border-top: 1px solid #edf2f7;
+                  color: #718096;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="logo">
+                  <h1 class="header">OptaHire</h1>
+                </div>
+                <p class="message">Hello ${application.candidate.name},</p>
+                <p class="message">Your application for the job <strong>${
+                  application.job.title
+                }</strong> has been updated.</p>
+                <div class="app-details">${status.toUpperCase()}</div>
+                <p class="message">You can check the status of your application by logging into your account.</p>
+                <p class="message">Thank you for using OptaHire.</p>
+                <p class="warning">This is an auto-generated email. Please do not reply.</p>
+                <div class="footer">
+                  <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
+                  <p>Optimizing Your Recruitement Journey.</p>
+                </div>
+              </div>
+            </body>
+          </html>`,
   });
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Email could not be sent');
+  }
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -344,6 +476,97 @@ const deleteApplication = asyncHandler(async (req, res) => {
   if (!deletedApplication) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Application could not be deleted');
+  }
+
+  const isEmailSent = await sendEmail({
+    from: process.env.SMTP_EMAIL,
+    to: application.candidate.email,
+    subject: 'OptaHire - Application Deleted',
+    html: `<html>
+            <head>
+              <style>
+                body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  background-color: #f8f9fa;
+                  color: #2c3e50;
+                  margin: 0;
+                  padding: 0;
+                }
+                .container {
+                  max-width: 600px;
+                  margin: 20px auto;
+                  background-color: #ffffff;
+                  padding: 30px;
+                  border-radius: 12px;
+                  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+                }
+                .logo {
+                  text-align: center;
+                  margin-bottom: 24px;
+                }
+                .header {
+                  font-size: 28px;
+                  font-weight: 600;
+                  text-align: center;
+                  color: #1a73e8;
+                  margin-bottom: 20px;
+                }
+                .app-details {
+                  background-color: #f1f7ff;
+                  font-size: 32px;
+                  font-weight: bold;
+                  color: #1a73e8;
+                  text-align: center;
+                  margin: 24px 0;
+                  padding: 16px;
+                  border-radius: 8px;
+                  letter-spacing: 4px;
+                }
+                .message {
+                  font-size: 16px;
+                  line-height: 1.6;
+                  color: #4a5568;
+                  margin: 16px 0;
+                }
+                .warning {
+                  font-size: 14px;
+                  color: #e74c3c;
+                  margin-top: 16px;
+                }
+                .footer {
+                  text-align: center;
+                  margin-top: 32px;
+                  padding-top: 16px;
+                  border-top: 1px solid #edf2f7;
+                  color: #718096;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="logo">
+                  <h1 class="header">OptaHire</h1>
+                </div>
+                <p class="message">Hello ${application.candidate.name},</p>
+                <p class="message">Your application for the job <strong>${
+                  application.job.title
+                }</strong> has been deleted.</p>
+                <p class="message">If you have any questions, please contact the recruiter.</p>
+                <p class="message">Thank you for using OptaHire.</p>
+                <p class="warning">This is an auto-generated email. Please do not reply.</p>
+                <div class="footer">
+                  <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
+                  <p>Optimizing Your Recruitement Journey.</p>
+                </div>
+              </div>
+            </body>
+          </html>`,
+  });
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Email could not be sent');
   }
 
   res.status(StatusCodes.OK).json({
