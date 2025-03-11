@@ -125,15 +125,13 @@ const createApplication = asyncHandler(async (req, res) => {
                   <h1 class="header">OptaHire</h1>
                 </div>
                 <p class="message">Hello ${job.recruiter.name},</p>
-                <p class="message">A new application has been received for the job <strong>${
-                  job.title
-                }</strong>.</p>
+                <p class="message">A new application has been received for the job <strong>${job.title
+      }</strong>.</p>
                 <div class="app-details">
                   <p class="message">Candidate: ${candidate.name}</p>
                   <p class="message">Email: ${candidate.email}</p>
-                  <p class="message">Application Date: ${
-                    application.applicationDate
-                  }</p>
+                  <p class="message">Application Date: ${application.applicationDate
+      }</p>
                   <p class="message">Status: ${application.status}</p>
                 </div>
                 <p class="message">You can view the application by logging into your account.</p>
@@ -324,7 +322,7 @@ const updateApplication = asyncHandler(async (req, res) => {
   }
 
   const application = await Application.findByPk(req.params.id, {
-    include: [{ model: User, as: 'candidate' }, { model: Job }],
+    include: [{ model: User, as: 'candidate' }, { model: Job, as: 'job' }],
   });
 
   if (!application) {
@@ -417,9 +415,8 @@ const updateApplication = asyncHandler(async (req, res) => {
                   <h1 class="header">OptaHire</h1>
                 </div>
                 <p class="message">Hello ${application.candidate.name},</p>
-                <p class="message">Your application for the job <strong>${
-                  application.job.title
-                }</strong> has been updated.</p>
+                <p class="message">Your application for the job <strong>${application.job.title
+      }</strong> has been updated.</p>
                 <div class="app-details">${status.toUpperCase()}</div>
                 <p class="message">You can check the status of your application by logging into your account.</p>
                 <p class="message">Thank you for using OptaHire.</p>
@@ -549,9 +546,8 @@ const deleteApplication = asyncHandler(async (req, res) => {
                   <h1 class="header">OptaHire</h1>
                 </div>
                 <p class="message">Hello ${application.candidate.name},</p>
-                <p class="message">Your application for the job <strong>${
-                  application.job.title
-                }</strong> has been deleted.</p>
+                <p class="message">Your application for the job <strong>${application.job.title
+      }</strong> has been deleted.</p>
                 <p class="message">If you have any questions, please contact the recruiter.</p>
                 <p class="message">Thank you for using OptaHire.</p>
                 <p class="warning">This is an auto-generated email. Please do not reply.</p>

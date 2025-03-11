@@ -22,6 +22,14 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const resumeRoutes = require('./routes/resume.routes');
 const jobRoutes = require('./routes/job.routes');
+const applicationRoutes = require('./routes/application.routes');
+// const chatroomRoutes = require('./routes/chatroom.routes');
+// const videoRoutes = require('./routes/video.routes');
+// const contractRoutes = require('./routes/contract.routes');
+// const interviewRoutes = require('./routes/interview.routes');
+// const ratingRoutes = require('./routes/rating.routes');
+// const transactionRoutes = require('./routes/transaction.routes');
+// const paymentRoutes = require('./routes/payment.routes');
 
 dotenv.config();
 
@@ -151,7 +159,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/jobs', jobRoutes);
-// app.use('/api/v1/applications', applicationRoutes);
+app.use('/api/v1/applications', applicationRoutes);
 // app.use('/api/v1/chatrooms', chatroomRoutes);
 // app.use('/api/v1/videos', videoRoutes);
 // app.use('/api/v1/contracts', contractRoutes);
