@@ -4,7 +4,10 @@ const { Op } = require('sequelize');
 
 const { User, Job, Interview, ChatRoom, Message } = require('../models');
 
-const sendEmail = require('../utils/nodemailer.utils');
+const {
+  sendEmail,
+  generateEmailTemplate,
+} = require('../utils/nodemailer.utils');
 
 const generateRoomId = (length = 12) => {
   const timestamp = Date.now().toString(36);

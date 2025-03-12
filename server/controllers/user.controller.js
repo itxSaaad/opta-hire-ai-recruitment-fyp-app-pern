@@ -4,7 +4,10 @@ const { StatusCodes } = require('http-status-codes');
 
 const { User, Resume } = require('../models');
 
-const sendEmail = require('../utils/nodemailer.utils');
+const {
+  sendEmail,
+  generateEmailTemplate,
+} = require('../utils/nodemailer.utils');
 
 /**
  * @desc Verify user email with OTP.
@@ -70,66 +73,26 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'Welcome to OptaHire - Email Verified',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">Congratulations! Your email has been verified successfully. You can now enjoy all the features of OptaHire.</p>
-            <p class="message">If you have any questions or need assistance, feel free to contact our support team.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitment Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'Welcome to OptaHire - Email Verified',
+      content: [
+        {
+          type: 'text',
+          value:
+            'Congratulations! Your email has been verified successfully. You can now enjoy all the features of OptaHire.',
+        },
+        {
+          type: 'text',
+          value:
+            'If you have any questions or need assistance, feel free to contact our support team.',
+        },
+        {
+          type: 'text',
+          value: 'Thank you for using OptaHire.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -197,65 +160,21 @@ const updateUserPassword = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Password Updated',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">Your password has been updated successfully. If you did not request this change, please contact our support team immediately.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitment Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Password Updated',
+      content: [
+        {
+          type: 'text',
+          value:
+            'Your password has been updated successfully. If you did not request this change, please contact our support team immediately.',
+        },
+        {
+          type: 'text',
+          value: 'Thank you for using OptaHire.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -389,65 +308,21 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Profile Deleted',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">Your profile has been deleted successfully. If you did not request this change, please contact our support team immediately.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitment Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Profile Deleted',
+      content: [
+        {
+          type: 'text',
+          value:
+            'Your profile has been deleted successfully. If you did not request this change, please contact our support team immediately.',
+        },
+        {
+          type: 'text',
+          value: 'Thank you for using OptaHire.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -577,6 +452,7 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
     success: true,
     message: 'User updated successfully.',
     user,
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -613,65 +489,21 @@ const deleteUserById = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Account Deleted',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">Your account has been deleted due to violation of our rules and policies. If you believe this is a mistake, please contact our support team immediately.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitment Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Account Deleted',
+      content: [
+        {
+          type: 'text',
+          value:
+            'Your account has been deleted due to violation of our rules and policies. If you believe this is a mistake, please contact our support team immediately.',
+        },
+        {
+          type: 'text',
+          value: 'Thank you for using OptaHire.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -720,65 +552,21 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Account Permanently Deleted',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">Your account has been permanently deleted. If you believe this is a mistake, please contact our support team immediately.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitment Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Account Permanently Deleted',
+      content: [
+        {
+          type: 'text',
+          value:
+            'Your account has been permanently deleted. If you believe this is a mistake, please contact our support team immediately.',
+        },
+        {
+          type: 'text',
+          value: 'Thank you for using OptaHire.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {

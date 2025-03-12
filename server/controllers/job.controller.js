@@ -5,7 +5,10 @@ const { Op } = require('sequelize');
 const { User, Job } = require('../models');
 
 const { validateString, validateArray } = require('../utils/validation.utils');
-const sendEmail = require('../utils/nodemailer.utils');
+const {
+  sendEmail,
+  generateEmailTemplate,
+} = require('../utils/nodemailer.utils');
 
 /**
  * @desc Creates a new job.
@@ -108,97 +111,45 @@ const createJob = asyncHandler(async (req, res) => {
     benefits: benefitsArrayJoined,
   };
 
+  const emailContent = [
+    {
+      type: 'text',
+      value: 'You have successfully Created a new job on OptaHire.',
+    },
+    {
+      type: 'heading',
+      value: 'Job Details',
+    },
+    {
+      type: 'list',
+      value: [
+        `Title: ${job.title}`,
+        `Description: ${job.description}`,
+        `Requirements: ${requirementsArrayJoined}`,
+        `Benefits: ${benefitsArrayJoined}`,
+        `Company: ${job.company}`,
+        `Salary Range: ${job.salaryRange}`,
+        `Category: ${job.category}`,
+        `Location: ${job.location}`,
+      ],
+    },
+    {
+      type: 'text',
+      value: 'Thank you for using OptaHire.',
+    },
+  ];
+
+  const emailHtml = generateEmailTemplate({
+    firstName: recruiter.firstName,
+    subject: 'OptaHire - New Job Created',
+    content: emailContent,
+  });
+
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
     to: recruiter.email,
     subject: 'OptaHire - New Job Created',
-    html: `<html>
-           <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .focus {
-              background-color: #f1f7ff;
-              font-size: 32px;
-              font-weight: bold;
-              color: #1a73e8;
-              text-align: center;
-              margin: 24px 0;
-              padding: 16px;
-              border-radius: 8px;
-              letter-spacing: 4px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .warning {
-              font-size: 14px;
-              color: #e74c3c;
-              margin-top: 16px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${recruiter.firstName},</p>
-            <p class="message">You have successfully Created a new job on OptaHire.</p>
-            <div class-"focus">
-              <p class="message">Title: ${job.title}</p>
-              <p class="message">Description: ${job.description}</p>
-              <p class="message">Requirements: ${requirementsArrayJoined}</p>
-              <p class="message">Benefits: ${benefitsArrayJoined}</p>
-              <p class="message">Company: ${job.company}</p>
-              <p class="message">Salary Range: ${job.salaryRange}</p>
-              <p class="message">Category: ${job.category}</p>
-              <p class="message">Location: ${job.location}</p>
-            </div>
-            <p class="message">Thank you for using OptaHire.</p>
-            <p class="warning">This is an auto-generated email. Please do not reply.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitement Journey.</p>
-            </div>
-          </div>
-        </body>
-    </html>`,
+    html: emailHtml,
   });
 
   if (!isEmailSent) {
@@ -481,98 +432,46 @@ const updateJob = asyncHandler(async (req, res) => {
     benefits: benefitsArrayJoined,
   };
 
+  const emailContent = [
+    {
+      type: 'text',
+      value: 'You have successfully Updated a job on OptaHire.',
+    },
+    {
+      type: 'heading',
+      value: 'Job Details',
+    },
+    {
+      type: 'list',
+      value: [
+        `Title: ${updatedJob.title}`,
+        `Description: ${updatedJob.description}`,
+        `Requirements: ${requirementsArrayJoined}`,
+        `Benefits: ${benefitsArrayJoined}`,
+        `Company: ${updatedJob.company}`,
+        `Salary Range: ${updatedJob.salaryRange}`,
+        `Category: ${updatedJob.category}`,
+        `Location: ${updatedJob.location}`,
+        `Is Closed: ${updatedJob.isClosed}`,
+      ],
+    },
+    {
+      type: 'text',
+      value: 'Thank you for using OptaHire.',
+    },
+  ];
+
+  const emailHtml = generateEmailTemplate({
+    firstName: job.recruiter.firstName,
+    subject: 'OptaHire - Job Updated',
+    content: emailContent,
+  });
+
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Updated',
-    html: `<html>
-           <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .focus {
-              background-color: #f1f7ff;
-              font-size: 32px;
-              font-weight: bold;
-              color: #1a73e8;
-              text-align: center;
-              margin: 24px 0;
-              padding: 16px;
-              border-radius: 8px;
-              letter-spacing: 4px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .warning {
-              font-size: 14px;
-              color: #e74c3c;
-              margin-top: 16px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${job.recruiter.firstName},</p>
-            <p class="message">You have successfully Updated a job on OptaHire.</p>
-            <div class-"focus">
-              <p class="message">Title: ${updatedJob.title}</p>
-              <p class="message">Description: ${updatedJob.description}</p>
-              <p class="message">Requirements: ${requirementsArrayJoined}</p>
-              <p class="message">Benefits: ${benefitsArrayJoined}</p>
-              <p class="message">Company: ${updatedJob.company}</p>
-              <p class="message">Salary Range: ${updatedJob.salaryRange}</p>
-              <p class="message">Category: ${updatedJob.category}</p>
-              <p class="message">Location: ${updatedJob.location}</p>
-              <p class="message">Is Closed: ${updatedJob.isClosed}</p>
-            </div>
-            <p class="message">Thank you for using OptaHire.</p>
-            <p class="warning">This is an auto-generated email. Please do not reply.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitement Journey.</p>
-            </div>
-          </div>
-        </body>
-    </html>`,
+    html: emailHtml,
   });
 
   if (!isEmailSent) {
@@ -649,97 +548,45 @@ const deleteJob = asyncHandler(async (req, res) => {
     benefits: benefitsArrayJoined,
   };
 
+  const emailContent = [
+    {
+      type: 'text',
+      value: 'You have successfully Deleted a job on OptaHire.',
+    },
+    {
+      type: 'heading',
+      value: 'Job Details',
+    },
+    {
+      type: 'list',
+      value: [
+        `Title: ${job.title}`,
+        `Description: ${job.description}`,
+        `Requirements: ${requirementsArrayJoined}`,
+        `Benefits: ${benefitsArrayJoined}`,
+        `Company: ${job.company}`,
+        `Salary Range: ${job.salaryRange}`,
+        `Category: ${job.category}`,
+        `Location: ${job.location}`,
+      ],
+    },
+    {
+      type: 'text',
+      value: 'Thank you for using OptaHire.',
+    },
+  ];
+
+  const emailHtml = generateEmailTemplate({
+    firstName: job.recruiter.firstName,
+    subject: 'OptaHire - Job Deleted',
+    content: emailContent,
+  });
+
   const isEmailSent = await sendEmail({
     from: process.env.SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Deleted',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .focus {
-              background-color: #f1f7ff;
-              font-size: 32px;
-              font-weight: bold;
-              color: #1a73e8;
-              text-align: center;
-              margin: 24px 0;
-              padding: 16px;
-              border-radius: 8px;
-              letter-spacing: 4px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .warning {
-              font-size: 14px;
-              color: #e74c3c;
-              margin-top: 16px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${job.recruiter.firstName},</p>
-            <p class="message">You have successfully Deleted a job on OptaHire.</p>
-            <div class-"focus">
-              <p class="message">Title: ${job.title}</p>
-              <p class="message">Description: ${job.description}</p>
-              <p class="message">Requirements: ${requirementsArrayJoined}</p>
-              <p class="message">Benefits: ${benefitsArrayJoined}</p>
-              <p class="message">Company: ${job.company}</p>
-              <p class="message">Salary Range: ${job.salaryRange}</p>
-              <p class="message">Category: ${job.category}</p>
-              <p class="message">Location: ${job.location}</p>
-            </div>
-            <p class="message">Thank you for using OptaHire.</p>
-            <p class="warning">This is an auto-generated email. Please do not reply.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitement Journey.</p>
-            </div>
-          </div>
-        </body>
-    </html>`,
+    html: emailHtml,
   });
 
   if (!isEmailSent) {

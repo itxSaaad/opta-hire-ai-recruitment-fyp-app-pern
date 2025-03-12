@@ -5,7 +5,10 @@ const { StatusCodes } = require('http-status-codes');
 
 const { User } = require('../models');
 
-const sendEmail = require('../utils/nodemailer.utils');
+const {
+  sendEmail,
+  generateEmailTemplate,
+} = require('../utils/nodemailer.utils');
 
 /**
  * @desc Logs in a user.
@@ -256,84 +259,31 @@ const registerUser = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'Welcome to OptaHire - Verify Your Email',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .otp {
-              background-color: #f1f7ff;
-              font-size: 32px;
-              font-weight: bold;
-              color: #1a73e8;
-              text-align: center;
-              margin: 24px 0;
-              padding: 16px;
-              border-radius: 8px;
-              letter-spacing: 4px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .warning {
-              font-size: 14px;
-              color: #e74c3c;
-              margin-top: 16px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${firstName},</p>
-            <p class="message">Welcome to OptaHire! We're excited to have you on board. To get started, please verify your email address using the OTP below:</p>
-            <div class="otp">${verficationOTP}</div>
-            <p class="message">This verification code will expire in 10 minutes for security purposes.</p>
-            <p class="warning">If you didn't create an account with OptaHire, please disregard this email.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitement Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'Welcome to OptaHire - Verify Your Email',
+      content: [
+        {
+          type: 'text',
+          value:
+            "Welcome to OptaHire! We're excited to have you on board. To get started, please verify your email address using the OTP below:",
+        },
+        {
+          type: 'otp',
+          value: verficationOTP,
+        },
+        {
+          type: 'text',
+          value:
+            'This verification code will expire in 10 minutes for security purposes.',
+        },
+        {
+          type: 'text',
+          value:
+            "If you didn't create an account with OptaHire, please disregard this email.",
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -415,84 +365,30 @@ const forgotPassword = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Reset Your Password',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .otp {
-              background-color: #f1f7ff;
-              font-size: 32px;
-              font-weight: bold;
-              color: #1a73e8;
-              text-align: center;
-              margin: 24px 0;
-              padding: 16px;
-              border-radius: 8px;
-              letter-spacing: 4px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .warning {
-              font-size: 14px;
-              color: #e74c3c;
-              margin-top: 16px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">You recently requested to reset your password for your OptaHire account. Use the OTP below to reset it:</p>
-            <div class="otp">${resetPasswordOTP}</div>
-            <p class="message">This OTP will expire in 10 minutes for security purposes.</p>
-            <p class="warning">If you didn't request a password reset, please disregard this email.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitement Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Reset Your Password',
+      content: [
+        {
+          type: 'text',
+          value:
+            'You recently requested to reset your password for your OptaHire account. Use the OTP below to reset it:',
+        },
+        {
+          type: 'otp',
+          value: resetPasswordOTP,
+        },
+        {
+          type: 'text',
+          value: 'This OTP will expire in 10 minutes for security purposes.',
+        },
+        {
+          type: 'text',
+          value:
+            "If you didn't request a password reset, please disregard this email.",
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -576,71 +472,26 @@ const resetPassword = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Password Reset Successful',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .warning {
-              font-size: 14px;
-              color: #e74c3c;
-              margin-top: 16px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">Your password has been successfully reset. If you didn't make this change, please contact us immediately.</p>
-            <p class="warning">If you didn't request a password reset, please disregard this email.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitement Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Password Reset Successful',
+      content: [
+        {
+          type: 'text',
+          value: 'Your password has been successfully reset.',
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not initiate this password reset, please contact our support team immediately.',
+        },
+        {
+          type: 'text',
+          value:
+            'For security purposes, we recommend changing your password regularly and using strong, unique passwords.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -699,84 +550,30 @@ const regenerateOTP = asyncHandler(async (req, res) => {
     from: process.env.SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Your New Verification Code',
-    html: `<html>
-        <head>
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              background-color: #f8f9fa;
-              color: #2c3e50;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 20px auto;
-              background-color: #ffffff;
-              padding: 30px;
-              border-radius: 12px;
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-            }
-            .logo {
-              text-align: center;
-              margin-bottom: 24px;
-            }
-            .header {
-              font-size: 28px;
-              font-weight: 600;
-              text-align: center;
-              color: #1a73e8;
-              margin-bottom: 20px;
-            }
-            .otp {
-              background-color: #f1f7ff;
-              font-size: 32px;
-              font-weight: bold;
-              color: #1a73e8;
-              text-align: center;
-              margin: 24px 0;
-              padding: 16px;
-              border-radius: 8px;
-              letter-spacing: 4px;
-            }
-            .message {
-              font-size: 16px;
-              line-height: 1.6;
-              color: #4a5568;
-              margin: 16px 0;
-            }
-            .warning {
-              font-size: 14px;
-              color: #e74c3c;
-              margin-top: 16px;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 32px;
-              padding-top: 16px;
-              border-top: 1px solid #edf2f7;
-              color: #718096;
-              font-size: 14px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="logo">
-              <h1 class="header">OptaHire</h1>
-            </div>
-            <p class="message">Hello ${user.firstName},</p>
-            <p class="message">You requested a new verification code. Here's your new OTP:</p>
-            <div class="otp">${verficationOTP}</div>
-            <p class="message">This new verification code will expire in 10 minutes for security purposes.</p>
-            <p class="warning">If you didn't request a new verification code, please contact support immediately.</p>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} OptaHire. All rights reserved.</p>
-              <p>Optimizing Your Recruitement Journey.</p>
-            </div>
-          </div>
-        </body>
-      </html>`,
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Your New Verification Code',
+      content: [
+        {
+          type: 'text',
+          value: "You requested a new verification code. Here's your new OTP:",
+        },
+        {
+          type: 'otp',
+          value: verficationOTP,
+        },
+        {
+          type: 'text',
+          value:
+            'This new verification code will expire in 10 minutes for security purposes.',
+        },
+        {
+          type: 'text',
+          value:
+            "If you didn't request a new verification code, please contact support immediately.",
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {

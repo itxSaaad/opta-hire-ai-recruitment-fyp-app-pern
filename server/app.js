@@ -34,6 +34,7 @@ const interviewRoutes = require('./routes/interview.routes');
 // const paymentRoutes = require('./routes/payment.routes');
 
 const setupChatSocket = require('./sockets/chat.socket');
+const setupVideoCallSocket = require('./sockets/webrtc.socket');
 
 dotenv.config();
 
@@ -186,6 +187,7 @@ const io = new Server(server, {
 });
 
 setupChatSocket(io);
+setupVideoCallSocket(io);
 
 const startServer = async () => {
   try {
