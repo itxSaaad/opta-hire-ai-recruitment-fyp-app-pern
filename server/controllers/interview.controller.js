@@ -5,263 +5,566 @@ const { Op } = require('sequelize');
 const { User, Job, Interview, ChatRoom, Message } = require('../models');
 
 const sendEmail = require('../utils/nodemailer.utils');
-const roomId = require('uuid').v4();
+
+const generateRoomId = (length = 12) => {
+  const timestamp = Date.now().toString(36);
+  const randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const randomPart = Array.from({ length: 6 }, () =>
+    randomChars.charAt(Math.floor(Math.random() * randomChars.length))
+  ).join('');
+
+  return `${timestamp.slice(-4)}-${randomPart.slice(0, 4)}-${randomPart.slice(
+    4
+  )}`;
+};
 
 /**
- * @desc Creates a new interview.
- * @route POST /api/v1/interviews
- * @access Private
- * @param {Object} req - The request object containing interview details.
- * @param {Object} res - The response object.
- * @returns {Promise<void>}
- * @throws {Error} If required fields are missing or invalid.
+ * @desc Create a new interview
+ *
+ * @route POST /api/interviews
+ * @access Private (Interviewer, Candidate)
+ *
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ *
+ * @body {String} roomId
+ * @body {Date} scheduledTime
+ * @body {Number} interviewerId
+ * @body {Number} candidateId
+ * @body {Number} jobId
+ * @body {Number} applicationId
+ * @body {String} remarks
+ *
+ * @returns {Object} Interview
+ * @throws {Error} If required fields are missing
+ * @throws {Error} If scheduled time is in the past
+ * @throws {Error} If interviewer and candidate are the same
+ * @throws {Error} If interviewer or candidate not found
+ * @throws {Error} If job not found
+ * @throws {Error} If chat room not found
+ * @throws {Error} If interview already scheduled at this time
+ * @throws {Error} If interview could not be scheduled
  */
+
 const createInterview = asyncHandler(async (req, res) => {
-    const { scheduledTime, interviewerId, candidateId, jobId, applicationId } = req.body;
+  const {
+    roomId,
+    scheduledTime,
+    interviewerId,
+    candidateId,
+    jobId,
+    applicationId,
+    remarks,
+  } = req.body;
 
-    const interview = await Interview.create({
-        roomId,
-        scheduledTime,
-        interviewerId,
-        candidateId,
-        jobId,
-        applicationId,
-        status: 'scheduled'
-    });
+  if (
+    !roomId ||
+    !scheduledTime ||
+    !interviewerId ||
+    !candidateId ||
+    !jobId ||
+    !applicationId
+  ) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Missing required fields');
+  }
 
-    const createdInterview = await Interview.findByPk(interview.id, {
-        include: [
-            { model: User, as: 'interviewer' },
-            { model: User, as: 'candidate' },
-            { model: Job, as: 'job' }
-        ]
-    });
+  if (new Date(scheduledTime) <= new Date()) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Scheduled time must be in the future');
+  }
 
-    await ChatRoom.create({
-        id: roomId,
-        name: `Interview-${interview.id}`,
-        type: 'interview'
-    });
+  if (interviewerId === candidateId) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Interviewer and candidate cannot be the same');
+  }
 
-    const [interviewer, candidate] = await Promise.all([
-        User.findByPk(interviewerId),
-        User.findByPk(candidateId)
-    ]);
+  const interviewer = await User.findByPk(interviewerId);
+  const candidate = await User.findByPk(candidateId);
 
-    const isEmailSent = await Promise.all([
-        sendEmail({
-            from: process.env.SMTP_EMAIL,
-            to: interviewer.email,
-            subject: 'Interview Scheduled',
-            html: `<p>Your interview with ${candidate.name} has been scheduled for ${new Date(scheduledTime).toLocaleString()}</p>`
-        }),
-        sendEmail({
-            from: process.env.SMTP_EMAIL,
-            to: candidate.email,
-            subject: 'Interview Scheduled',
-            html: `<p>Your interview with ${interviewer.name} has been scheduled for ${new Date(scheduledTime).toLocaleString()}</p>`
-        })
-    ]);
+  if (!interviewer || !candidate) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Interviewer or candidate not found');
+  }
 
-    if (!isEmailSent) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-        throw new Error('Email could not be sent.');
-    }
+  const job = await Job.findByPk(jobId);
 
-    res.status(StatusCodes.CREATED).json({
-        success: true,
-        message: 'Interview created successfully',
-        interview: createdInterview
-    });
+  if (!job) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Job not found');
+  }
+
+  const chatRoom = await ChatRoom.findByPk(roomId);
+
+  if (!chatRoom) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Chat room not found');
+  }
+
+  const existingInterview = await Interview.findOne({
+    where: {
+      [Op.or]: [
+        { interviewerId, scheduledTime },
+        { candidateId, scheduledTime },
+      ],
+    },
+  });
+
+  if (existingInterview) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Interview already scheduled at this time');
+  }
+
+  const room = generateRoomId();
+
+  const interview = await Interview.create({
+    roomId: room,
+    scheduledTime,
+    interviewerId,
+    candidateId,
+    jobId,
+    applicationId,
+    remarks,
+    status: 'scheduled',
+  });
+
+  if (!interview) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Interview could not be scheduled');
+  }
+
+  const interviewerEmailContent = [
+    {
+      type: 'text',
+      value: `An interview has been scheduled with ${candidate.firstName} ${candidate.lastName} for the job ${job.title}.`,
+    },
+    { type: 'heading', value: 'Interview Details' },
+    {
+      type: 'list',
+      value: [
+        `Date and Time: ${new Date(scheduledTime).toLocaleString()}`,
+        `Job Title: ${job.title}`,
+        `Candidate: ${candidate.firstName} ${candidate.lastName}`,
+        `Room ID: ${room}`,
+      ],
+    },
+  ];
+
+  const candidateEmailContent = [
+    {
+      type: 'text',
+      value: `An interview has been scheduled with ${interviewer.firstName} ${interviewer.lastName} for the job ${job.title}.`,
+    },
+    { type: 'heading', value: 'Interview Details' },
+    {
+      type: 'list',
+      value: [
+        `Date and Time: ${new Date(scheduledTime).toLocaleString()}`,
+        `Job Title: ${job.title}`,
+        `Interviewer: ${interviewer.firstName} ${interviewer.lastName}`,
+        `Room ID: ${room}`,
+      ],
+    },
+  ];
+
+  const isEmailSent = await Promise.all([
+    sendEmail({
+      to: interviewer.email,
+      subject: 'OptaHire - Interview Scheduled',
+      html: generateEmailTemplate({
+        firstName: interviewer.firstName,
+        subject: 'Interview Scheduled',
+        content: interviewerEmailContent,
+      }),
+    }),
+    sendEmail({
+      to: candidate.email,
+      subject: 'OptaHire - Interview Scheduled',
+      html: generateEmailTemplate({
+        firstName: candidate.firstName,
+        subject: 'Interview Scheduled',
+        content: candidateEmailContent,
+      }),
+    }),
+  ]);
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Email could not be sent');
+  }
+
+  res.status(StatusCodes.CREATED).json({
+    success: true,
+    message: 'Interview scheduled successfully',
+    interview,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 /**
- * @desc Fetches all interviews.
- * @route GET /api/v1/interviews
- * @access Private
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @returns {Promise<void>}
- * @throws {Error} If the user is not an admin, recruiter or interviewer.
- * @throws {Error} If the interviews could not be found.
-    */
+ * @desc Get all interviews
+ *
+ * @route GET /api/interviews
+ * @access Private (Interviewer, Candidate, Admin)
+ *
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ *
+ * @returns {Object} Interviews
+ * @throws {Error} If no interviews found
+ * @throws {Error} If not authorized to view interviews
+ */
 
 const getInterviews = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
-    const userRole = req.user.role;
-    const { status } = req.query;
+  let interviews;
 
-    let whereClause = {};
-    if (status) {
-        whereClause.status = status;
-    }
-
-    let interviews;
-
-    if (userRole === 'admin') {
-        interviews = await Interview.findAll({
-            where: whereClause,
-            include: [
-                { model: User, as: 'interviewer' },
-                { model: User, as: 'candidate' },
-                { model: Job, as: 'job' }
-            ],
-            order: [['scheduledTime', 'DESC']]
-        });
-    } else if (userRole === 'recruiter') {
-        interviews = await Interview.findAll({
-            where: whereClause,
-            include: [
-                { model: User, as: 'interviewer' },
-                { model: User, as: 'candidate' },
-                {
-                    model: Job,
-                    as: 'job',
-                    where: { recruiterId: userId }
-                }
-            ],
-            order: [['scheduledTime', 'DESC']]
-        });
-    } else {
-        interviews = await Interview.findAll({
-            where: {
-                ...whereClause,
-                [Op.or]: [
-                    { interviewerId: userId },
-                    { candidateId: userId }
-                ]
-            },
-            include: [
-                { model: User, as: 'interviewer' },
-                { model: User, as: 'candidate' },
-                { model: Job, as: 'job' }
-            ],
-            order: [['scheduledTime', 'DESC']]
-        });
-    }
-
-    res.status(StatusCodes.OK).json({
-        success: true,
-        count: interviews.length,
-        interviews
+  if (req.user.isInterviewer) {
+    interviews = await Interview.findAll({
+      where: { interviewerId: req.user.id },
+      include: [
+        { model: Job, as: 'job', attributes: ['title', 'description'] },
+        { model: Application, as: 'application' },
+        {
+          model: User,
+          as: 'candidate',
+          attributes: ['firstName', 'lastName', 'email'],
+        },
+      ],
     });
+  } else if (req.user.isCandidate) {
+    interviews = await Interview.findAll({
+      where: { candidateId: req.user.id },
+      include: [
+        { model: Job, as: 'job', attributes: ['title', 'description'] },
+        { model: Application, as: 'application' },
+        {
+          model: User,
+          as: 'interviewer',
+          attributes: ['firstName', 'lastName', 'email'],
+        },
+      ],
+    });
+  } else if (req.user.isAdmin) {
+    interviews = await Interview.findAll({
+      include: [
+        { model: Job, as: 'job', attributes: ['title', 'description'] },
+        { model: Application, as: 'application' },
+        {
+          model: User,
+          as: 'interviewer',
+          attributes: ['firstName', 'lastName', 'email'],
+        },
+        {
+          model: User,
+          as: 'candidate',
+          attributes: ['firstName', 'lastName', 'email'],
+        },
+      ],
+    });
+  } else {
+    res.status(StatusCodes.FORBIDDEN);
+    throw new Error('Not authorized to view interviews');
+  }
+
+  if (!interviews || interviews.length === 0) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('No interviews found');
+  }
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    interviews,
+    count: interviews.length,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 /**
- * @desc Fetches an interview by ID.
- * 
- * @route GET /api/v1/interviews/:id
- * @access Private
- * 
- * @param {Object} req - The request object containing the interview ID.
- * @param {Object} res - The response object.
- * @returns {Promise<void>}
- * @throws {Error} If the interview is not found.
+ * @desc Get interview by ID
+ *
+ * @route GET /api/interviews/:id
+ * @access Private (Interviewer, Candidate, Admin)
+ *
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ *
+ * @returns {Object} Interview
+ * @throws {Error} If interview not found
+ * @throws {Error} If not authorized to view interview
  */
 
-
 const getInterviewById = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  const interview = await Interview.findByPk(req.params.id, {
+    include: [
+      {
+        model: User,
+        as: 'interviewer',
+        attributes: ['id', 'firstName', 'lastName', 'email'],
+      },
+      {
+        model: User,
+        as: 'candidate',
+        attributes: ['id', 'firstName', 'lastName', 'email'],
+      },
+      {
+        model: Job,
+        attributes: ['id', 'title'],
+      },
+    ],
+  });
 
-    const interview = await Interview.findByPk(id, {
-        include: [
-            { model: User, as: 'interviewer' },
-            { model: User, as: 'candidate' },
-            { model: Job, as: 'job' }
-        ]
-    });
+  if (!interview) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Interview not found');
+  }
 
-    if (!interview) {
-        res.status(StatusCodes.NOT_FOUND);
-        throw new Error('Interview not found');
-    }
-
-    res.status(StatusCodes.OK).json({
-        success: true,
-        interview
-    });
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Interview found',
+    interview,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 /**
- * @desc Updates an interview.
- * 
- * @route PUT /api/v1/interviews/:id
- * @access Private
- * 
- * @param {Object} req - The request object containing the interview ID and updates (status, remarks, summary, rating).
- * @param {Object} res - The response object.
- * @returns {Promise<void>}
- * @throws {Error} If the interview is not found.
+ * @desc Update an interview
+ *
+ * @route PUT /api/interviews/:id
+ * @access Private (Interviewer, Admin)
+ *
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ *
+ * @body {String} roomId
+ * @body {Date} scheduledTime
+ * @body {String} remarks
+ * @body {String} status
+ *
+ * @returns {Object} Interview
+ * @throws {Error} If interview not found
+ * @throws {Error} If scheduled time is in the past
+ * @throws {Error} If room ID is required to complete an interview
+ * @throws {Error} If interview could not be updated
+ * @throws {Error} If email could not be sent
  */
 
 const updateInterview = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { status, remarks, summary, rating } = req.body;
+  const interview = await Interview.findByPk(req.params.id);
 
-    const interview = await Interview.findByPk(id);
+  if (!interview) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Interview not found');
+  }
 
-    if (!interview) {
-        res.status(StatusCodes.NOT_FOUND);
-        throw new Error('Interview not found');
-    }
+  const { roomId, scheduledTime, remarks, status } = req.body;
 
-    const updates = {};
+  if (new Date(scheduledTime) <= new Date()) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Scheduled time must be in the future');
+  }
 
-    if (status) updates.status = status;
-    if (remarks) updates.remarks = remarks;
-    if (summary) updates.summary = summary;
-    if (rating !== undefined) updates.rating = rating;
+  if (status === 'completed' && !roomId) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Room ID is required to complete an interview');
+  }
 
-    if (status === 'ongoing') {
-        updates.callStartedAt = new Date();
-    } else if (status === 'completed') {
-        updates.callEndedAt = new Date();
-    }
+  const updatedInterview = await interview.update({
+    roomId: roomId || interview.roomId,
+    scheduledTime: scheduledTime || interview.scheduledTime,
+    remarks: remarks || interview.remarks,
+    status: status || interview.status,
+  });
 
-    const updatedInterview = await interview.update(updates);
+  if (!updatedInterview) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Interview could not be updated');
+  }
 
-    res.status(StatusCodes.OK).json({
-        success: true,
-        message: 'Interview updated successfully',
-        interview: updatedInterview
-    });
+  const [interviewer, candidate] = await Promise.all([
+    User.findByPk(updatedInterview.interviewerId),
+    User.findByPk(updatedInterview.candidateId),
+  ]);
+
+  const job = await Job.findByPk(updatedInterview.jobId);
+
+  const isEmailSent = await Promise.all([
+    sendEmail({
+      to: interviewer.email,
+      subject: 'OptaHire - Interview Updated',
+      html: generateEmailTemplate({
+        firstName: interviewer.firstName,
+        subject: 'Interview Updated',
+        content: [
+          {
+            type: 'text',
+            value: `The interview with ${candidate.firstName} ${candidate.lastName} for the position ${job.title} has been updated.`,
+          },
+          { type: 'heading', value: 'Updated Interview Details' },
+          {
+            type: 'list',
+            value: [
+              `Date and Time: ${new Date(
+                updatedInterview.scheduledTime
+              ).toLocaleString()}`,
+              `Job Title: ${job.title}`,
+              `Status: ${updatedInterview.status}`,
+              `Room ID: ${updatedInterview.roomId}`,
+              `Remarks: ${updatedInterview.remarks || 'N/A'}`,
+            ],
+          },
+        ],
+      }),
+    }),
+    sendEmail({
+      to: candidate.email,
+      subject: 'OptaHire - Interview Updated',
+      html: generateEmailTemplate({
+        firstName: candidate.firstName,
+        subject: 'Interview Updated',
+        content: [
+          {
+            type: 'text',
+            value: `Your interview with ${interviewer.firstName} ${interviewer.lastName} for the position ${job.title} has been updated.`,
+          },
+          { type: 'heading', value: 'Updated Interview Details' },
+          {
+            type: 'list',
+            value: [
+              `Date and Time: ${new Date(
+                updatedInterview.scheduledTime
+              ).toLocaleString()}`,
+              `Job Title: ${job.title}`,
+              `Status: ${updatedInterview.status}`,
+              `Room ID: ${updatedInterview.roomId}`,
+              `Remarks: ${updatedInterview.remarks || 'N/A'}`,
+            ],
+          },
+        ],
+      }),
+    }),
+  ]);
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Email could not be sent');
+  }
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Interview updated successfully',
+    interview: updatedInterview,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 /**
- * @desc Deletes an interview.
- * 
- * @route DELETE /api/v1/interviews/:id
- * @access Private
- * 
- * @param {Object} req - The request object containing the interview ID.
- * @param {Object} res - The response object.
- * @returns {Promise<void>}
- * @throws {Error} If the interview is not found.
+ * @desc Delete an interview
+ *
+ * @route DELETE /api/interviews/:id
+ * @access Private (Interviewer, Admin)
+ *
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ *
+ * @returns {Object} Message
+ * @throws {Error} If interview not found
+ * @throws {Error} If interview could not be deleted
+ * @throws {Error} If email could not be sent
  */
 
 const deleteInterview = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  const interview = await Interview.findByPk(req.params.id);
 
-    const interview = await Interview.findByPk(id);
+  if (!interview) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Interview not found');
+  }
 
-    if (!interview) {
-        res.status(StatusCodes.NOT_FOUND);
-        throw new Error('Interview not found');
-    }
+  const isDeleted = await interview.destroy();
 
-    await interview.destroy();
+  if (!isDeleted) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Interview could not be deleted');
+  }
 
-    res.status(StatusCodes.OK).json({
-        success: true,
-        message: 'Interview deleted successfully'
-    });
+  const [interviewer, candidate] = await Promise.all([
+    User.findByPk(interview.interviewerId),
+    User.findByPk(interview.candidateId),
+  ]);
+
+  const job = await Job.findByPk(interview.jobId);
+
+  const isEmailSent = await Promise.all([
+    sendEmail({
+      to: interviewer.email,
+      subject: 'OptaHire - Interview Cancelled',
+      html: generateEmailTemplate({
+        firstName: interviewer.firstName,
+        subject: 'Interview Cancelled',
+        content: [
+          {
+            type: 'text',
+            value: `The interview with ${candidate.firstName} ${candidate.lastName} for the position ${job.title} has been cancelled.`,
+          },
+          { type: 'heading', value: 'Cancelled Interview Details' },
+          {
+            type: 'list',
+            value: [
+              `Date and Time: ${new Date(
+                interview.scheduledTime
+              ).toLocaleString()}`,
+              `Job Title: ${job.title}`,
+              `Status: Cancelled`,
+              `Remarks: ${interview.remarks || 'N/A'}`,
+            ],
+          },
+        ],
+      }),
+    }),
+    sendEmail({
+      to: candidate.email,
+      subject: 'OptaHire - Interview Cancelled',
+      html: generateEmailTemplate({
+        firstName: candidate.firstName,
+        subject: 'Interview Cancelled',
+        content: [
+          {
+            type: 'text',
+            value: `Your interview with ${interviewer.firstName} ${interviewer.lastName} for the position ${job.title} has been cancelled.`,
+          },
+          { type: 'heading', value: 'Cancelled Interview Details' },
+          {
+            type: 'list',
+            value: [
+              `Date and Time: ${new Date(
+                interview.scheduledTime
+              ).toLocaleString()}`,
+              `Job Title: ${job.title}`,
+              `Status: Cancelled`,
+              `Remarks: ${interview.remarks || 'N/A'}`,
+            ],
+          },
+        ],
+      }),
+    }),
+  ]);
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Email could not be sent');
+  }
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Interview deleted successfully',
+    timestamp: new Date().toISOString(),
+  });
 });
 
-
 module.exports = {
-    createInterview,
-    getInterviews,
-    getInterviewById,
-    updateInterview,
-    deleteInterview,
+  createInterview,
+  getInterviews,
+  getInterviewById,
+  updateInterview,
+  deleteInterview,
 };
