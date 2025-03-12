@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const { User } = require('../models');
 
-const protect = asyncHandler(async (req, res, next) => {
+const protectServer = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -41,7 +41,34 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-const authorizeRoles = (...flags) => {
+const protectSocket = async (socket, next) => {
+  const token = socket.handshake.auth.token;
+
+  if (!token) {
+    return next(new Error('Not Authorized, No Token!'));
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_ACCESS_TOKEN_SECRET || 'your-secret-key'
+    );
+
+    socket.user = await User.findByPk(decoded.id, {
+      attributes: { exclude: ['password'] },
+    });
+
+    if (!socket.user) {
+      return next(new Error('Not Authorized, User Not Found!'));
+    }
+
+    next();
+  } catch (error) {
+    return next(new Error('Not Authorized, Token Failed!'));
+  }
+};
+
+const authorizeServerRoles = (...flags) => {
   return asyncHandler(async (req, res, next) => {
     const user = req.user;
     const hasRequiredFlag = flags.some((flag) => user[flag] === true);
@@ -58,4 +85,22 @@ const authorizeRoles = (...flags) => {
   });
 };
 
-module.exports = { protect, authorizeRoles };
+const authorizeSocketRoles = (...flags) => {
+  return (socket, next) => {
+    const user = socket.user;
+    const hasRequiredFlag = flags.some((flag) => user[flag] === true);
+
+    if (hasRequiredFlag) {
+      next();
+    } else {
+      return next(new Error('Forbidden to access this route'));
+    }
+  };
+};
+
+module.exports = {
+  protectServer,
+  protectSocket,
+  authorizeServerRoles,
+  authorizeSocketRoles,
+};
