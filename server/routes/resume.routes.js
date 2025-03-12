@@ -1,6 +1,9 @@
 const { Router } = require('express');
 
-const { protect, authorizeRoles } = require('../middlewares/auth.middleware');
+const {
+  protectServer,
+  authorizeServerRoles,
+} = require('../middlewares/auth.middleware');
 
 const {
   createUserResume,
@@ -14,13 +17,13 @@ const router = Router();
 
 router
   .route('/')
-  .post(protect, createUserResume)
-  .get(protect, authorizeRoles('isAdmin'), getAllUserResumes);
+  .post(protectServer, createUserResume)
+  .get(protectServer, authorizeServerRoles('isAdmin'), getAllUserResumes);
 
 router
   .route('/user')
-  .get(protect, getUserResume)
-  .put(protect, updateUserResume)
-  .delete(protect, deleteUserResume);
+  .get(protectServer, getUserResume)
+  .put(protectServer, updateUserResume)
+  .delete(protectServer, deleteUserResume);
 
 module.exports = router;

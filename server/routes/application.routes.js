@@ -1,5 +1,8 @@
 const { Router } = require('express');
-const { protect, authorizeRoles } = require('../middlewares/auth.middleware');
+const {
+  protectServer,
+  authorizeServerRoles,
+} = require('../middlewares/auth.middleware');
 
 const {
   createApplication,
@@ -14,19 +17,23 @@ const router = Router();
 
 router
   .route('/')
-  .post(protect, authorizeRoles('isCandidate'), createApplication)
-  .get(protect, getAllApplications);
+  .post(protectServer, authorizeServerRoles('isCandidate'), createApplication)
+  .get(protectServer, getAllApplications);
 
 router
   .route('/:id')
-  .get(protect, getApplicationById)
-  .patch(protect, authorizeRoles('isRecruiter', 'isAdmin'), updateApplication)
-  .delete(protect, authorizeRoles('isAdmin'), deleteApplication);
+  .get(protectServer, getApplicationById)
+  .patch(
+    protectServer,
+    authorizeServerRoles('isRecruiter', 'isAdmin'),
+    updateApplication
+  )
+  .delete(protectServer, authorizeServerRoles('isAdmin'), deleteApplication);
 
 router.get(
   '/job/:jobId',
-  protect,
-  authorizeRoles('isRecruiter', 'isAdmin'),
+  protectServer,
+  authorizeServerRoles('isRecruiter', 'isAdmin'),
   getApplicationsByJobId
 );
 

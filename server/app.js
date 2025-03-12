@@ -5,10 +5,12 @@ const dotenv = require('dotenv');
 const express = require('express');
 const rateLimiter = require('express-rate-limit');
 const helmet = require('helmet');
+const http = require('http');
 const morgan = require('morgan');
 const { StatusCodes } = require('http-status-codes');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { Server } = require('socket.io');
 const xss = require('xss-clean');
 
 const db = require('./models');
@@ -23,13 +25,15 @@ const userRoutes = require('./routes/user.routes');
 const resumeRoutes = require('./routes/resume.routes');
 const jobRoutes = require('./routes/job.routes');
 const applicationRoutes = require('./routes/application.routes');
-// const chatroomRoutes = require('./routes/chatroom.routes');
+const chatRoomRoutes = require('./routes/chatRoom.routes');
 // const videoRoutes = require('./routes/video.routes');
 // const contractRoutes = require('./routes/contract.routes');
 // const interviewRoutes = require('./routes/interview.routes');
 // const ratingRoutes = require('./routes/rating.routes');
 // const transactionRoutes = require('./routes/transaction.routes');
 // const paymentRoutes = require('./routes/payment.routes');
+
+const setupChatSocket = require('./sockets/chat.socket');
 
 dotenv.config();
 
@@ -160,7 +164,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/jobs', jobRoutes);
 app.use('/api/v1/applications', applicationRoutes);
-// app.use('/api/v1/chatrooms', chatroomRoutes);
+app.use('/api/v1/chatrooms', chatRoomRoutes);
 // app.use('/api/v1/videos', videoRoutes);
 // app.use('/api/v1/contracts', contractRoutes);
 // app.use('/api/v1/interviews', interviewRoutes);
@@ -171,9 +175,21 @@ app.use('/api/v1/applications', applicationRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
+setupChatSocket(io);
+
 const startServer = async () => {
   try {
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log('\n' + '='.repeat(86).yellow);
       console.log(`🚀 SERVER STATUS`.bold.yellow);
       console.log('='.repeat(86).yellow);
@@ -200,6 +216,7 @@ const startServer = async () => {
     console.error(`💬 Message:    ${error.message}`.red);
     console.error('='.repeat(86).red);
     db.close();
+    io.close();
     process.exit(1);
   }
 };

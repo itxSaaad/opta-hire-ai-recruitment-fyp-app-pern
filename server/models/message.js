@@ -62,6 +62,14 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: { msg: 'Interviewer ID cannot be empty' },
         },
       },
+      senderId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        validate: {
+          notNull: { msg: 'Sender ID is required' },
+          notEmpty: { msg: 'Sender ID cannot be empty' },
+        },
+      },
       content: {
         type: DataTypes.TEXT,
         allowNull: false,

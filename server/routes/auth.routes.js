@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const rateLimiter = require('express-rate-limit');
 
-const { protect } = require('../middlewares/auth.middleware');
+const { protectServer } = require('../middlewares/auth.middleware');
 
 const {
   loginUser,
@@ -31,7 +31,7 @@ const limiter = rateLimiter({
 
 router.route('/login').post(limiter, loginUser);
 
-router.route('/logout').post(protect, logoutUser);
+router.route('/logout').post(protectServer, logoutUser);
 
 router.route('/refresh-token').post(limiter, refreshToken);
 

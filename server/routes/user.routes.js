@@ -1,6 +1,9 @@
 const { Router } = require('express');
 
-const { protect, authorizeRoles } = require('../middlewares/auth.middleware');
+const {
+  protectServer,
+  authorizeServerRoles,
+} = require('../middlewares/auth.middleware');
 
 const {
   verifyUserEmail,
@@ -17,28 +20,30 @@ const {
 
 const router = Router();
 
-router.route('/').get(protect, authorizeRoles('isAdmin'), getAllUsersProfile);
+router
+  .route('/')
+  .get(protectServer, authorizeServerRoles('isAdmin'), getAllUsersProfile);
 
-router.route('/verify-email').post(protect, verifyUserEmail);
+router.route('/verify-email').post(protectServer, verifyUserEmail);
 
-router.route('/update-password').put(protect, updateUserPassword);
+router.route('/update-password').put(protectServer, updateUserPassword);
 
 router
   .route('/profile')
-  .get(protect, getUserProfile)
-  .put(protect, updateUserProfile)
-  .delete(protect, deleteUserProfile);
+  .get(protectServer, getUserProfile)
+  .put(protectServer, updateUserProfile)
+  .delete(protectServer, deleteUserProfile);
 
 router
   .route('/:id')
-  .get(protect, authorizeRoles('isAdmin'), getUserProfileById)
-  .put(protect, authorizeRoles('isAdmin'), updateUserProfileById)
-  .delete(protect, authorizeRoles('isAdmin'), deleteUserById);
+  .get(protectServer, authorizeServerRoles('isAdmin'), getUserProfileById)
+  .put(protectServer, authorizeServerRoles('isAdmin'), updateUserProfileById)
+  .delete(protectServer, authorizeServerRoles('isAdmin'), deleteUserById);
 
 router.delete(
   '/:id/permanent',
-  protect,
-  authorizeRoles('isAdmin'),
+  protectServer,
+  authorizeServerRoles('isAdmin'),
   deleteUserPermById
 );
 

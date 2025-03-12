@@ -1,5 +1,8 @@
 const { Router } = require('express');
-const { protect, authorizeRoles } = require('../middlewares/auth.middleware');
+const {
+  protectServer,
+  authorizeServerRoles,
+} = require('../middlewares/auth.middleware');
 
 const {
   createJob,
@@ -13,13 +16,17 @@ const router = Router();
 
 router
   .route('/')
-  .post(protect, authorizeRoles('isRecruiter'), createJob)
+  .post(protectServer, authorizeServerRoles('isRecruiter'), createJob)
   .get(getAllJobs);
 
 router
   .route('/:id')
   .get(getJobById)
-  .patch(protect, authorizeRoles('isRecruiter', 'isAdmin'), updateJob)
-  .delete(protect, authorizeRoles('isAdmin'), deleteJob);
+  .patch(
+    protectServer,
+    authorizeServerRoles('isRecruiter', 'isAdmin'),
+    updateJob
+  )
+  .delete(protectServer, authorizeServerRoles('isAdmin'), deleteJob);
 
 module.exports = router;
