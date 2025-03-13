@@ -14,7 +14,7 @@ module.exports = {
         allowNull: false,
       },
       roomId: {
-        type: Sequelize.UUID,
+        type: Sequelize.STRING,
         allowNull: true,
       },
       scheduledTime: {

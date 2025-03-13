@@ -185,7 +185,6 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: 'Job',
       timestamps: true,
-      paranoid: true,
     }
   );
   return Job;

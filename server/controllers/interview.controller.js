@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 const { Op } = require('sequelize');
 
-const { User, Job, Interview, ChatRoom, Message } = require('../models');
+const { User, Job, Interview, ChatRoom, Application } = require('../models');
 
 const {
   sendEmail,
@@ -50,15 +50,16 @@ const generateRoomId = (length = 12) => {
  */
 
 const createInterview = asyncHandler(async (req, res) => {
+  const interviewerId = req.user.id;
   const {
-    roomId,
     scheduledTime,
-    interviewerId,
     candidateId,
     jobId,
     applicationId,
     remarks,
   } = req.body;
+
+  const roomId = generateRoomId();
 
   if (
     !roomId ||
@@ -82,6 +83,15 @@ const createInterview = asyncHandler(async (req, res) => {
     throw new Error('Interviewer and candidate cannot be the same');
   }
 
+  const existingApplicationInterview = await Interview.findOne({
+    where: { applicationId }
+  });
+
+  if (existingApplicationInterview) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('An interview already exists for this application');
+  }
+
   const interviewer = await User.findByPk(interviewerId);
   const candidate = await User.findByPk(candidateId);
 
@@ -95,13 +105,6 @@ const createInterview = asyncHandler(async (req, res) => {
   if (!job) {
     res.status(StatusCodes.NOT_FOUND);
     throw new Error('Job not found');
-  }
-
-  const chatRoom = await ChatRoom.findByPk(roomId);
-
-  if (!chatRoom) {
-    res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Chat room not found');
   }
 
   const existingInterview = await Interview.findOne({
@@ -118,17 +121,15 @@ const createInterview = asyncHandler(async (req, res) => {
     throw new Error('Interview already scheduled at this time');
   }
 
-  const room = generateRoomId();
-
   const interview = await Interview.create({
-    roomId: room,
+    roomId,
     scheduledTime,
     interviewerId,
     candidateId,
     jobId,
     applicationId,
     remarks,
-    status: 'scheduled',
+    status: 'scheduled'
   });
 
   if (!interview) {
@@ -148,7 +149,7 @@ const createInterview = asyncHandler(async (req, res) => {
         `Date and Time: ${new Date(scheduledTime).toLocaleString()}`,
         `Job Title: ${job.title}`,
         `Candidate: ${candidate.firstName} ${candidate.lastName}`,
-        `Room ID: ${room}`,
+        `Room ID: ${roomId}`,
       ],
     },
   ];
@@ -165,7 +166,7 @@ const createInterview = asyncHandler(async (req, res) => {
         `Date and Time: ${new Date(scheduledTime).toLocaleString()}`,
         `Job Title: ${job.title}`,
         `Interviewer: ${interviewer.firstName} ${interviewer.lastName}`,
-        `Room ID: ${room}`,
+        `Room ID: ${roomId}`,
       ],
     },
   ];
@@ -311,7 +312,9 @@ const getInterviewById = asyncHandler(async (req, res) => {
       },
       {
         model: Job,
+        as: 'job',
         attributes: ['id', 'title'],
+
       },
     ],
   });
@@ -359,23 +362,26 @@ const updateInterview = asyncHandler(async (req, res) => {
     throw new Error('Interview not found');
   }
 
-  const { roomId, scheduledTime, remarks, status } = req.body;
+  const { scheduledTime, summary, status, remarks, rating } = req.body;
 
-  if (new Date(scheduledTime) <= new Date()) {
+  if (scheduledTime && new Date(scheduledTime) <= new Date()) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Scheduled time must be in the future');
   }
 
-  if (status === 'completed' && !roomId) {
+  if (rating && (rating < 0 || rating > 5)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Room ID is required to complete an interview');
+    throw new Error('Rating must be between 0 and 5');
   }
 
   const updatedInterview = await interview.update({
-    roomId: roomId || interview.roomId,
     scheduledTime: scheduledTime || interview.scheduledTime,
+    summary: summary || interview.summary,
     remarks: remarks || interview.remarks,
     status: status || interview.status,
+    rating: rating || interview.rating,
+    callStartedAt: status === 'ongoing' ? new Date() : interview.callStartedAt,
+    callEndedAt: status === 'completed' ? new Date() : interview.callEndedAt
   });
 
   if (!updatedInterview) {
@@ -406,14 +412,14 @@ const updateInterview = asyncHandler(async (req, res) => {
           {
             type: 'list',
             value: [
-              `Date and Time: ${new Date(
-                updatedInterview.scheduledTime
-              ).toLocaleString()}`,
+              `Date and Time: ${new Date(updatedInterview.scheduledTime).toLocaleString()}`,
               `Job Title: ${job.title}`,
               `Status: ${updatedInterview.status}`,
               `Room ID: ${updatedInterview.roomId}`,
               `Remarks: ${updatedInterview.remarks || 'N/A'}`,
-            ],
+              `Summary: ${updatedInterview.summary || 'N/A'}`,
+              updatedInterview.rating ? `Rating: ${updatedInterview.rating}` : null
+            ].filter(Boolean),
           },
         ],
       }),
@@ -433,14 +439,14 @@ const updateInterview = asyncHandler(async (req, res) => {
           {
             type: 'list',
             value: [
-              `Date and Time: ${new Date(
-                updatedInterview.scheduledTime
-              ).toLocaleString()}`,
+              `Date and Time: ${new Date(updatedInterview.scheduledTime).toLocaleString()}`,
               `Job Title: ${job.title}`,
               `Status: ${updatedInterview.status}`,
               `Room ID: ${updatedInterview.roomId}`,
               `Remarks: ${updatedInterview.remarks || 'N/A'}`,
-            ],
+              `Summary: ${updatedInterview.summary || 'N/A'}`,
+              updatedInterview.rating ? `Rating: ${updatedInterview.rating}` : null
+            ].filter(Boolean),
           },
         ],
       }),
@@ -483,12 +489,22 @@ const deleteInterview = asyncHandler(async (req, res) => {
     throw new Error('Interview not found');
   }
 
-  const isDeleted = await interview.destroy();
-
-  if (!isDeleted) {
+  if (interview.status === 'ongoing' || interview.status === 'completed') {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Interview could not be deleted');
+    throw new Error('Cannot delete an ongoing or completed interview');
   }
+
+  const isUpdated = await interview.update({
+    status: 'cancelled',
+    remarks: `${interview.remarks || ''}\nCancelled at: ${new Date().toISOString()}`
+  });
+
+  if (!isUpdated) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Interview could not be cancelled');
+  }
+
+  await interview.destroy();
 
   const [interviewer, candidate] = await Promise.all([
     User.findByPk(interview.interviewerId),
@@ -513,9 +529,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
           {
             type: 'list',
             value: [
-              `Date and Time: ${new Date(
-                interview.scheduledTime
-              ).toLocaleString()}`,
+              `Date and Time: ${new Date(interview.scheduledTime).toLocaleString()}`,
               `Job Title: ${job.title}`,
               `Status: Cancelled`,
               `Remarks: ${interview.remarks || 'N/A'}`,
@@ -539,9 +553,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
           {
             type: 'list',
             value: [
-              `Date and Time: ${new Date(
-                interview.scheduledTime
-              ).toLocaleString()}`,
+              `Date and Time: ${new Date(interview.scheduledTime).toLocaleString()}`,
               `Job Title: ${job.title}`,
               `Status: Cancelled`,
               `Remarks: ${interview.remarks || 'N/A'}`,
@@ -559,7 +571,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Interview deleted successfully',
+    message: 'Interview cancelled successfully',
     timestamp: new Date().toISOString(),
   });
 });

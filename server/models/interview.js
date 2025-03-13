@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       roomId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING,
         allowNull: false,
         unique: { msg: 'Room ID must be unique' },
         validate: {
@@ -174,7 +174,6 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: 'Interview',
       timestamps: true,
-      paranoid: true,
     }
   );
   return Interview;
