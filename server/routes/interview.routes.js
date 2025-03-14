@@ -1,28 +1,42 @@
 const { Router } = require('express');
+
 const {
-    protectServer,
-    authorizeServerRoles,
+  protectServer,
+  authorizeServerRoles,
 } = require('../middlewares/auth.middleware');
 
 const {
-    createInterview,
-    getInterviews,
-    getInterviewById,
-    updateInterview,
-    deleteInterview,
+  createInterview,
+  getAllInterviews,
+  getInterviewById,
+  getInterviewsByJobId,
+  updateInterview,
+  deleteInterview,
 } = require('../controllers/interview.controller');
 
 const router = Router();
 
 router
-    .route('/')
-    .post(protectServer, authorizeServerRoles('isAdmin', 'isInterviewer'), createInterview)
-    .get(protectServer, authorizeServerRoles('isAdmin', 'isInterviewer', 'isCandidate'), getInterviews);
+  .route('/')
+  .post(protectServer, authorizeServerRoles('isInterviewer'), createInterview)
+  .get(protectServer, getAllInterviews);
 
 router
-    .route('/:id')
-    .get(protectServer, authorizeServerRoles('isAdmin', 'isInterviewer', 'isCandidate'), getInterviewById)
-    .put(protectServer, authorizeServerRoles('isAdmin', 'isInterviewer'), updateInterview)
-    .delete(protectServer, authorizeServerRoles('isAdmin', 'isInterviewer'), deleteInterview);
+  .route('/:id')
+  .get(protectServer, getInterviewById)
+  .put(
+    protectServer,
+    authorizeServerRoles('isInterviewer', 'isAdmin'),
+    updateInterview
+  )
+  .delete(protectServer, authorizeServerRoles('isAdmin'), deleteInterview);
+
+router
+  .route('/job/:jobId')
+  .get(
+    protectServer,
+    authorizeServerRoles('isInterviewer', 'isRecruiter', 'isAdmin'),
+    getInterviewsByJobId
+  );
 
 module.exports = router;

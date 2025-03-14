@@ -125,13 +125,17 @@ const generateEmailTemplate = ({
       <title>${subject}</title>
       <style>
         :root {
-          --primary: ${branding.primaryColor};
-          --secondary: ${branding.secondaryColor};
-          --text: #1A1A1A;
-          --border: #E0E0E0;
-          --background: #FFFFFF;
+        --primary: #0eb0e3;
+        --secondary: #3946ae;
+        --text: #1a1a1a;
+        --border: #e0e0e0;
+        --background: #ffffff;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           line-height: 1.6;
@@ -140,57 +144,86 @@ const generateEmailTemplate = ({
           -webkit-font-smoothing: antialiased;
         }
         .container {
-          max-width: 600px;
-          margin: 20px auto;
+          max-width: 650px;
+          margin: 40px auto;
           background: var(--background);
-          padding: 2rem;
+          padding: 3rem;
           border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+          border: 1px solid var(--border);
         }
         .header {
           text-align: center;
-          font-size: 1.75rem;
-          font-weight: 700;
-          color: var(--secondary);
-          margin-bottom: 1.5rem;
+          font-size: 1.8rem;
+          font-weight: 600;
+          color: var(--primary);
+          margin-bottom: 2.5rem;
+          padding-bottom: 1.5rem;
+          border-bottom: 2px solid var(--border);
+          letter-spacing: 0.5px;
         }
         .subheader {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin: 1rem 0;
           color: var(--secondary);
+          font-size: 1.4rem;
+          margin: 2rem 0 1.5rem;
+          font-weight: 600;
+          padding-left: 1rem;
+          padding: 0.8rem 1rem;
+          border-left: 5px solid var(--primary);
+          background: rgba(14, 176, 227, 0.05);
+          border-radius: 0 8px 8px 0;
         }
-        .content, .content-list { margin-bottom: 1.5rem; }
-        .content-list li { margin-left: 1.5rem; }
-        .otp {
-          background: #F1F7FF;
-          font-size: 2rem;
-          font-weight: 700;
-          color: var(--primary);
-          text-align: center;
+        .content {
+          color: var(--text);
+          font-size: 1.1rem;
+          margin-bottom: 1.5rem;
+          line-height: 1.8;
+        }
+        .content-list {
           margin: 1.5rem 0;
-          padding: 1rem;
+          padding-left: 2rem;
+        }
+        .content-list li {
+          margin: 0.8rem 0;
+          color: var(--text);
+          font-size: 1.1rem;
+        }
+        .otp {
+          background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+          font-size: 2rem;
+          padding: 1.5rem;
+          margin: 2rem 0;
           border-radius: 8px;
-          letter-spacing: 0.25rem;
+          border: 2px solid var(--primary);
+          text-align: center;
+          letter-spacing: 0.3rem;
+          font-weight: 600;
+          color: var(--secondary);
         }
         .cta-button {
           display: inline-block;
           background: var(--primary);
           color: var(--background) !important;
-          padding: 0.75rem 1.5rem;
+          padding: 1rem 2rem;
           border-radius: 6px;
           text-decoration: none;
-          font-weight: 600;
-          text-align: center;
-          transition: background 0.2s ease;
+          font-weight: 500;
+          font-size: 1.1rem;
+          transition: all 0.3s ease;
+          margin: 1.5rem 0;
+        }
+        .cta-button:hover {
+          background: var(--secondary);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(57, 70, 174, 0.2);
         }
         .footer {
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 2px solid var(--border);
           text-align: center;
-          margin-top: 2rem;
-          padding-top: 1rem;
-          border-top: 1px solid var(--border);
-          color: #718096;
-          font-size: 0.875rem;
+          color: #666;
+          font-size: 0.9rem;
         }
       </style>
     </head>
