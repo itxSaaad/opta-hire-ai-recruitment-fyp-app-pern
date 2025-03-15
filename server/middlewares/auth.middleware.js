@@ -12,7 +12,7 @@ const protectServer = asyncHandler(async (req, res, next) => {
 
     if (!token) {
       res.status(StatusCodes.UNAUTHORIZED);
-      throw new Error('Not Authorized, No Token!');
+      throw new Error('Authentication token is missing. Please log in again.');
     }
 
     try {
@@ -27,17 +27,19 @@ const protectServer = asyncHandler(async (req, res, next) => {
 
       if (!req.user) {
         res.status(StatusCodes.UNAUTHORIZED);
-        throw new Error('Not Authorized, User Not Found!');
+        throw new Error(
+          'User account not found. Please log in with a valid account.'
+        );
       }
 
       next();
     } catch (error) {
       res.status(StatusCodes.UNAUTHORIZED);
-      throw new Error('Not Authorized, Token Failed!');
+      throw new Error('Session expired or invalid. Please log in again.');
     }
   } else {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Not Authorized, No Token Provided');
+    throw new Error('Authentication required. Please log in to continue.');
   }
 });
 
@@ -45,7 +47,9 @@ const protectSocket = async (socket, next) => {
   const token = socket.handshake.auth.token;
 
   if (!token) {
-    return next(new Error('Not Authorized, No Token!'));
+    return next(
+      new Error('Authentication token is missing. Please log in again.')
+    );
   }
 
   try {
@@ -59,12 +63,14 @@ const protectSocket = async (socket, next) => {
     });
 
     if (!socket.user) {
-      return next(new Error('Not Authorized, User Not Found!'));
+      return next(
+        new Error('User account not found. Please log in with a valid account.')
+      );
     }
 
     next();
   } catch (error) {
-    return next(new Error('Not Authorized, Token Failed!'));
+    return next(new Error('Session expired or invalid. Please log in again.'));
   }
 };
 
@@ -78,7 +84,7 @@ const authorizeServerRoles = (...flags) => {
     } else {
       return res.status(StatusCodes.FORBIDDEN).json({
         success: false,
-        message: 'Forbidden to access this route',
+        message: 'You do not have permission to access this resource.',
         timestamp: new Date().toISOString(),
       });
     }
@@ -93,7 +99,9 @@ const authorizeSocketRoles = (...flags) => {
     if (hasRequiredFlag) {
       next();
     } else {
-      return next(new Error('Forbidden to access this route'));
+      return next(
+        new Error('You do not have permission to access this resource.')
+      );
     }
   };
 };

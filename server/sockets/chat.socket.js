@@ -1,3 +1,5 @@
+const { Op } = require('sequelize');
+
 const { ChatRoom, Message, User, Job } = require('../models');
 
 const {
@@ -31,12 +33,18 @@ const setupChatSocket = (io) => {
       });
 
       if (!chatroom) {
-        socket.emit('error', 'Chat Room not found');
+        socket.emit(
+          'error',
+          'Chat room not found. Please check the room ID and try again.'
+        );
         return;
       }
 
       socket.join(roomId);
-      socket.emit('message', 'Welcome to the chat room!');
+      socket.emit(
+        'message',
+        "You've successfully joined the chat room. Messages will appear below."
+      );
       socket.emit('chatRoomData', chatroom);
 
       console.log(`User joined room: ${roomId}`);
@@ -49,7 +57,18 @@ const setupChatSocket = (io) => {
           const chatroom = await ChatRoom.findByPk(roomId);
 
           if (!chatroom) {
-            socket.emit('error', 'Chat Room not found');
+            socket.emit(
+              'error',
+              'Chat room not found. Please check the room ID and try again.'
+            );
+            return;
+          }
+
+          if (!content || content.trim() === '') {
+            socket.emit(
+              'error',
+              'Cannot send an empty message. Please type something.'
+            );
             return;
           }
 
@@ -72,7 +91,10 @@ const setupChatSocket = (io) => {
 
           io.to(roomId).emit('message', messageWithDetails);
         } catch (error) {
-          socket.emit('error', error.message);
+          socket.emit(
+            'error',
+            'Unable to send your message. Please try again.'
+          );
         }
       }
     );

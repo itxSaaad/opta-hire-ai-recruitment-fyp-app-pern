@@ -1,8 +1,10 @@
 const { StatusCodes } = require('http-status-codes');
 
 const notFoundHandler = (req, res) => {
-  const err = new Error(`Route not found - ${req.method}: ${req.originalUrl}`);
-  console.error(`404 Error: ${err.message}`);
+  const err = new Error(`The requested resource could not be found.`);
+
+  console.error(`404 Error: ${req.method}: ${req.originalUrl}`);
+
   res.status(StatusCodes.NOT_FOUND).json({
     success: false,
     message: err.message,
@@ -12,9 +14,11 @@ const notFoundHandler = (req, res) => {
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-  const message = err.message || 'Internal Server Error';
+  const message =
+    err.message || 'Something went wrong. Please try again later.';
 
   console.error(`Error ${statusCode}: ${message}`);
+
   if (err.stack) console.error(err.stack);
 
   res.status(statusCode).json({

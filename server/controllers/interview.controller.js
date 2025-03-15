@@ -8,7 +8,7 @@ const {
   sendEmail,
   generateEmailTemplate,
 } = require('../utils/nodemailer.utils');
-const { validateString, validateArray } = require('../utils/validation.utils');
+const { validateString } = require('../utils/validation.utils');
 const { generateRoomId, generateRemarks } = require('../utils/interview.utils');
 
 /**
@@ -45,17 +45,19 @@ const createInterview = asyncHandler(async (req, res) => {
 
   if (!scheduledTime || !candidateId || !jobId || !applicationId || !roomId) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Missing required fields');
+    throw new Error(
+      'Please provide all required information to schedule the interview.'
+    );
   }
 
   if (new Date(scheduledTime) <= new Date()) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Scheduled time must be in the future');
+    throw new Error('Interview must be scheduled for a future date and time.');
   }
 
   if (interviewerId === candidateId) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Interviewer and candidate cannot be the same');
+    throw new Error('An interviewer cannot interview themselves.');
   }
 
   const [interviewer, candidate, recruiter, job, application] =
@@ -69,17 +71,17 @@ const createInterview = asyncHandler(async (req, res) => {
 
   if (!interviewer || !candidate) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Interviewer or candidate not found');
+    throw new Error('Could not find the specified interviewer or candidate.');
   }
 
   if (!job) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Job not found');
+    throw new Error('The specified job position was not found.');
   }
 
   if (!application) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Application not found');
+    throw new Error('The specified job application was not found.');
   }
 
   const existingInterview = await Interview.findOne({
@@ -108,7 +110,9 @@ const createInterview = asyncHandler(async (req, res) => {
 
   if (existingInterview) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Interview already scheduled at this time');
+    throw new Error(
+      'A conflicting interview is already scheduled for this time slot.'
+    );
   }
 
   const roomId = generateRoomId();
@@ -132,8 +136,8 @@ const createInterview = asyncHandler(async (req, res) => {
   });
 
   if (!interview) {
-    res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Interview could not be scheduled');
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Unable to schedule the interview. Please try again.');
   }
 
   const emailContent = [
@@ -193,13 +197,15 @@ const createInterview = asyncHandler(async (req, res) => {
   ]);
 
   if (!isEmailSent) {
-    res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email could not be sent');
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error(
+      'Interview scheduled but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.CREATED).json({
     success: true,
-    message: 'Interview scheduled successfully',
+    message: 'Interview has been successfully scheduled.',
     interview,
     timestamp: new Date().toISOString(),
   });
@@ -209,7 +215,7 @@ const createInterview = asyncHandler(async (req, res) => {
  * @desc Get all interviews
  *
  * @route GET /api/interviews
- * @access Private (Interviewer, Candidate, Recruiter, Admin)
+ * @access Private
  *
  * @param {Object} req - Request object
  * @param {Object} res - Response object
@@ -220,81 +226,85 @@ const createInterview = asyncHandler(async (req, res) => {
  */
 
 const getAllInterviews = asyncHandler(async (req, res) => {
-  let interviews;
+  const { role, status, scheduledTime, jobId, interviewerId, candidateId } =
+    req.query;
+  let whereClause = {};
 
-  if (req.user.isInterviewer) {
-    interviews = await Interview.findAll({
-      where: { interviewerId: req.user.id },
-      include: [
-        { model: Job, as: 'job', attributes: ['title', 'description'] },
-        { model: Application, as: 'application' },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
-  } else if (req.user.isCandidate) {
-    interviews = await Interview.findAll({
-      where: { candidateId: req.user.id },
-      include: [
-        { model: Job, as: 'job', attributes: ['title', 'description'] },
-        { model: Application, as: 'application' },
-        {
-          model: User,
-          as: 'interviewer',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
-  } else if (req.user.isRecruiter) {
-    const jobs = await Job.findAll({ where: { recruiterId: req.user.id } });
-    const jobIds = jobs.map((job) => job.id);
-
-    interviews = await Interview.findAll({
-      where: { jobId: { [Op.in]: jobIds } },
-      include: [
-        { model: Job, as: 'job', attributes: ['title', 'description'] },
-        { model: Application, as: 'application' },
-        {
-          model: User,
-          as: 'interviewer',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
-  } else if (req.user.isAdmin) {
-    interviews = await Interview.findAll({
-      include: [
-        { model: Job, as: 'job', attributes: ['title', 'description'] },
-        { model: Application, as: 'application' },
-        {
-          model: User,
-          as: 'interviewer',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
+  if (role) {
+    switch (role) {
+      case 'interviewer':
+        whereClause.interviewerId = req.user.id;
+        break;
+      case 'candidate':
+        whereClause.candidateId = req.user.id;
+        break;
+      case 'recruiter':
+        whereClause['$job.recruiterId$'] = req.user.id;
+        break;
+    }
   }
+
+  if (status) {
+    if (!['scheduled', 'ongoing', 'completed', 'cancelled'].includes(status)) {
+      res.status(StatusCodes.BAD_REQUEST);
+      throw new Error('Invalid interview status provided.');
+    }
+
+    whereClause.status = status;
+  }
+
+  if (scheduledTime) {
+    whereClause.scheduledTime = {
+      [Op.gte]: new Date(scheduledTime),
+    };
+  }
+
+  if (jobId) {
+    whereClause.jobId = jobId;
+  }
+
+  if (interviewerId) {
+    whereClause.interviewerId = interviewerId;
+  }
+
+  if (candidateId) {
+    whereClause.candidateId = candidateId;
+  }
+
+  const interviews = await Interview.findAll({
+    where: whereClause,
+    include: [
+      {
+        model: Job,
+        as: 'job',
+        attributes: ['title', 'description'],
+      },
+      {
+        model: Application,
+        as: 'application',
+      },
+      {
+        model: User,
+        as: 'interviewer',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+      {
+        model: User,
+        as: 'candidate',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+    ],
+    order: [['scheduledTime', 'DESC']],
+  });
 
   if (!interviews || interviews.length === 0) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No interviews found');
+    throw new Error('No interviews found matching the criteria.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
+    message: 'Interviews retrieved successfully',
     interviews,
     count: interviews.length,
     timestamp: new Date().toISOString(),
@@ -305,7 +315,7 @@ const getAllInterviews = asyncHandler(async (req, res) => {
  * @desc Get interview by ID
  *
  * @route GET /api/interviews/:id
- * @access Private (Interviewer, Candidate, Recruiter, Admin)
+ * @access Private
  *
  * @param {Object} req - Request object
  * @param {Object} res - Response object
@@ -338,12 +348,12 @@ const getInterviewById = asyncHandler(async (req, res) => {
 
   if (!interview) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Interview not found');
+    throw new Error('Interview details not found. Please check and try again.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Interview found',
+    message: 'Interview details retrieved successfully',
     interview,
     timestamp: new Date().toISOString(),
   });
@@ -366,73 +376,72 @@ const getInterviewById = asyncHandler(async (req, res) => {
  */
 
 const getInterviewsByJobId = asyncHandler(async (req, res) => {
-  const job = await Job.findByPk(req.params.jobId);
+  const { role, status, scheduledTime } = req.query;
+  let whereClause = { jobId: req.params.jobId };
 
-  if (!job) {
-    res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Job not found');
+  if (role) {
+    switch (role) {
+      case 'interviewer':
+        whereClause.interviewerId = req.user.id;
+        break;
+      case 'candidate':
+        whereClause.candidateId = req.user.id;
+        break;
+      case 'recruiter':
+        whereClause['$job.recruiterId$'] = req.user.id;
+        break;
+    }
   }
 
-  let interviews;
+  if (status) {
+    if (!['scheduled', 'ongoing', 'completed', 'cancelled'].includes(status)) {
+      res.status(StatusCodes.BAD_REQUEST);
+      throw new Error('Invalid interview status provided.');
+    }
 
-  if (req.user.isInterviewer) {
-    interviews = await Interview.findAll({
-      where: { jobId: req.params.jobId, interviewerId: req.user.id },
-      include: [
-        { model: Job, as: 'job', attributes: ['title', 'description'] },
-        { model: Application, as: 'application' },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
-  } else if (req.user.isRecruiter) {
-    interviews = await Interview.findAll({
-      where: { jobId: req.params.jobId },
-      include: [
-        { model: Job, as: 'job', attributes: ['title', 'description'] },
-        { model: Application, as: 'application' },
-        {
-          model: User,
-          as: 'interviewer',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
-  } else if (req.user.isAdmin) {
-    interviews = await Interview.findAll({
-      where: { jobId: req.params.jobId },
-      include: [
-        { model: Job, as: 'job', attributes: ['title', 'description'] },
-        { model: Application, as: 'application' },
-        {
-          model: User,
-          as: 'interviewer',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
+    whereClause.status = status;
   }
+
+  if (scheduledTime) {
+    whereClause.scheduledTime = {
+      [Op.gte]: new Date(scheduledTime),
+    };
+  }
+
+  const interviews = await Interview.findAll({
+    where: whereClause,
+    include: [
+      {
+        model: Job,
+        as: 'job',
+        attributes: ['title', 'description'],
+      },
+      {
+        model: Application,
+        as: 'application',
+      },
+      {
+        model: User,
+        as: 'interviewer',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+      {
+        model: User,
+        as: 'candidate',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+    ],
+    order: [['scheduledTime', 'DESC']],
+  });
 
   if (!interviews || interviews.length === 0) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No interviews found for this job');
+    throw new Error('No interviews found for this job position.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
+    message: 'Interviews retrieved successfully',
     interviews,
     count: interviews.length,
     timestamp: new Date().toISOString(),
@@ -466,7 +475,7 @@ const updateInterview = asyncHandler(async (req, res) => {
 
   if (!interview) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Interview not found');
+    throw new Error('Interview not found. Please check and try again.');
   }
 
   const { scheduledTime, summary, status, rating } = req.body;
@@ -476,28 +485,28 @@ const updateInterview = asyncHandler(async (req, res) => {
 
     if (!['scheduled', 'ongoing', 'completed', 'cancelled'].includes(status)) {
       res.status(StatusCodes.BAD_REQUEST);
-      throw new Error('Invalid status value');
+      throw new Error('Invalid interview status provided.');
     }
 
     if (interview.status === 'completed' && status !== 'completed') {
       res.status(StatusCodes.BAD_REQUEST);
-      throw new Error('Cannot change status of completed interview');
+      throw new Error('Cannot modify a completed interview.');
     }
     if (interview.status === 'cancelled' && status !== 'cancelled') {
       res.status(StatusCodes.BAD_REQUEST);
-      throw new Error('Cannot change status of cancelled interview');
+      throw new Error('Cannot modify a cancelled interview.');
     }
   }
 
   if (scheduledTime && new Date(scheduledTime) <= new Date()) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Scheduled time must be in the future');
+    throw new Error('Interview must be scheduled for a future date and time.');
   }
 
   if (rating) {
     if (isNaN(rating) || rating < 0 || rating > 5) {
       res.status(StatusCodes.BAD_REQUEST);
-      throw new Error('Rating must be a number between 0 and 5');
+      throw new Error('Rating must be between 0 and 5 stars.');
     }
   }
 
@@ -524,7 +533,7 @@ const updateInterview = asyncHandler(async (req, res) => {
 
   if (!updatedInterview) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Interview could not be updated');
+    throw new Error('Unable to update interview details. Please try again.');
   }
 
   const [interviewer, candidate, job] = await Promise.all([
@@ -539,7 +548,9 @@ const updateInterview = asyncHandler(async (req, res) => {
     {
       type: 'text',
       value: `The interview ${
-        status ? `status has been changed to ${status}` : 'has been updated'
+        status
+          ? `status has been updated to ${status}`
+          : 'details have been modified'
       }.`,
     },
     { type: 'heading', value: 'Updated Interview Details' },
@@ -591,12 +602,14 @@ const updateInterview = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email could not be sent');
+    throw new Error(
+      'Interview updated but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Interview updated successfully',
+    message: 'Interview details updated successfully.',
     interview: updatedInterview,
     timestamp: new Date().toISOString(),
   });
@@ -622,7 +635,9 @@ const deleteInterview = asyncHandler(async (req, res) => {
 
   if (!interview) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Interview not found');
+    throw new Error(
+      'Interview record not found. Please check and try again later.'
+    );
   }
 
   await interview.destroy();
@@ -638,9 +653,9 @@ const deleteInterview = asyncHandler(async (req, res) => {
   const emailContent = [
     {
       type: 'text',
-      value: `The Interview History has been deleted due to inactivity.`,
+      value: `This interview record has been permanently removed from the system.`,
     },
-    { type: 'heading', value: 'Deleted Interview Details' },
+    { type: 'heading', value: 'Interview Details' },
     {
       type: 'list',
       value: [
@@ -658,28 +673,28 @@ const deleteInterview = asyncHandler(async (req, res) => {
   const isEmailSent = await Promise.all([
     sendEmail({
       to: interviewer.email,
-      subject: 'OptaHire - Interview Deleted',
+      subject: 'OptaHire - Interview Record Deleted',
       html: generateEmailTemplate({
         firstName: interviewer.firstName,
-        subject: 'Interview Deleted',
+        subject: 'Interview Record Deleted',
         content: emailContent,
       }),
     }),
     sendEmail({
       to: recruiter.email,
-      subject: 'OptaHire - Interview Deleted',
+      subject: 'OptaHire - Interview Record Deleted',
       html: generateEmailTemplate({
         firstName: recruiter.firstName,
-        subject: 'Interview Deleted',
+        subject: 'Interview Record Deleted',
         content: emailContent,
       }),
     }),
     sendEmail({
       to: candidate.email,
-      subject: 'OptaHire - Interview Deleted',
+      subject: 'OptaHire - Interview Record Deleted',
       html: generateEmailTemplate({
         firstName: candidate.firstName,
-        subject: 'Interview Deleted',
+        subject: 'Interview Record Deleted',
         content: emailContent,
       }),
     }),
@@ -687,12 +702,14 @@ const deleteInterview = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email could not be sent');
+    throw new Error(
+      'Interview record deleted but email could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Interview deleted successfully',
+    message: 'Interview record has been successfully deleted',
     timestamp: new Date().toISOString(),
   });
 });

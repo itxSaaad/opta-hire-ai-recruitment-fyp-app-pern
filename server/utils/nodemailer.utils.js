@@ -49,7 +49,9 @@ const sendEmail = asyncHandler(async (options) => {
     return response;
   } catch (error) {
     console.error(`Error Sending Email: ${error}`);
-    throw new Error('Error sending email');
+    throw new Error(
+      'Unable to send email notification. Please check your network connection and try again later.'
+    );
   }
 });
 
@@ -58,36 +60,16 @@ const sendEmail = asyncHandler(async (options) => {
  * by passing an array of content blocks.
  *
  * @param {Object} params - Dynamic parameters for the email.
- * @param {string} params.brandName - Company/Brand name (default: "OptaHire").
- * @param {string} params.firstName - Recipient's first name.
- * @param {string} params.subject - Email subject.
- * @param {Object[]} params.content - Array of content blocks.
- *        Each block must include:
- *          - type: 'text', 'heading', 'otp', 'cta', or 'list'
- *          - value: string (for text, otp, heading) or object (for cta: { link, text }) or array (for list)
- * @param {Object} [params.branding] - Branding options.
- * @param {string} [params.branding.primaryColor] - Primary brand color.
- * @param {string} [params.branding.secondaryColor] - Secondary brand color.
- * @param {string} [params.branding.logo] - Logo URL.
- * @param {string} [params.footerText] - Custom footer text.
- * @param {number} [params.year] - Footer copyright year.
+ * @param {string} params.firstName - The recipient's first name.
+ * @param {string} params.subject - The email subject.
+ * @param {Object[]} params.content - An array of content blocks for the email.
+ * @param {string} params.content[].type - The type of content block (text, heading, otp, cta, list).
+ * @param {string} params.content[].value - The value of the content block.
  *
  * @returns {string} HTML email template.
  */
 
-const generateEmailTemplate = ({
-  brandName = 'OptaHire',
-  firstName,
-  subject,
-  content = [],
-  branding = {
-    primaryColor: '#0EB0E3',
-    secondaryColor: '#3946AE',
-    logo: null,
-  },
-  footerText = 'Optimizing Your Recruitment Journey',
-  year = new Date().getFullYear(),
-}) => {
+const generateEmailTemplate = ({ firstName, subject, content = [] }) => {
   const renderContent = (content) => {
     return content
       .map((block) => {
@@ -97,10 +79,10 @@ const generateEmailTemplate = ({
           case 'heading':
             return `<h2 class="subheader">${block.value}</h2>`;
           case 'otp':
-            return `<div class="otp" role="textbox" aria-label="One-Time Password">${block.value}</div>`;
+            return `<div class="highlight" role="textbox" aria-label="One-Time Password">${block.value}</div>`;
           case 'cta':
             return `
-              <div style="text-align: center;">
+              <div style="text-align: center; margin-top: 30px;">
                 <a href="${block.value.link}" class="cta-button" role="button">${block.value.text}</a>
               </div>`;
           case 'list':
@@ -122,14 +104,23 @@ const generateEmailTemplate = ({
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="color-scheme" content="light">
+      <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+      <meta name="apple-mobile-web-app-title" content="OptaHire" />
+      <link rel="manifest" href="/site.webmanifest" />
       <title>${subject}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
         :root {
-        --primary: #0eb0e3;
-        --secondary: #3946ae;
-        --text: #1a1a1a;
-        --border: #e0e0e0;
-        --background: #ffffff;
+          --primary: #0eb0e3;
+          --secondary: #3946ae;
+          --text: #1a1a1a;
+          --border: #e0e0e0;
+          --background: #ffffff;
+          --heading-font: 'Hanken Grotesk', sans-serif;
+          --body-font: 'Inter', sans-serif;
         }
         * {
           margin: 0;
@@ -137,14 +128,15 @@ const generateEmailTemplate = ({
           box-sizing: border-box;
         }
         body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-family: var(--body-font);
           line-height: 1.6;
           color: var(--text);
           background-color: #f4f4f4;
           -webkit-font-smoothing: antialiased;
+          padding: 20px;
         }
         .container {
-          max-width: 650px;
+          max-width: 700px;
           margin: 40px auto;
           background: var(--background);
           padding: 3rem;
@@ -152,18 +144,33 @@ const generateEmailTemplate = ({
           box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
           border: 1px solid var(--border);
         }
-        .header {
-          text-align: center;
-          font-size: 1.8rem;
-          font-weight: 600;
-          color: var(--primary);
+        .header-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           margin-bottom: 2.5rem;
-          padding-bottom: 1.5rem;
           border-bottom: 2px solid var(--border);
+          padding-bottom: 1rem;
+        }
+        .logo {
+          max-width: 100px;
+          height: auto;
+          margin-right: 20px;
+        }
+        .header {
+          text-align: left;
+          font-family: var(--heading-font);
+          border-bottom: none;
+        }
+        .header h1 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: var(--secondary);
           letter-spacing: 0.5px;
         }
         .subheader {
-          color: var(--secondary);
+          font-family: var(--heading-font);
+          color: var(--primary);
           font-size: 1.4rem;
           margin: 2rem 0 1.5rem;
           font-weight: 600;
@@ -172,6 +179,13 @@ const generateEmailTemplate = ({
           border-left: 5px solid var(--primary);
           background: rgba(14, 176, 227, 0.05);
           border-radius: 0 8px 8px 0;
+        }
+        .header-subheader {
+          font-family: var(--heading-font);
+          color: var(--primary);
+          font-size: 1rem;
+          font-weight: 500;
+          text-align: left;
         }
         .content {
           color: var(--text);
@@ -188,36 +202,35 @@ const generateEmailTemplate = ({
           color: var(--text);
           font-size: 1.1rem;
         }
-        .otp {
+        .highlight {
           background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
-          font-size: 2rem;
+          font-size: 1.5rem;
           padding: 1.5rem;
           margin: 2rem 0;
           border-radius: 8px;
           border: 2px solid var(--primary);
           text-align: center;
-          letter-spacing: 0.3rem;
           font-weight: 600;
           color: var(--secondary);
         }
         .cta-button {
           display: inline-block;
-          background: var(--primary);
-          color: var(--background) !important;
-          padding: 1rem 2rem;
+          background-color: var(--secondary);
+          color: white !important;
+          padding: 12px 24px;
           border-radius: 6px;
           text-decoration: none;
           font-weight: 500;
-          font-size: 1.1rem;
           transition: all 0.3s ease;
-          margin: 1.5rem 0;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .cta-button:hover {
-          background: var(--secondary);
+          background-color: var(--primary);
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(57, 70, 174, 0.2);
+          box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
         .footer {
+          font-family: var(--body-font);
           margin-top: 3rem;
           padding-top: 2rem;
           border-top: 2px solid var(--border);
@@ -225,24 +238,47 @@ const generateEmailTemplate = ({
           color: #666;
           font-size: 0.9rem;
         }
+        @media (max-width: 768px) {
+          .container {
+            padding: 2rem;
+          }
+          .header-container {
+            flex-direction: column;
+          }
+          .logo {
+            margin-right: 0;
+            margin-bottom: 15px;
+          }
+          .header,
+          .subheader,
+          .header-subheader {
+            text-align: center;
+          }
+          .cta-button {
+            width: 80%;
+            text-align: center;
+          }
+        }
       </style>
     </head>
     <body>
       <div class="container" role="main">
-        <header class="header" role="banner">
-          ${
-            branding.logo
-              ? `<img src="${branding.logo}" alt="${brandName}" style="max-height: 50px;">`
-              : brandName
-          }
+        <header class="header-container">
+          <img src="assets/logo.png" alt="OptaHire Logo" class="logo" />
+          <div class="header" role="banner">
+            <h1>OptaHire</h1>
+            <h3 class="header-subheader">Optimizing Your Recruitment Journey</h3>
+          </div>
         </header>
         <main>
           <p class="content">Hello ${firstName},</p>
           ${renderContent(content)}
         </main>
         <footer class="footer" role="contentinfo">
-          <p>&copy; ${year} ${brandName}. All rights reserved.</p>
-          <p>${footerText}</p>
+          <p>
+            Visit <a href="https://opta-hire-fyp-app-client.vercel.app" style="color: var(--primary); text-decoration: none">OptaHire</a> to experience the full platform.
+          </p>
+          <p>&copy; ${new Date().getFullYear()} OptaHire | Optimizing Your Recruitment Journey</p>
         </footer>
       </div>
     </body>

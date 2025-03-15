@@ -6,24 +6,31 @@ const {
 } = require('../middlewares/auth.middleware');
 
 const {
-  createUserResume,
-  getUserResume,
-  updateUserResume,
-  deleteUserResume,
-  getAllUserResumes,
+  createResume,
+  getAllResumes,
+  getResumeForUser,
+  updateResume,
+  deleteResume,
+  updateResumeById,
+  deleteResumeById,
 } = require('../controllers/resume.controller');
 
 const router = Router();
 
 router
   .route('/')
-  .post(protectServer, createUserResume)
-  .get(protectServer, authorizeServerRoles('isAdmin'), getAllUserResumes);
+  .post(protectServer, createResume)
+  .get(protectServer, authorizeServerRoles('isAdmin'), getAllResumes);
 
 router
   .route('/user')
-  .get(protectServer, getUserResume)
-  .put(protectServer, updateUserResume)
-  .delete(protectServer, deleteUserResume);
+  .get(protectServer, getResumeForUser)
+  .put(protectServer, updateResume)
+  .delete(protectServer, deleteResume);
+
+router
+  .route('/:id')
+  .put(protectServer, authorizeServerRoles('isAdmin'), updateResumeById)
+  .delete(protectServer, authorizeServerRoles('isAdmin'), deleteResumeById);
 
 module.exports = router;

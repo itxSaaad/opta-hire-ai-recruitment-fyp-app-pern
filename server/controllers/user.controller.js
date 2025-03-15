@@ -1,6 +1,7 @@
 const emailValidator = require('email-validator');
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
+const { Op } = require('sequelize');
 
 const { User, Resume } = require('../models');
 
@@ -27,7 +28,7 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
 
   if (!emailValidator.validate(email)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid email.');
+    throw new Error('Please enter a valid email address.');
   }
 
   const user = await User.findByPk(req.user.id, {
@@ -36,27 +37,29 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error('Unable to find your account. Please try again.');
   }
 
   if (user.email !== email) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid email.');
+    throw new Error('The email address does not match your account.');
   }
 
   if (user.isVerified) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email is already verified.');
+    throw new Error(
+      'Your email is already verified. You can proceed to login.'
+    );
   }
 
   if (user.otp !== otp) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid OTP.');
+    throw new Error('Invalid verification code. Please check and try again.');
   }
 
   if (user.otpExpires < new Date()) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('OTP has expired.');
+    throw new Error('Verification code has expired. Please request a new one.');
   }
 
   user.isVerified = true;
@@ -70,7 +73,7 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
   await user.save();
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'Welcome to OptaHire - Email Verified',
     html: generateEmailTemplate({
@@ -97,12 +100,14 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Unable to send confirmation email. Please try again later.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Email verified successfully.',
+    message: 'Your email has been verified successfully. Welcome to OptaHire!',
     user: {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -137,19 +142,23 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error('Unable to find your account. Please try again.');
   }
 
   const { currentPassword, newPassword } = req.body;
 
   if (!(await user.matchPassword(currentPassword))) {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Invalid current password.');
+    throw new Error(
+      'Current password is incorrect. Please check and try again.'
+    );
   }
 
   if (currentPassword === newPassword) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('New password cannot be the same as the current password.');
+    throw new Error(
+      'New password must be different from your current password.'
+    );
   }
 
   user.password = newPassword;
@@ -157,7 +166,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   await user.save();
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Password Updated',
     html: generateEmailTemplate({
@@ -167,7 +176,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
         {
           type: 'text',
           value:
-            'Your password has been updated successfully. If you did not request this change, please contact our support team immediately.',
+            'Your password has been updated successfully. If you did not make this change, please contact support immediately.',
         },
         {
           type: 'text',
@@ -179,12 +188,15 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Password updated but confirmation email could not be sent.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Password updated successfully.',
+    message:
+      'Password updated successfully. You can now login with your new password.',
     timestamp: new Date().toISOString(),
   });
 });
@@ -208,12 +220,14 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User profile not found.');
+    throw new Error(
+      'Unable to locate your profile. Please try again or contact support.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'User profile found.',
+    message: 'Profile retrieved successfully.',
     user: {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -250,7 +264,9 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User profile not found.');
+    throw new Error(
+      'Unable to find your profile. Please refresh and try again.'
+    );
   }
 
   const { firstName, lastName, email, phone } = req.body;
@@ -260,14 +276,44 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   user.phone = phone || user.phone;
 
   if (email) {
-    user.email = emailValidator.validate(email) ? email : user.email;
+    if (!emailValidator.validate(email)) {
+      res.status(StatusCodes.BAD_REQUEST);
+      throw new Error('Please enter a valid email address format.');
+    }
+    user.email = email;
   }
 
-  await user.save();
+  const updatedUser = await user.save();
+
+  if (!updatedUser) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Profile could not be updated. Please try again.');
+  }
+
+  const isEmailSent = await sendEmail({
+    from: process.env.NODEMAILER_SMTP_EMAIL,
+    to: user.email,
+    subject: 'OptaHire - Profile Updated',
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Profile Updated',
+      content: [
+        {
+          type: 'text',
+          value:
+            'Your profile has been updated successfully. If you did not make this change, please contact support immediately.',
+        },
+        {
+          type: 'text',
+          value: 'Thank you for using OptaHire.',
+        },
+      ],
+    }),
+  });
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Profile updated successfully.',
+    message: 'Your profile has been updated successfully.',
     user: {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -301,25 +347,25 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User profile not found.');
+    throw new Error('We could not find your profile. Please try again.');
   }
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
-    subject: 'OptaHire - Profile Deleted',
+    subject: 'OptaHire - Account Deletion Confirmation',
     html: generateEmailTemplate({
       firstName: user.firstName,
-      subject: 'OptaHire - Profile Deleted',
+      subject: 'OptaHire - Account Deletion Confirmation',
       content: [
         {
           type: 'text',
           value:
-            'Your profile has been deleted successfully. If you did not request this change, please contact our support team immediately.',
+            'We have successfully processed your account deletion request. If you did not initiate this action, please contact our support team immediately.',
         },
         {
           type: 'text',
-          value: 'Thank you for using OptaHire.',
+          value: 'Thank you for being part of OptaHire.',
         },
       ],
     }),
@@ -327,14 +373,16 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Account deleted but confirmation email could not be sent.'
+    );
   }
 
   await user.destroy();
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Profile deleted successfully.',
+    message: 'Your account has been successfully deleted.',
     timestamp: new Date().toISOString(),
   });
 });
@@ -351,31 +399,62 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
  */
 
 const getAllUsersProfile = asyncHandler(async (req, res) => {
-  const query = {};
+  const { role, email, firstName, lastName } = req.query;
+  let whereClause = {};
 
-  if (req.query.role) {
-    query[req.query.role] = true;
+  if (role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        whereClause.isAdmin = true;
+        break;
+      case 'recruiter':
+        whereClause.isRecruiter = true;
+        break;
+      case 'interviewer':
+        whereClause.isInterviewer = true;
+        break;
+      case 'candidate':
+        whereClause.isCandidate = true;
+        break;
+      default:
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error('Invalid user role. Please select a valid role.');
+    }
   }
 
-  if (req.query.email) {
-    query.email = req.query.email;
+  if (email) {
+    whereClause.email = { [Op.iLike]: `%${email}%` };
   }
 
-  const users = await User.findAll({
-    where: query,
-    attributes: { exclude: ['password'] },
+  if (firstName) {
+    whereClause.firstName = { [Op.iLike]: `%${firstName}%` };
+  }
+
+  if (lastName) {
+    whereClause.lastName = { [Op.iLike]: `%${lastName}%` };
+  }
+
+  const users = await User.findAndCountAll({
+    where: whereClause,
+    attributes: {
+      exclude: ['password', 'otp', 'otpExpires'],
+    },
+    order: [['createdAt', 'DESC']],
+    paranoid: true,
   });
 
-  if (users.length === 0) {
+  if (!users.count) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No users found.');
+    throw new Error('No users found. Try adjusting your search criteria.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Users found.',
-    count: users.length,
-    users,
+    message: `Found ${users.count} user${
+      users.count === 1 ? '' : 's'
+    } matching your search.`,
+    count: users.count,
+    users: users.rows,
     timestamp: new Date().toISOString(),
   });
 });
@@ -384,7 +463,7 @@ const getAllUsersProfile = asyncHandler(async (req, res) => {
  * @desc Gets a user by ID.
  *
  * @route GET /api/v1/users/:id
- * @access Private AND Admin
+ * @access Private (Admin)
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
@@ -393,17 +472,19 @@ const getAllUsersProfile = asyncHandler(async (req, res) => {
 
 const getUserProfileById = asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.params.id, {
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password', 'otp', 'otpExpires'] },
   });
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error(
+      'This user profile could not be found. Please verify the user ID and try again.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'User found.',
+    message: 'User profile retrieved successfully.',
     user,
     timestamp: new Date().toISOString(),
   });
@@ -413,7 +494,7 @@ const getUserProfileById = asyncHandler(async (req, res) => {
  * @desc Updates a user by ID.
  *
  * @route PUT /api/v1/users/:id
- * @access Private AND Admin
+ * @access Private (Admin)
  *
  * @param {Object} req - The request object containing updated user details.
  * @param {Object} res - The response object.
@@ -422,23 +503,29 @@ const getUserProfileById = asyncHandler(async (req, res) => {
  */
 
 const updateUserProfileById = asyncHandler(async (req, res) => {
+  const { firstName, lastName, email, phone, role } = req.body;
+
   const user = await User.findByPk(req.params.id, {
     attributes: { exclude: ['password'] },
   });
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error(
+      'User profile not found. Please check the ID and try again.'
+    );
   }
-
-  const { firstName, lastName, email, phone, role } = req.body;
 
   user.firstName = firstName || user.firstName;
   user.lastName = lastName || user.lastName;
   user.phone = phone || user.phone;
 
   if (email) {
-    user.email = emailValidator.validate(email) ? email : user.email;
+    if (!emailValidator.validate(email)) {
+      res.status(StatusCodes.BAD_REQUEST);
+      throw new Error('Please enter a valid email address format.');
+    }
+    user.email = email;
   }
 
   user.isAdmin = role === 'admin' ? true : user.isAdmin;
@@ -446,11 +533,16 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
   user.isInterviewer = role === 'interviewer' ? true : user.isInterviewer;
   user.isCandidate = role === 'candidate' ? true : user.isCandidate;
 
-  await user.save();
+  const updatedUser = await user.save();
+
+  if (!updatedUser) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('User profile could not be updated. Please try again.');
+  }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'User updated successfully.',
+    message: 'User profile has been updated successfully.',
     user,
     timestamp: new Date().toISOString(),
   });
@@ -460,7 +552,7 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
  * @desc Deletes a user by ID.
  *
  * @route DELETE /api/v1/users/:id
- * @access Private AND Admin
+ * @access Private (Admin)
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
@@ -475,32 +567,36 @@ const deleteUserById = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error(
+      'Unable to locate user account. Please verify and try again.'
+    );
   }
 
   const isDestroyed = await user.destroy();
 
   if (!isDestroyed) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('User could not be deleted.');
+    throw new Error(
+      'Account deletion failed. Please try again or contact support.'
+    );
   }
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
-    subject: 'OptaHire - Account Deleted',
+    subject: 'OptaHire - Account Deactivated',
     html: generateEmailTemplate({
       firstName: user.firstName,
-      subject: 'OptaHire - Account Deleted',
+      subject: 'OptaHire - Account Deactivated',
       content: [
         {
           type: 'text',
           value:
-            'Your account has been deleted due to violation of our rules and policies. If you believe this is a mistake, please contact our support team immediately.',
+            'Your OptaHire account has been deactivated. If you believe this was done in error, please contact our support team.',
         },
         {
           type: 'text',
-          value: 'Thank you for using OptaHire.',
+          value: 'Thank you for being part of OptaHire.',
         },
       ],
     }),
@@ -508,12 +604,14 @@ const deleteUserById = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Account deactivated but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'User deleted successfully.',
+    message: 'Account successfully deactivated.',
     timestamp: new Date().toISOString(),
   });
 });
@@ -522,7 +620,7 @@ const deleteUserById = asyncHandler(async (req, res) => {
  * @desc Deletes a user permanently by ID.
  *
  * @route DELETE /api/v1/users/:id/permanent
- * @access Private AND Admin
+ * @access Private (Admin)
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
@@ -538,18 +636,18 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error('The requested user account could not be found.');
   }
 
   const isDestroyed = await user.destroy({ force: true });
 
   if (!isDestroyed) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('User could not be deleted.');
+    throw new Error('Unable to process deletion request. Please try again.');
   }
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Account Permanently Deleted',
     html: generateEmailTemplate({
@@ -559,11 +657,12 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
         {
           type: 'text',
           value:
-            'Your account has been permanently deleted. If you believe this is a mistake, please contact our support team immediately.',
+            'Your OptaHire account and all associated data have been permanently deleted.',
         },
         {
           type: 'text',
-          value: 'Thank you for using OptaHire.',
+          value:
+            'If you did not request this action, please contact our support team immediately.',
         },
       ],
     }),
@@ -571,12 +670,12 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error('Account deleted but unable to send confirmation email.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'User permanently deleted successfully.',
+    message: 'Account and associated data permanently deleted.',
     timestamp: new Date().toISOString(),
   });
 });

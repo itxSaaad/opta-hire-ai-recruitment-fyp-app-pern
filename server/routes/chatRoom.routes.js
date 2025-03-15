@@ -22,13 +22,27 @@ router
     authorizeServerRoles('isRecruiter', 'isInterviewer'),
     createChatRoom
   )
-  .get(protectServer, getAllChatRooms);
+  .get(
+    protectServer,
+    authorizeServerRoles('isRecruiter', 'isInterviewer', 'isAdmin'),
+    getAllChatRooms
+  );
 
 router
   .route('/:id')
-  .get(protectServer, getChatRoomById)
+  .get(
+    protectServer,
+    authorizeServerRoles('isRecruiter', 'isInterviewer', 'isAdmin'),
+    getChatRoomById
+  )
   .delete(protectServer, authorizeServerRoles('isAdmin'), deleteChatRoom);
 
-router.route('/:id/messages').get(protectServer, getAllMessagesFromChatRoom);
+router
+  .route('/:id/messages')
+  .get(
+    protectServer,
+    authorizeServerRoles('isRecruiter', 'isInterviewer'),
+    getAllMessagesFromChatRoom
+  );
 
 module.exports = router;

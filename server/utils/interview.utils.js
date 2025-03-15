@@ -15,15 +15,15 @@ const generateRemarks = (status, interviewer, candidate, jobTitle) => {
 
   switch (status) {
     case 'scheduled':
-      return `Interview scheduled between ${interviewer} (Interviewer) and ${candidate} for ${jobTitle} position. Awaiting both parties to join.`;
+      return `Interview for ${jobTitle} position has been successfully scheduled. ${interviewer} will interview ${candidate}. Waiting for participants to join.`;
     case 'ongoing':
-      return `Interview in progress since ${currentTime}. ${interviewer} is currently interviewing ${candidate} for ${jobTitle} role.`;
+      return `Interview in progress since ${currentTime}. ${interviewer} is interviewing ${candidate} for the ${jobTitle} position.`;
     case 'completed':
-      return `Interview successfully concluded at ${currentTime}. ${candidate} was interviewed by ${interviewer} for ${jobTitle} position.`;
+      return `Interview successfully completed at ${currentTime}. ${candidate}'s interview for ${jobTitle} position with ${interviewer} has concluded.`;
     case 'cancelled':
-      return `Interview for ${jobTitle} position between ${interviewer} and ${candidate} has been cancelled at ${currentTime}.`;
+      return `Interview for ${jobTitle} position has been cancelled at ${currentTime}. ${interviewer} and ${candidate} have been notified.`;
     default:
-      return 'Interview status not specified';
+      return 'Unable to determine interview status. Please contact support.';
   }
 };
 

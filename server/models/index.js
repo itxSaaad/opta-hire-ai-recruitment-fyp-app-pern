@@ -56,12 +56,6 @@ try {
   console.log(`⏰ Timestamp:  ${new Date().toLocaleString()}`.magenta);
   console.log(`🌍 Node ENV:   ${process.env.NODE_ENV}`.yellow);
   console.log(`📚 Loaded Models: ${Object.keys(db).join(', ')}`.cyan);
-  // console.log('-'.repeat(86).blue);
-
-  // // Sync database with models
-  // await sequelize.sync({ alter: true });
-  // console.log(`🛠️  Models synchronized successfully!`.green);
-  // console.log(`📚 Loaded Models: ${Object.keys(db).join(', ')}`.cyan);
   console.log('='.repeat(86).blue);
 } catch (error) {
   console.error('\n' + '='.repeat(86).red);

@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 const { User, Job, Application } = require('../models');
 
@@ -13,7 +13,7 @@ const {
  * @desc Creates a new application
  *
  * @route POST /api/v1/applications
- * @access Private
+ * @access Private (Candidate)
  *
  * @param {Object} req - The request object containing the job ID.
  * @param {Object} res - The response object.
@@ -25,20 +25,25 @@ const createApplication = asyncHandler(async (req, res) => {
   const { jobId } = req.body;
   const candidateId = req.user.id;
 
-  const candidate = await User.findByPk(candidateId);
-
-  const job = await Job.findByPk(jobId, {
-    include: [{ model: User, as: 'recruiter' }],
-  });
+  const [candidate, job] = await Promise.all([
+    User.findByPk(candidateId),
+    Job.findByPk(jobId, {
+      include: { model: User, as: 'recruiter' },
+    }),
+  ]);
 
   if (!candidate) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Candidate not found');
+    throw new Error(
+      'Unable to locate your candidate profile. Please try again.'
+    );
   }
 
   if (!job) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Job not found');
+    throw new Error(
+      'The job posting you are trying to apply for no longer exists.'
+    );
   }
 
   const existingApplication = await Application.findOne({
@@ -47,7 +52,9 @@ const createApplication = asyncHandler(async (req, res) => {
 
   if (existingApplication) {
     res.status(StatusCodes.CONFLICT);
-    throw new Error('You have already applied for this job');
+    throw new Error(
+      'You have already submitted an application for this position.'
+    );
   }
 
   const application = await Application.create({
@@ -60,7 +67,7 @@ const createApplication = asyncHandler(async (req, res) => {
   const emailContent = [
     {
       type: 'text',
-      value: `A new application has been received for the job <strong>${job.title}</strong>.`,
+      value: `A new application has been received for the position of <strong>${job.title}</strong>.`,
     },
     { type: 'heading', value: 'Application Details' },
     {
@@ -86,7 +93,7 @@ const createApplication = asyncHandler(async (req, res) => {
   });
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - New Application Received',
     html: emailHtml,
@@ -94,12 +101,14 @@ const createApplication = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent');
+    throw new Error(
+      'Application submitted successfully but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.CREATED).json({
     success: true,
-    message: 'Application submitted successfully',
+    message: 'Your application has been successfully submitted.',
     application,
     timestamp: new Date().toISOString(),
   });
@@ -109,7 +118,7 @@ const createApplication = asyncHandler(async (req, res) => {
  * @desc Get all applications
  *
  * @route GET /api/v1/applications
- * @access Private/Admin
+ * @access Private
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
@@ -118,87 +127,66 @@ const createApplication = asyncHandler(async (req, res) => {
  */
 
 const getAllApplications = asyncHandler(async (req, res) => {
-  let applications;
+  const { role, status, applicationDate, jobId, candidateId } = req.query;
+  let whereClause = {};
 
-  if (req.user.isCandidate) {
-    applications = await Application.findAll({
-      where: { candidateId: req.user.id },
-      include: [
-        {
-          model: Job,
-          as: 'job',
-          attributes: ['title', 'category', 'location'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
-  } else if (req.user.isInterviewer) {
-    applications = await Application.findAll({
-      include: [
-        {
-          model: Job,
-          as: 'job',
-          attributes: ['title', 'category', 'location'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-      where: {
-        status: {
-          [Op.or]: ['shortlisted'],
-        },
-      },
-    });
-  } else if (req.user.isRecruiter) {
-    applications = await Application.findAll({
-      include: [
-        {
-          model: Job,
-          as: 'job',
-          attributes: ['title', 'category', 'location'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-      where: {
-        '$job.recruiterId$': req.user.id,
-      },
-    });
-  } else if (req.user.isAdmin) {
-    applications = await Application.findAll({
-      include: [
-        {
-          model: Job,
-          as: 'job',
-          attributes: ['title', 'category', 'location'],
-        },
-        {
-          model: User,
-          as: 'candidate',
-          attributes: ['firstName', 'lastName', 'email'],
-        },
-      ],
-    });
+  if (role) {
+    switch (role) {
+      case 'candidate':
+        whereClause.candidateId = req.user.id;
+        break;
+      case 'interviewer':
+        whereClause.status = { [Op.or]: ['shortlisted'] };
+        break;
+      case 'recruiter':
+        whereClause['$job.recruiterId$'] = req.user.id;
+        break;
+    }
   }
+
+  if (status) {
+    whereClause.status = status;
+  }
+
+  if (applicationDate) {
+    whereClause.applicationDate = {
+      [Op.gte]: new Date(applicationDate),
+    };
+  }
+
+  if (jobId) {
+    whereClause.jobId = jobId;
+  }
+
+  if (candidateId) {
+    whereClause.candidateId = candidateId;
+  }
+
+  const applications = await Application.findAll({
+    where: whereClause,
+    include: [
+      {
+        model: Job,
+        as: 'job',
+        attributes: ['title', 'category', 'location'],
+      },
+      {
+        model: User,
+        as: 'candidate',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+    ],
+    order: [['applicationDate', 'DESC']],
+  });
 
   if (!applications || applications.length === 0) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No applications found');
+    throw new Error('No applications found matching the criteria.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Applications retrieved successfully',
+    message: 'Applications retrieved successfully.',
     count: applications.length,
     applications,
     timestamp: new Date().toISOString(),
@@ -209,7 +197,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
  * @desc Get application by ID
  *
  * @route GET /api/v1/applications/:id
- * @access Private
+ * @access Private (Recruiter, Admin)
  *
  * @param {Object} req - The request object containing the application ID.
  * @param {Object} res - The response object.
@@ -234,13 +222,67 @@ const getApplicationById = asyncHandler(async (req, res) => {
 
   if (!application) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Application not found');
+    throw new Error(
+      'No application found with the specified ID. Please try again.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Application retrieved successfully',
+    message: 'Application details retrieved successfully.',
     application,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
+ * @desc Get job's applications
+ *
+ * @route GET /api/v1/applications/job/:jobId
+ * @access Private
+ *
+ * @param {Object} req - The request object containing the job ID.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ * @throws {Error} - If the job is not found or if the user is not authorized to view applications for the job
+ */
+
+const getApplicationsByJobId = asyncHandler(async (req, res) => {
+  const job = await Job.findByPk(req.params.jobId);
+
+  if (!job) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('The requested job posting could not be found.');
+  }
+
+  const applications = await Application.findAll({
+    where: { jobId: req.params.jobId },
+    include: [
+      {
+        model: Job,
+        as: 'job',
+        attributes: ['title', 'category', 'location'],
+      },
+      {
+        model: User,
+        as: 'candidate',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+    ],
+  });
+
+  if (!applications || applications.length === 0) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error(
+      'No applications have been submitted for this job posting yet.'
+    );
+  }
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Job applications retrieved successfully.',
+    count: applications.length,
+    applications,
     timestamp: new Date().toISOString(),
   });
 });
@@ -249,7 +291,7 @@ const getApplicationById = asyncHandler(async (req, res) => {
  * @desc Update application
  *
  * @route PUT /api/v1/applications/:id
- * @access Private/Recruiter
+ * @access Private (Recruiter, Admin)
  *
  * @param {Object} req - The request object containing the application ID.
  * @param {Object} res - The response object.
@@ -264,7 +306,7 @@ const updateApplication = asyncHandler(async (req, res) => {
 
   if (!validStatuses.includes(status)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid application status');
+    throw new Error('Please provide a valid application status.');
   }
 
   const application = await Application.findByPk(req.params.id, {
@@ -276,12 +318,12 @@ const updateApplication = asyncHandler(async (req, res) => {
 
   if (!application) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Application not found');
+    throw new Error('Unable to locate the specified application.');
   }
 
   if (req.user.isRecruiter && application.job.recruiterId !== req.user.id) {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('You are not authorized to update this application');
+    throw new Error('You do not have permission to update this application.');
   }
 
   application.status = status;
@@ -290,7 +332,7 @@ const updateApplication = asyncHandler(async (req, res) => {
 
   if (!updatedApplication) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Application could not be updated');
+    throw new Error('Failed to update application status. Please try again.');
   }
 
   const emailContent = [
@@ -318,7 +360,7 @@ const updateApplication = asyncHandler(async (req, res) => {
   });
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: application.candidate.email,
     subject: 'OptaHire - Application Status Update',
     html: emailHtml,
@@ -326,12 +368,14 @@ const updateApplication = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent');
+    throw new Error(
+      'Application updated but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Application updated successfully',
+    message: 'Application status updated successfully.',
     application,
     timestamp: new Date().toISOString(),
   });
@@ -341,7 +385,7 @@ const updateApplication = asyncHandler(async (req, res) => {
  * @desc Delete application
  *
  * @route DELETE /api/v1/applications/:id
- * @access Private
+ * @access Private (Admin)
  *
  * @param {Object} req - The request object containing the application ID.
  * @param {Object} res - The response object.
@@ -354,112 +398,71 @@ const deleteApplication = asyncHandler(async (req, res) => {
 
   if (!application) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Application not found');
+    throw new Error(
+      'Application record not found. Please check and try again later.'
+    );
   }
 
-  if (req.user.id !== application.candidateId && !req.user.isAdmin) {
-    res.status(StatusCodes.FORBIDDEN);
-    throw new Error('Not authorized to delete this application');
-  }
+  await application.destroy();
 
-  const deletedApplication = await application.destroy();
+  const [candidate, job] = await Promise.all([
+    User.findByPk(application.candidateId),
+    Job.findByPk(application.jobId),
+  ]);
 
-  if (!deletedApplication) {
-    res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Application could not be deleted');
-  }
+  const recruiter = await User.findByPk(job.recruiterId);
 
   const emailContent = [
     {
       type: 'text',
-      value: `Your application for the job <strong>${application.job.title}</strong> has been deleted.`,
+      value: `This application record has been permanently removed from the system.`,
     },
+    { type: 'heading', value: 'Application Details' },
     {
-      type: 'text',
-      value: 'If you have any questions, please contact the recruiter.',
-    },
-    {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
+      type: 'list',
+      value: [
+        `Job Title: ${job.title}`,
+        `Company: ${job.company}`,
+        `Candidate: ${candidate.firstName} ${candidate.lastName}`,
+        `Application Date: ${new Date(
+          application.applicationDate
+        ).toLocaleString()}`,
+        `Status: ${application.status}`,
+      ],
     },
   ];
 
-  const emailHtml = generateEmailTemplate({
-    firstName: application.candidate.firstName,
-    subject: 'OptaHire - Application Deleted',
-    content: emailContent,
-  });
-
-  const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
-    to: application.candidate.email,
-    subject: 'OptaHire - Application Deleted',
-    html: emailHtml,
-  });
+  const isEmailSent = await Promise.all([
+    sendEmail({
+      to: recruiter.email,
+      subject: 'OptaHire - Application Record Deleted',
+      html: generateEmailTemplate({
+        firstName: recruiter.firstName,
+        subject: 'Application Record Deleted',
+        content: emailContent,
+      }),
+    }),
+    sendEmail({
+      to: candidate.email,
+      subject: 'OptaHire - Application Record Deleted',
+      html: generateEmailTemplate({
+        firstName: candidate.firstName,
+        subject: 'Application Record Deleted',
+        content: emailContent,
+      }),
+    }),
+  ]);
 
   if (!isEmailSent) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent');
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error(
+      'Application record deleted but email could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Application deleted successfully',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-/**
- * @desc Get job's applications
- *
- * @route GET /api/v1/applications/job/:jobId
- * @access Private/Recruiter
- *
- * @param {Object} req - The request object containing the job ID.
- * @param {Object} res - The response object.
- * @returns {Promise<void>}
- * @throws {Error} - If the job is not found or if the user is not authorized to view applications for the job
- */
-
-const getApplicationsByJobId = asyncHandler(async (req, res) => {
-  const job = await Job.findByPk(req.params.jobId);
-
-  if (!job) {
-    res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Job not found');
-  }
-
-  if (req.user.isRecruiter && job.recruiterId !== req.user.id) {
-    res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('You are not authorized to view applications for this job');
-  }
-
-  const applications = await Application.findAll({
-    where: { jobId: req.params.jobId },
-    include: [
-      {
-        model: Job,
-        as: 'job',
-        attributes: ['title', 'category', 'location'],
-      },
-      {
-        model: User,
-        as: 'candidate',
-        attributes: ['firstName', 'lastName', 'email'],
-      },
-    ],
-  });
-
-  if (!applications || applications.length === 0) {
-    res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No applications found for this job');
-  }
-
-  res.status(StatusCodes.OK).json({
-    success: true,
-    message: 'Applications retrieved successfully',
-    count: applications.length,
-    applications,
+    message: 'Application record has been successfully deleted',
     timestamp: new Date().toISOString(),
   });
 });
@@ -468,7 +471,7 @@ module.exports = {
   createApplication,
   getAllApplications,
   getApplicationById,
+  getApplicationsByJobId,
   updateApplication,
   deleteApplication,
-  getApplicationsByJobId,
 };

@@ -14,10 +14,11 @@ const {
  * @desc Creates a new job.
  *
  * @route POST /api/v1/jobs
- * @access Private
+ * @access Private (Recruiter)
  *
  * @param {Object} req - The request object containing the OTP.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
  * @throws {Error} If the job could not be created.
  * @throws {Error} If the email could not be sent.
@@ -40,7 +41,7 @@ const createJob = asyncHandler(async (req, res) => {
 
   if (!recruiter) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Recruiter not found');
+    throw new Error('Unable to find recruiter account. Please try again.');
   }
 
   if (
@@ -52,7 +53,9 @@ const createJob = asyncHandler(async (req, res) => {
     !location
   ) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Please fill in all fields');
+    throw new Error(
+      'Please fill in all required fields to create a job posting.'
+    );
   }
 
   const validatedData = {
@@ -86,7 +89,7 @@ const createJob = asyncHandler(async (req, res) => {
 
   if (!job) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Job could not be created');
+    throw new Error('Unable to create job posting. Please try again.');
   }
 
   const requirementsArrayParsed =
@@ -146,7 +149,7 @@ const createJob = asyncHandler(async (req, res) => {
   });
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: recruiter.email,
     subject: 'OptaHire - New Job Created',
     html: emailHtml,
@@ -154,12 +157,14 @@ const createJob = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Job created successfully but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.CREATED).json({
     success: true,
-    message: 'Job created successfully',
+    message: 'Job posting created successfully',
     job: jobData,
     timestamp: new Date().toISOString(),
   });
@@ -169,7 +174,7 @@ const createJob = asyncHandler(async (req, res) => {
  * @desc Gets all Job applications.
  *
  * @route GET /api/v1/jobs
- * @access Private AND Admin
+ * @access Public
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
@@ -177,7 +182,7 @@ const createJob = asyncHandler(async (req, res) => {
  */
 
 const getAllJobs = asyncHandler(async (req, res) => {
-  const { search, category, location, company, salaryRange, isClosed } =
+  const { search, category, location, company, salaryRange, isClosed, limit } =
     req.query;
   let whereClause = {};
 
@@ -191,28 +196,15 @@ const getAllJobs = asyncHandler(async (req, res) => {
     };
   }
 
-  if (category) {
-    whereClause.category = { [Op.iLike]: `%${category}%` };
-  }
-
-  if (location) {
-    whereClause.location = { [Op.iLike]: `%${location}%` };
-  }
-
-  if (company) {
-    whereClause.company = { [Op.iLike]: `%${company}%` };
-  }
-
-  if (salaryRange) {
-    whereClause.salaryRange = { [Op.iLike]: `%${salaryRange}%` };
-  }
-
-  if (isClosed) {
-    whereClause.isClosed = isClosed;
-  }
+  if (category) whereClause.category = { [Op.iLike]: `%${category}%` };
+  if (location) whereClause.location = { [Op.iLike]: `%${location}%` };
+  if (company) whereClause.company = { [Op.iLike]: `%${company}%` };
+  if (salaryRange) whereClause.salaryRange = { [Op.iLike]: `%${salaryRange}%` };
+  if (isClosed) whereClause.isClosed = isClosed;
 
   const jobs = await Job.findAll({
     where: whereClause,
+    limit: limit ? parseInt(limit) : null,
     include: [
       {
         model: User,
@@ -224,7 +216,9 @@ const getAllJobs = asyncHandler(async (req, res) => {
 
   if (!jobs || jobs.length === 0) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No jobs found');
+    throw new Error(
+      'No jobs match your search criteria. Try adjusting your filters.'
+    );
   }
 
   const jobsData = jobs.map((job) => {
@@ -255,7 +249,7 @@ const getAllJobs = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Jobs retrieved successfully',
+    message: `Found ${jobs.length} opportunities matching your search`,
     count: jobs.length,
     jobs: jobsData,
     timestamp: new Date().toISOString(),
@@ -289,7 +283,7 @@ const getJobById = asyncHandler(async (req, res) => {
 
   if (!job) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Job not found');
+    throw new Error('This job posting no longer exists or has been removed.');
   }
 
   const requirementsArrayParsed =
@@ -316,7 +310,7 @@ const getJobById = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Job retrieved successfully',
+    message: 'Job details retrieved successfully',
     job: jobData,
     timestamp: new Date().toISOString(),
   });
@@ -326,6 +320,7 @@ const getJobById = asyncHandler(async (req, res) => {
  * @desc Updates the job with the specified ID.
  *
  * @route PATCH /api/v1/jobs/:id
+ * @access Private (Recruiter, Admin)
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
@@ -333,7 +328,7 @@ const getJobById = asyncHandler(async (req, res) => {
  * @throws {Error} If the job is not found.
  */
 
-const updateJob = asyncHandler(async (req, res) => {
+const updateJobById = asyncHandler(async (req, res) => {
   const {
     title,
     description,
@@ -359,7 +354,9 @@ const updateJob = asyncHandler(async (req, res) => {
     typeof isClosed === 'undefined'
   ) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Please fill in at least one field to update');
+    throw new Error(
+      'Please provide at least one field to update the job posting.'
+    );
   }
 
   const job = await Job.findByPk(jobId, {
@@ -374,7 +371,7 @@ const updateJob = asyncHandler(async (req, res) => {
 
   if (!job) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Job not found');
+    throw new Error('Job posting not found. Please check and try again.');
   }
 
   const validatedData = {
@@ -405,7 +402,7 @@ const updateJob = asyncHandler(async (req, res) => {
 
   if (!updatedJob) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Job could not be updated');
+    throw new Error('Unable to update job posting. Please try again.');
   }
 
   const requirementsArrayParsed =
@@ -435,11 +432,11 @@ const updateJob = asyncHandler(async (req, res) => {
   const emailContent = [
     {
       type: 'text',
-      value: 'You have successfully Updated a job on OptaHire.',
+      value: 'Your job posting has been successfully updated on OptaHire.',
     },
     {
       type: 'heading',
-      value: 'Job Details',
+      value: 'Updated Job Details',
     },
     {
       type: 'list',
@@ -452,7 +449,7 @@ const updateJob = asyncHandler(async (req, res) => {
         `Salary Range: ${updatedJob.salaryRange}`,
         `Category: ${updatedJob.category}`,
         `Location: ${updatedJob.location}`,
-        `Is Closed: ${updatedJob.isClosed}`,
+        `Status: ${updatedJob.isClosed ? 'Closed' : 'Open'}`,
       ],
     },
     {
@@ -468,7 +465,7 @@ const updateJob = asyncHandler(async (req, res) => {
   });
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Updated',
     html: emailHtml,
@@ -476,12 +473,14 @@ const updateJob = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Job updated successfully but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Job updated successfully',
+    message: 'Job posting updated successfully',
     job: jobData,
     timestamp: new Date().toISOString(),
   });
@@ -491,7 +490,7 @@ const updateJob = asyncHandler(async (req, res) => {
  * @desc Deletes the job with the specified ID.
  *
  * @route DELETE /api/v1/jobs/:id
- * @access Private
+ * @access Private (Admin)
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
@@ -499,7 +498,7 @@ const updateJob = asyncHandler(async (req, res) => {
  * @throws {Error} If the user is not found.
  */
 
-const deleteJob = asyncHandler(async (req, res) => {
+const deleteJobById = asyncHandler(async (req, res) => {
   const jobId = req.params.id;
 
   const job = await Job.findByPk(jobId, {
@@ -514,14 +513,14 @@ const deleteJob = asyncHandler(async (req, res) => {
 
   if (!job) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('Job not found');
+    throw new Error('Job posting not found. Please check and try again.');
   }
 
   const deletedJob = await job.destroy();
 
   if (!deletedJob) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Job could not be deleted');
+    throw new Error('Unable to delete job posting. Please try again.');
   }
 
   const requirementsArrayParsed =
@@ -551,11 +550,11 @@ const deleteJob = asyncHandler(async (req, res) => {
   const emailContent = [
     {
       type: 'text',
-      value: 'You have successfully Deleted a job on OptaHire.',
+      value: 'Your job posting has been successfully deleted from OptaHire.',
     },
     {
       type: 'heading',
-      value: 'Job Details',
+      value: 'Deleted Job Details',
     },
     {
       type: 'list',
@@ -583,7 +582,7 @@ const deleteJob = asyncHandler(async (req, res) => {
   });
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Deleted',
     html: emailHtml,
@@ -591,12 +590,14 @@ const deleteJob = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Job deleted successfully but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Job deleted successfully',
+    message: 'Job posting deleted successfully',
     timestamp: new Date().toISOString(),
   });
 });
@@ -605,6 +606,6 @@ module.exports = {
   createJob,
   getAllJobs,
   getJobById,
-  updateJob,
-  deleteJob,
+  updateJobById,
+  deleteJobById,
 };

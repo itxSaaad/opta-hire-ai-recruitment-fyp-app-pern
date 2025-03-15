@@ -1,4 +1,5 @@
 const { Router } = require('express');
+
 const {
   protectServer,
   authorizeServerRoles,
@@ -30,11 +31,6 @@ router
   )
   .delete(protectServer, authorizeServerRoles('isAdmin'), deleteApplication);
 
-router.get(
-  '/job/:jobId',
-  protectServer,
-  authorizeServerRoles('isRecruiter', 'isAdmin'),
-  getApplicationsByJobId
-);
+router.get('/job/:jobId', protectServer, getApplicationsByJobId);
 
 module.exports = router;

@@ -1,6 +1,5 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
-const { Op } = require('sequelize');
 
 const { ChatRoom, Job, Message, User } = require('../models');
 
@@ -9,8 +8,8 @@ const { validateString } = require('../utils/validation.utils');
 /**
  * @desc Creates a Chat Room
  *
- * @route POST /api/v1/chatrooms
- * @access Private (Recruiters & Interviewers)
+ * @route POST /api/v1/chat-rooms
+ * @access Private (Recruiters, Interviewers)
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
@@ -26,21 +25,23 @@ const createChatRoom = asyncHandler(async (req, res) => {
 
   if (!interviewerId || !jobId) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Please provide an Interviewer ID and a Job ID');
+    throw new Error(
+      'Please provide both an interviewer and job to create a chat room.'
+    );
   }
 
   const job = await Job.findByPk(jobId);
 
   if (!job) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error(`Job with ID ${jobId} does not exist`);
+    throw new Error('Job not found. Please check and try again.');
   }
 
   const interviewer = await User.findByPk(interviewerId);
 
   if (!interviewer) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error(`User with ID ${interviewerId} does not exist`);
+    throw new Error('Interviewer not found. Please check and try again.');
   }
 
   const chatRoom = await ChatRoom.create({
@@ -51,7 +52,7 @@ const createChatRoom = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.CREATED).json({
     success: true,
-    message: 'Chat Room created successfully',
+    message: 'Chat room created successfully',
     chatRoom,
     timestamp: new Date().toISOString(),
   });
@@ -60,8 +61,8 @@ const createChatRoom = asyncHandler(async (req, res) => {
 /**
  * @desc Get all Chat Rooms
  *
- * @route GET /api/v1/chatrooms
- * @access Private
+ * @route GET /api/v1/chat-rooms
+ * @access Private (Recruiters, Interviewers, Admins)
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
@@ -74,18 +75,30 @@ const createChatRoom = asyncHandler(async (req, res) => {
  */
 
 const getAllChatRooms = asyncHandler(async (req, res) => {
+  const { role, jobId, interviewerId, recruiterId } = req.query;
   let whereClause = {};
 
-  if (req.user.isRecruiter) {
-    whereClause = {
-      recruiterId: req.user.id,
-    };
-  } else if (req.user.isInterviewer) {
-    whereClause = {
-      interviewerId: req.user.id,
-    };
-  } else if (req.user.isAdmin) {
-    whereClause = {};
+  if (role) {
+    switch (role) {
+      case 'recruiter':
+        whereClause.recruiterId = req.user.id;
+        break;
+      case 'interviewer':
+        whereClause.interviewerId = req.user.id;
+        break;
+    }
+  }
+
+  if (jobId) {
+    whereClause.jobId = jobId;
+  }
+
+  if (interviewerId) {
+    whereClause.interviewerId = interviewerId;
+  }
+
+  if (recruiterId) {
+    whereClause.recruiterId = recruiterId;
   }
 
   const chatRooms = await ChatRoom.findAll({
@@ -93,6 +106,7 @@ const getAllChatRooms = asyncHandler(async (req, res) => {
     include: [
       {
         model: Job,
+        as: 'job',
         attributes: ['title'],
       },
       {
@@ -105,19 +119,30 @@ const getAllChatRooms = asyncHandler(async (req, res) => {
         as: 'recruiter',
         attributes: ['id', 'name', 'email'],
       },
+      {
+        model: Message,
+        as: 'messages',
+        attributes: ['id'],
+      },
     ],
+    order: [['createdAt', 'DESC']],
   });
 
   if (!chatRooms || chatRooms.length === 0) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No chat rooms found');
+    throw new Error('No chat rooms available matching the criteria');
   }
+
+  const chatRoomsWithMessageCount = chatRooms.map((room) => ({
+    ...room.toJSON(),
+    messageCount: room.messages.length,
+  }));
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Chat Rooms retrieved successfully',
+    message: 'Chat rooms fetched successfully',
     count: chatRooms.length,
-    chatRooms,
+    chatRooms: chatRoomsWithMessageCount,
     timestamp: new Date().toISOString(),
   });
 });
@@ -125,8 +150,8 @@ const getAllChatRooms = asyncHandler(async (req, res) => {
 /**
  * @desc Get a Chat Room by ID
  *
- * @route GET /api/v1/chatrooms/:id
- * @access Private
+ * @route GET /api/v1/chat-rooms/:id
+ * @access Private (Recruiters, Interviewers, Admins)
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
@@ -141,7 +166,7 @@ const getChatRoomById = asyncHandler(async (req, res) => {
 
   if (!validateString(chatRoomId)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Chat Room ID is invalid');
+    throw new Error('Invalid chat room ID provided. Please try again.');
   }
 
   const chatRoom = await ChatRoom.findByPk(chatRoomId, {
@@ -165,12 +190,12 @@ const getChatRoomById = asyncHandler(async (req, res) => {
 
   if (!chatRoom) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error(`Chat Room with ID ${chatRoomId} does not exist`);
+    throw new Error('Chat room not found. Please check the ID and try again.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Chat Room retrieved successfully',
+    message: 'Chat room details loaded successfully',
     chatRoom,
     timestamp: new Date().toISOString(),
   });
@@ -179,7 +204,7 @@ const getChatRoomById = asyncHandler(async (req, res) => {
 /**
  * @desc Delete a Chat Room by ID
  *
- * @route DELETE /api/v1/chatrooms/:id
+ * @route DELETE /api/v1/chat-rooms/:id
  * @access Private (Admin)
  *
  * @param {Object} req - The request object
@@ -192,34 +217,73 @@ const getChatRoomById = asyncHandler(async (req, res) => {
  */
 
 const deleteChatRoom = asyncHandler(async (req, res) => {
-  const chatRoomId = req.params.id;
-
-  if (!validateString(chatRoomId)) {
-    res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Chat Room ID is invalid');
-  }
-
-  const chatRoom = await ChatRoom.findByPk(chatRoomId);
+  const chatRoom = await ChatRoom.findByPk(req.params.id);
 
   if (!chatRoom) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error(`Chat Room with ID ${chatRoomId} does not exist`);
+    throw new Error('Chat room not found. Please check and try again later.');
   }
 
-  const deletedChatRoom = await ChatRoom.destroy({
-    where: {
-      id: chatRoomId,
-    },
-  });
+  const deletedChatRoom = await chatRoom.destroy();
 
   if (!deletedChatRoom) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error(`Chat Room with ID ${chatRoomId} could not be deleted`);
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Chat room could not be deleted. Please try again later.');
+  }
+
+  const [interviewer, job] = await Promise.all([
+    User.findByPk(chatRoom.interviewerId),
+    Job.findByPk(chatRoom.jobId),
+  ]);
+
+  const recruiter = await User.findByPk(job.recruiterId);
+
+  const emailContent = [
+    {
+      type: 'text',
+      value: `This chat room has been permanently removed from the system.`,
+    },
+    { type: 'heading', value: 'Chat Room Details' },
+    {
+      type: 'list',
+      value: [
+        `Job Title: ${job.title}`,
+        `Interviewer: ${interviewer.firstName} ${interviewer.lastName}`,
+        `Recruiter: ${recruiter.firstName} ${recruiter.lastName}`,
+        `Created At: ${new Date(chatRoom.createdAt).toLocaleString()}`,
+      ],
+    },
+  ];
+
+  const isEmailSent = await Promise.all([
+    sendEmail({
+      to: interviewer.email,
+      subject: 'OptaHire - Chat Room Deleted',
+      html: generateEmailTemplate({
+        firstName: interviewer.firstName,
+        subject: 'Chat Room Deleted',
+        content: emailContent,
+      }),
+    }),
+    sendEmail({
+      to: recruiter.email,
+      subject: 'OptaHire - Chat Room Deleted',
+      html: generateEmailTemplate({
+        firstName: recruiter.firstName,
+        subject: 'Chat Room Deleted',
+        content: emailContent,
+      }),
+    }),
+  ]);
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error('Chat room deleted but email could not be delivered.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: `Chat Room with ID ${chatRoomId} deleted successfully`,
+    message: 'Chat room has been successfully deleted',
     timestamp: new Date().toISOString(),
   });
 });
@@ -227,8 +291,8 @@ const deleteChatRoom = asyncHandler(async (req, res) => {
 /**
  * @desc Get all Messages from a Chat Room
  *
- * @route GET /api/v1/chatrooms/:id/messages
- * @access Private
+ * @route GET /api/v1/chat-rooms/:id/messages
+ * @access Private (Recruiters, Interviewers)
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
@@ -245,14 +309,14 @@ const getAllMessagesFromChatRoom = asyncHandler(async (req, res) => {
 
   if (!validateString(chatRoomId)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Chat Room ID is invalid');
+    throw new Error('Please provide a valid chat room ID to load messages.');
   }
 
   const chatRoom = await ChatRoom.findByPk(chatRoomId);
 
   if (!chatRoom) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error(`Chat Room with ID ${chatRoomId} does not exist`);
+    throw new Error('Chat room not found. Please check and try again.');
   }
 
   const messages = await Message.findAll({
@@ -281,12 +345,12 @@ const getAllMessagesFromChatRoom = asyncHandler(async (req, res) => {
 
   if (!messages || messages.length === 0) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('No messages found in this chat room');
+    throw new Error('No messages available in this chat room yet.');
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Messages retrieved successfully',
+    message: 'Chat messages loaded successfully',
     count: messages.length,
     messages,
     timestamp: new Date().toISOString(),

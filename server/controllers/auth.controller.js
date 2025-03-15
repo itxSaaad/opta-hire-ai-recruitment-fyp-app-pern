@@ -5,6 +5,7 @@ const { StatusCodes } = require('http-status-codes');
 
 const { User } = require('../models');
 
+const { validateString } = require('../utils/validation.utils');
 const {
   sendEmail,
   generateEmailTemplate,
@@ -27,12 +28,12 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!email || !password) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email and password are required.');
+    throw new Error('Please enter both email and password to sign in.');
   }
 
   if (!emailValidator.validate(email)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid email format.');
+    throw new Error('Please enter a valid email address.');
   }
 
   const user = await User.findOne({
@@ -41,14 +42,14 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Invalid email or password.');
+    throw new Error('These credentials do not match our records.');
   }
 
   const isPasswordCorrect = await user.validatePassword(password);
 
   if (!isPasswordCorrect) {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Invalid email or password.');
+    throw new Error('These credentials do not match our records.');
   }
 
   const accessToken = user.generateAccessToken();
@@ -63,7 +64,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Logged in successfully.',
+    message: 'Welcome back! You have successfully signed in.',
     user: {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -98,7 +99,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   if (!cookies.refreshToken) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('No refresh token found.');
+    throw new Error('Your session has already expired. Please sign in again.');
   }
 
   res.clearCookie('refreshToken', {
@@ -109,7 +110,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Logged out successfully.',
+    message: 'You have been successfully signed out.',
     timestamp: new Date().toISOString(),
   });
 });
@@ -131,7 +132,7 @@ const refreshToken = asyncHandler(async (req, res) => {
 
   if (!cookies.refreshToken) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('No refresh token found.');
+    throw new Error('Session expired. Please sign in again.');
   }
 
   jwt.verify(
@@ -140,7 +141,7 @@ const refreshToken = asyncHandler(async (req, res) => {
     asyncHandler(async (err, decoded) => {
       if (err) {
         res.status(StatusCodes.UNAUTHORIZED);
-        throw new Error('Invalid refresh token.');
+        throw new Error('Invalid session. Please sign in again.');
       }
 
       const user = await User.findByPk(decoded.id, {
@@ -149,14 +150,14 @@ const refreshToken = asyncHandler(async (req, res) => {
 
       if (!user) {
         res.status(StatusCodes.NOT_FOUND);
-        throw new Error('User not found.');
+        throw new Error('Account not found. Please contact support.');
       }
 
       const accessToken = user.generateAccessToken();
 
       res.status(StatusCodes.OK).json({
         success: true,
-        message: 'Token refreshed successfully.',
+        message: 'Session refreshed successfully.',
         accessToken,
         timestamp: new Date().toISOString(),
       });
@@ -181,61 +182,58 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (!firstName || !lastName || !email || !phone || !password || !role) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('All fields are required.');
+    throw new Error(
+      'Please fill in all required fields to complete registration.'
+    );
   }
 
   if (!emailValidator.validate(email)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid email format.');
+    throw new Error('Please enter a valid email address.');
   }
 
   if (!['admin', 'recruiter', 'interviewer', 'candidate'].includes(role)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid role.');
+    throw new Error('Invalid user role selected.');
   }
 
   const existingUser = await User.findOne({
     where: { email },
-    attributes: {
-      exclude: ['password'],
-    },
+    attributes: { exclude: ['password'] },
   });
 
   if (existingUser) {
     res.status(StatusCodes.CONFLICT);
-    throw new Error('User already exists.');
+    throw new Error('An account with this email already exists.');
+  }
+
+  const phoneRegex = /^\+(?:[0-9] ?){6,14}[0-9]$/;
+  if (!phoneRegex.test(phone)) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error(
+      'Please enter a valid phone number starting with + symbol.'
+    );
   }
 
   let userFlags = {
-    isAdmin: false,
-    isRecruiter: false,
-    isInterviewer: false,
-    isCandidate: false,
+    isAdmin: role === 'admin',
+    isRecruiter: role === 'recruiter',
+    isInterviewer: role === 'interviewer',
+    isCandidate: role === 'candidate',
   };
 
-  switch (role) {
-    case 'admin':
-      userFlags.isAdmin = true;
-      break;
-    case 'recruiter':
-      userFlags.isRecruiter = true;
-      break;
-    case 'interviewer':
-      userFlags.isInterviewer = true;
-      break;
-    case 'candidate':
-      userFlags.isCandidate = true;
-      break;
-    default:
-      break;
-  }
+  const validatedData = {
+    firstName: firstName
+      ? validateString(firstName, 'First Name', 2, 50)
+      : null,
+    lastName: lastName ? validateString(lastName, 'Last Name', 2, 50) : null,
+    email: email ? validateString(email, 'Email', 5, 255) : null,
+    phone: phone ? validateString(phone, 'Phone', 10, 15) : null,
+    password: password ? validateString(password, 'Password', 6, 100) : null,
+  };
 
   const user = await User.create({
-    firstName,
-    lastName,
-    email,
-    phone,
-    password,
+    ...validatedData,
     isVerified: false,
     isLinkedinVerified: false,
     ...userFlags,
@@ -243,7 +241,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Registration failed.');
+    throw new Error('Unable to create your account. Please try again.');
   }
 
   const verficationOTP = await user.generateOTP();
@@ -256,7 +254,7 @@ const registerUser = asyncHandler(async (req, res) => {
   await user.save();
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'Welcome to OptaHire - Verify Your Email',
     html: generateEmailTemplate({
@@ -266,7 +264,7 @@ const registerUser = asyncHandler(async (req, res) => {
         {
           type: 'text',
           value:
-            "Welcome to OptaHire! We're excited to have you on board. To get started, please verify your email address using the OTP below:",
+            "Welcome to OptaHire! We're excited to have you join us. Please verify your email with this code:",
         },
         {
           type: 'otp',
@@ -274,13 +272,11 @@ const registerUser = asyncHandler(async (req, res) => {
         },
         {
           type: 'text',
-          value:
-            'This verification code will expire in 10 minutes for security purposes.',
+          value: 'This code will expire in 10 minutes.',
         },
         {
           type: 'text',
-          value:
-            "If you didn't create an account with OptaHire, please disregard this email.",
+          value: "Didn't create an account? Please ignore this email.",
         },
       ],
     }),
@@ -288,7 +284,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Account created but verification email could not be delivered.'
+    );
   }
 
   const accessToken = user.generateAccessToken();
@@ -303,7 +301,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.CREATED).json({
     success: true,
-    message: 'Registration successful.',
+    message: 'Account created successfully. Please check your email to verify.',
     user: {
       firstName: user.firstName,
       lastName: user.lastName,
@@ -339,12 +337,12 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   if (!email) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email is required.');
+    throw new Error('Please enter your email address to reset your password.');
   }
 
   if (!emailValidator.validate(email)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid email format.');
+    throw new Error('Please enter a valid email address.');
   }
 
   const user = await User.findOne({
@@ -356,13 +354,26 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error('No account found with this email address.');
   }
 
   const resetPasswordOTP = await user.generateOTP();
 
+  const otpExpiresIn = new Date();
+  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
+
+  user.otp = resetPasswordOTP;
+  user.otpExpires = otpExpiresIn;
+
+  const updatedUser = await user.save();
+
+  if (!updatedUser) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Unable to process your request. Please try again.');
+  }
+
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Reset Your Password',
     html: generateEmailTemplate({
@@ -385,7 +396,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
         {
           type: 'text',
           value:
-            "If you didn't request a password reset, please disregard this email.",
+            "If you didn't request a password reset, please ignore this email.",
         },
       ],
     }),
@@ -393,20 +404,14 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'OTP Generated but notification emails could not be delivered.'
+    );
   }
-
-  const otpExpiresIn = new Date();
-  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
-
-  user.otp = resetPasswordOTP;
-  user.otpExpires = otpExpiresIn;
-
-  await user.save();
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'OTP sent successfully.',
+    message: 'Password reset OTP sent to your email.',
     timestamp: new Date().toISOString(),
   });
 });
@@ -430,12 +435,14 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   if (!email || !otp || !password) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email, OTP, and password are required.');
+    throw new Error(
+      'Please provide your email, verification code, and new password.'
+    );
   }
 
   if (!emailValidator.validate(email)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid email format.');
+    throw new Error('Please enter a valid email address.');
   }
 
   const user = await User.findOne({
@@ -444,22 +451,24 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error('No account found with this email address.');
   }
 
   if (currentTime > user.optExpires) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('OTP has been expired.');
+    throw new Error('Verification code has expired. Please request a new one.');
   }
 
   if (user.otp !== otp) {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Invalid OTP.');
+    throw new Error('Invalid verification code. Please try again.');
   }
 
   if (user.password === password) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('New password cannot be the same as the old password.');
+    throw new Error(
+      'New password must be different from your current password.'
+    );
   }
 
   user.password = password;
@@ -469,7 +478,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   await user.save();
 
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Password Reset Successful',
     html: generateEmailTemplate({
@@ -483,12 +492,12 @@ const resetPassword = asyncHandler(async (req, res) => {
         {
           type: 'text',
           value:
-            'If you did not initiate this password reset, please contact our support team immediately.',
+            'If you did not make this change, please contact support immediately.',
         },
         {
           type: 'text',
           value:
-            'For security purposes, we recommend changing your password regularly and using strong, unique passwords.',
+            'For enhanced security, we recommend using strong, unique passwords.',
         },
       ],
     }),
@@ -496,12 +505,14 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'Password reset successful but notification emails could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'Password reset successfully.',
+    message: 'Your password has been reset successfully.',
     timestamp: new Date().toISOString(),
   });
 });
@@ -524,12 +535,12 @@ const regenerateOTP = asyncHandler(async (req, res) => {
 
   if (!email) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Email is required.');
+    throw new Error('Please provide your email address.');
   }
 
   if (!emailValidator.validate(email)) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Invalid email format.');
+    throw new Error('Please enter a valid email address.');
   }
 
   const user = await User.findOne({
@@ -541,13 +552,26 @@ const regenerateOTP = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(StatusCodes.NOT_FOUND);
-    throw new Error('User not found.');
+    throw new Error('No account found with this email address.');
   }
 
   const verficationOTP = await user.generateOTP();
 
+  const otpExpiresIn = new Date();
+  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
+
+  user.otp = verficationOTP;
+  user.otpExpires = otpExpiresIn;
+
+  const updatedUser = await user.save();
+
+  if (!updatedUser) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Unable to update user. Please try again.');
+  }
+
   const isEmailSent = await sendEmail({
-    from: process.env.SMTP_EMAIL,
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Your New Verification Code',
     html: generateEmailTemplate({
@@ -564,13 +588,11 @@ const regenerateOTP = asyncHandler(async (req, res) => {
         },
         {
           type: 'text',
-          value:
-            'This new verification code will expire in 10 minutes for security purposes.',
+          value: 'This code will expire in 10 minutes.',
         },
         {
           type: 'text',
-          value:
-            "If you didn't request a new verification code, please contact support immediately.",
+          value: "If you didn't request this code, please ignore this email.",
         },
       ],
     }),
@@ -578,20 +600,14 @@ const regenerateOTP = asyncHandler(async (req, res) => {
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Email could not be sent.');
+    throw new Error(
+      'OTP Generated but notification emails could not be delivered.'
+    );
   }
-
-  const otpExpiresIn = new Date();
-  otpExpiresIn.setMinutes(otpExpiresIn.getMinutes() + 10);
-
-  user.otp = verficationOTP;
-  user.otpExpires = otpExpiresIn;
-
-  await user.save();
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: 'OTP regenerated successfully.',
+    message: 'New verification code sent to your email.',
     timestamp: new Date().toISOString(),
   });
 });

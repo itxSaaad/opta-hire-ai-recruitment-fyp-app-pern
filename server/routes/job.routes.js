@@ -1,4 +1,5 @@
 const { Router } = require('express');
+
 const {
   protectServer,
   authorizeServerRoles,
@@ -8,8 +9,8 @@ const {
   createJob,
   getAllJobs,
   getJobById,
-  updateJob,
-  deleteJob,
+  updateJobById,
+  deleteJobById,
 } = require('../controllers/job.controller');
 
 const router = Router();
@@ -25,8 +26,8 @@ router
   .patch(
     protectServer,
     authorizeServerRoles('isRecruiter', 'isAdmin'),
-    updateJob
+    updateJobById
   )
-  .delete(protectServer, authorizeServerRoles('isAdmin'), deleteJob);
+  .delete(protectServer, authorizeServerRoles('isAdmin'), deleteJobById);
 
 module.exports = router;
