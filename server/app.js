@@ -27,10 +27,10 @@ const resumeRoutes = require('./routes/resume.routes');
 const jobRoutes = require('./routes/job.routes');
 const applicationRoutes = require('./routes/application.routes');
 const chatRoomRoutes = require('./routes/chatRoom.routes');
-// const contractRoutes = require('./routes/contract.routes');
-const interviewRoutes = require('./routes/interview.routes');
-// const interviewerRating = require('./routes/interviewerRating.routes');
+const contractRoutes = require('./routes/contract.routes');
 // const transactionRoutes = require('./routes/transaction.routes');
+const interviewRoutes = require('./routes/interview.routes');
+const interviewerRating = require('./routes/interviewerRating.routes');
 // const paymentRoutes = require('./routes/payment.routes');
 
 const setupChatSocket = require('./sockets/chat.socket');
@@ -127,10 +127,10 @@ app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/jobs', jobRoutes);
 app.use('/api/v1/applications', applicationRoutes);
 app.use('/api/v1/chat-rooms', chatRoomRoutes);
-// app.use('/api/v1/contracts', contractRoutes);
+app.use('/api/v1/contracts', contractRoutes);
 // app.use('/api/v1/transactions', transactionRoutes);
 app.use('/api/v1/interviews', interviewRoutes);
-// app.use('/api/v1/interviewer-ratings', interviewerRating);
+app.use('/api/v1/interviewer-ratings', interviewerRating);
 // app.use('/api/v1/payments', paymentRoutes);
 // app.use('/api/v1/ai', aiRoutes);
 
