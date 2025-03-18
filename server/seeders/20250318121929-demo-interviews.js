@@ -6,7 +6,9 @@ const generateRoomId = (length = 12) => {
   const randomPart = Array.from({ length: 6 }, () =>
     randomChars.charAt(Math.floor(Math.random() * randomChars.length))
   ).join('');
-  return `${timestamp.slice(-4)}-${randomPart.slice(0, 4)}-${randomPart.slice(4)}`;
+  return `${timestamp.slice(-4)}-${randomPart.slice(0, 4)}-${randomPart.slice(
+    4
+  )}`;
 };
 
 /** @type {import('sequelize-cli').Migration} */
@@ -18,7 +20,9 @@ module.exports = {
     );
 
     if (!candidates || candidates.length < 2) {
-      throw new Error('Candidate records not found. Ensure Users seeder has been run.');
+      throw new Error(
+        'Candidate records not found. Ensure Users seeder has been run.'
+      );
     }
 
     const candidateMap = candidates.reduce((acc, candidate) => {
@@ -26,21 +30,21 @@ module.exports = {
       return acc;
     }, {});
 
-
     const interviewers = await queryInterface.sequelize.query(
       `SELECT id, email FROM "Users" WHERE email IN ('interviewer@optahire.com', 'interviewer2@optahire.com');`,
       { type: Sequelize.QueryTypes.SELECT }
     );
 
     if (!interviewers || interviewers.length < 2) {
-      throw new Error('Interviewer records not found. Ensure Users seeder has been run.');
+      throw new Error(
+        'Interviewer records not found. Ensure Users seeder has been run.'
+      );
     }
 
     const interviewerMap = interviewers.reduce((acc, interviewer) => {
       acc[interviewer.email] = interviewer.id;
       return acc;
     }, {});
-
 
     const application1 = await queryInterface.sequelize.query(
       `SELECT id, "jobId" FROM "Applications" WHERE "candidateId" = '${candidateMap['candidate@optahire.com']}' LIMIT 1;`,
@@ -93,8 +97,10 @@ module.exports = {
       jobId: application2[0].jobId,
       applicationId: application2[0].id,
       status: 'completed',
-      remarks: 'Interview completed successfully. Candidate showed strong skills.',
-      summary: 'Detailed feedback: candidate demonstrated excellent technical ability.',
+      remarks:
+        'Interview completed successfully. Candidate showed strong skills.',
+      summary:
+        'Detailed feedback: candidate demonstrated excellent technical ability.',
       rating: 4.5,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -107,5 +113,5 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('Interviews', null, {});
-  }
+  },
 };
