@@ -51,6 +51,17 @@ module.exports = (sequelize, DataTypes) => {
           isDate: { msg: 'Please enter a valid date' },
         },
       },
+      transactionType: {
+        type: DataTypes.ENUM('payment', 'refund', 'payout'),
+        allowNull: false,
+        validate: {
+          notEmpty: { msg: 'Transaction type is required' },
+          isIn: {
+            args: [['payment', 'refund', 'payout']],
+            msg: 'Transaction type must be either payment, refund, or payout',
+          },
+        },
+      },
       contractId: {
         type: DataTypes.UUID,
         allowNull: false,

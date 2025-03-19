@@ -36,6 +36,7 @@
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.5",
     "socket.io": "^4.8.1",
+    "stripe": "^17.7.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "xss-clean": "^0.1.4"
