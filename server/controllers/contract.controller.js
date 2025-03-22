@@ -27,9 +27,6 @@ const { validateString } = require('../utils/validation.utils');
  * @param {object} res - Response object
  *
  * @return {Promise<void>}
- * @throws {Error} If one of the required fields is missing
- * @throws {Error} If agreed price is not a positive number
- * @throws {Error} If job, recruiter, interviewer or chat room is not found
  */
 
 const createContract = asyncHandler(async (req, res) => {
@@ -117,10 +114,15 @@ const createContract = asyncHandler(async (req, res) => {
   }
 
   const emailContent = [
-    { type: 'heading', value: 'New Contract Created' },
+    { type: 'heading', value: 'New Contract Created!' },
     {
       type: 'text',
-      value: 'A new contract has been created for your job posting.',
+      value:
+        'A new contract has been successfully created for your job posting.',
+    },
+    {
+      type: 'heading',
+      value: 'Contract Details',
     },
     {
       type: 'list',
@@ -133,22 +135,60 @@ const createContract = asyncHandler(async (req, res) => {
         `Payment Status: ${contract.paymentStatus}`,
       ],
     },
+    {
+      type: 'heading',
+      value: 'Next Steps',
+    },
+    {
+      type: 'list',
+      value: [
+        'Review the contract details',
+        'Communicate with the other party',
+        'Prepare for the upcoming interview',
+        'Track the contract status in your dashboard',
+      ],
+    },
+    {
+      type: 'cta',
+      value: {
+        text: 'View Contract Details',
+        link: `${process.env.CLIENT_URL}/contracts/${contract.id}`,
+      },
+    },
+    {
+      type: 'text',
+      value:
+        'If you have any questions or need assistance, please contact our support team.',
+    },
   ];
 
-  const isEmailSent = await sendEmail({
-    to: recruiter.email,
-    subject: 'OptaHire - New Contract Created',
-    html: generateEmailTemplate({
-      firstName: recruiter.firstName,
-      subject: 'New Contract Created',
-      content: emailContent,
+  const isEmailSent = await Promise.all([
+    sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
+      to: recruiter.email,
+      subject: 'OptaHire - New Contract Created',
+      html: generateEmailTemplate({
+        firstName: recruiter.firstName,
+        subject: 'New Contract Created',
+        content: emailContent,
+      }),
     }),
-  });
+    sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
+      to: interviewer.email,
+      subject: 'OptaHire - New Contract Created',
+      html: generateEmailTemplate({
+        firstName: interviewer.firstName,
+        subject: 'New Contract Created',
+        content: emailContent,
+      }),
+    }),
+  ]);
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
-      'Contract created successfully but notification email could not be sent.'
+      'Contract created successfully but notification email could not be delivered.'
     );
   }
 
@@ -169,22 +209,7 @@ const createContract = asyncHandler(async (req, res) => {
  * @param {object} req - Request object
  * @param {object} res - Response object
  *
- * @query {string} search - Search term to filter contracts by job title or description
- * @query {string} status - Filter contracts by status (pending, active, completed, cancelled)
- * @query {string} paymentStatus - Filter contracts by payment status (pending, paid, failed, refunded)
- * @query {string} recruiterId - Filter contracts by recruiter ID
- * @query {string} interviewerId - Filter contracts by interviewer ID
- * @query {string} jobId - Filter contracts by job ID
- * @query {number} limit - Limit the number of contracts returned
- *
  * @return {Promise<void>}
- * @throws {Error} If no contracts are found
- * @throws {Error} If invalid search criteria are provided
- * @throws {Error} If invalid status is provided
- * @throws {Error} If invalid payment status is provided
- * @throws {Error} If invalid recruiter ID is provided
- * @throws {Error} If invalid interviewer ID is provided
- * @throws {Error} If invalid job ID is provided
  */
 
 const getAllContracts = asyncHandler(async (req, res) => {
@@ -237,17 +262,16 @@ const getAllContracts = asyncHandler(async (req, res) => {
       {
         model: ChatRoom,
         as: 'chatRoom',
-        attributes: ['name', 'description', 'status'],
       },
       {
         model: InterviewerRating,
         as: 'interviewerRatings',
-        attributes: ['rating', 'comment', 'createdAt'],
+        attributes: ['rating', 'feedback', 'createdAt'],
       },
       {
         model: Transaction,
         as: 'transactions',
-        attributes: ['amount', 'status', 'createdAt'],
+        attributes: ['amount', 'status', 'transactionDate', 'transactionType'],
       },
     ],
   });
@@ -278,8 +302,6 @@ const getAllContracts = asyncHandler(async (req, res) => {
  * @param {object} res - Response object
  *
  * @return {Promise<void>}
- * @throws {Error} If contract is not found
- * @throws {Error} If contract ID is not provided
  */
 
 const getContractById = asyncHandler(async (req, res) => {
@@ -303,17 +325,16 @@ const getContractById = asyncHandler(async (req, res) => {
       {
         model: ChatRoom,
         as: 'chatRoom',
-        attributes: ['name', 'description', 'status'],
       },
       {
         model: InterviewerRating,
         as: 'interviewerRatings',
-        attributes: ['rating', 'comment', 'createdAt'],
+        attributes: ['rating', 'feedback', 'createdAt'],
       },
       {
         model: Transaction,
         as: 'transactions',
-        attributes: ['amount', 'status', 'createdAt'],
+        attributes: ['amount', 'status', 'transactionDate', 'transactionType'],
       },
     ],
   });
@@ -339,21 +360,8 @@ const getContractById = asyncHandler(async (req, res) => {
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
- * @param {number} req.params.id - Contract ID
- *
- * @param {object} req.body - Request body
- * @param {number} req.body.agreedPrice - Agreed price for the contract
- * @param {string} req.body.status - Contract status (pending, active, completed, cancelled)
- * @param {string} req.body.paymentStatus - Payment status (pending, paid, failed, refunded)
  *
  * @return {Promise<void>}
- * @throws {Error} If no fields are provided to update the contract
- * @throws {Error} If contract is not found
- * @throws {Error} If agreed price is not a positive number
- * @throws {Error} If agreed price exceeds 1,000,000
- * @throws {Error} If status is invalid
- * @throws {Error} If payment status is invalid
- * @throws {Error} If contract update fails
  */
 
 const updateContractById = asyncHandler(async (req, res) => {
@@ -436,10 +444,15 @@ const updateContractById = asyncHandler(async (req, res) => {
   }
 
   const emailContent = [
-    { type: 'heading', value: 'Contract Updated' },
+    { type: 'heading', value: 'Contract Updated Successfully' },
     {
       type: 'text',
-      value: 'Your contract details have been updated successfully.',
+      value:
+        'The contract details have been updated. Please review the new information below:',
+    },
+    {
+      type: 'heading',
+      value: 'Updated Contract Details',
     },
     {
       type: 'list',
@@ -452,10 +465,23 @@ const updateContractById = asyncHandler(async (req, res) => {
         `Payment Status: ${updatedContract.paymentStatus}`,
       ],
     },
+    {
+      type: 'text',
+      value:
+        'Please review these changes and contact us if you have any questions or concerns.',
+    },
+    {
+      type: 'cta',
+      value: {
+        text: 'View Contract Details',
+        link: `${process.env.CLIENT_URL}/contracts/${contract.id}`,
+      },
+    },
   ];
 
   const isEmailSent = await Promise.all([
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.recruiter.email,
       subject: 'OptaHire - Contract Updated',
       html: generateEmailTemplate({
@@ -465,6 +491,7 @@ const updateContractById = asyncHandler(async (req, res) => {
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.interviewer.email,
       subject: 'OptaHire - Contract Updated',
       html: generateEmailTemplate({
@@ -478,7 +505,7 @@ const updateContractById = asyncHandler(async (req, res) => {
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
-      'Contract updated successfully but notification email could not be sent.'
+      'Contract updated successfully but notification email could not be delivered.'
     );
   }
 
@@ -502,17 +529,16 @@ const updateContractById = asyncHandler(async (req, res) => {
       {
         model: ChatRoom,
         as: 'chatRoom',
-        attributes: ['name', 'description', 'status'],
       },
       {
         model: InterviewerRating,
         as: 'interviewerRatings',
-        attributes: ['rating', 'comment', 'createdAt'],
+        attributes: ['rating', 'feedback', 'createdAt'],
       },
       {
         model: Transaction,
         as: 'transactions',
-        attributes: ['amount', 'status', 'createdAt'],
+        attributes: ['amount', 'status', 'transactionDate', 'transactionType'],
       },
     ],
   });
@@ -533,17 +559,34 @@ const updateContractById = asyncHandler(async (req, res) => {
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
- * @param {number} req.params.id - Contract ID
  *
  * @return {Promise<void>}
- * @throws {Error} If contract is not found
- * @throws {Error} If contract deletion fails
- * @throws {Error} If notification email could not be sent
- * @throws {Error} If contract is deleted but email is not sent
  */
 
 const deleteContractById = asyncHandler(async (req, res) => {
-  const contract = await Contract.findByPk(req.params.id);
+  const contract = await Contract.findByPk(req.params.id, {
+    include: [
+      {
+        model: Job,
+        as: 'job',
+        attributes: ['title', 'description'],
+      },
+      {
+        model: User,
+        as: 'recruiter',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+      {
+        model: User,
+        as: 'interviewer',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+      {
+        model: ChatRoom,
+        as: 'chatRoom',
+      },
+    ],
+  });
 
   if (!contract) {
     res.status(StatusCodes.NOT_FOUND);
@@ -558,8 +601,19 @@ const deleteContractById = asyncHandler(async (req, res) => {
   }
 
   const emailContent = [
-    { type: 'heading', value: 'Contract Deleted' },
-    { type: 'text', value: 'Your contract has been deleted successfully.' },
+    {
+      type: 'heading',
+      value: 'Contract Record Deleted',
+    },
+    {
+      type: 'text',
+      value:
+        'This contract record has been permanently removed from the system.',
+    },
+    {
+      type: 'heading',
+      value: 'Contract Details',
+    },
     {
       type: 'list',
       value: [
@@ -573,26 +627,29 @@ const deleteContractById = asyncHandler(async (req, res) => {
     },
     {
       type: 'text',
-      value: 'Please contact us if you have any questions or concerns.',
+      value:
+        'If you believe this was done in error, please contact the administrator.',
     },
   ];
 
   const isEmailSent = await Promise.all([
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.recruiter.email,
-      subject: 'OptaHire - Contract Deleted',
+      subject: 'OptaHire - Contract Record Deleted',
       html: generateEmailTemplate({
         firstName: contract.recruiter.firstName,
-        subject: 'Contract Deleted',
+        subject: 'Contract Record Deleted',
         content: emailContent,
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.interviewer.email,
-      subject: 'OptaHire - Contract Deleted',
+      subject: 'OptaHire - Contract Record Deleted',
       html: generateEmailTemplate({
         firstName: contract.interviewer.firstName,
-        subject: 'Contract Deleted',
+        subject: 'Contract Record Deleted',
         content: emailContent,
       }),
     }),
@@ -601,7 +658,7 @@ const deleteContractById = asyncHandler(async (req, res) => {
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
-      'Contract deleted successfully but notification email could not be sent.'
+      'Contract deleted successfully but notification email could not be delivered.'
     );
   }
 
@@ -620,13 +677,8 @@ const deleteContractById = asyncHandler(async (req, res) => {
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
- * @param {number} req.params.jobId - Job ID
  *
  * @return {Promise<void>}
- * @throws {Error} If job ID is not provided
- * @throws {Error} If job is not found
- * @throws {Error} If no contracts are found for the job
- * @throws {Error} If contracts retrieval fails
  */
 
 const getContractsByJobId = asyncHandler(async (req, res) => {
@@ -665,17 +717,16 @@ const getContractsByJobId = asyncHandler(async (req, res) => {
       {
         model: ChatRoom,
         as: 'chatRoom',
-        attributes: ['name', 'description', 'status'],
       },
       {
         model: InterviewerRating,
         as: 'interviewerRatings',
-        attributes: ['rating', 'comment', 'createdAt'],
+        attributes: ['rating', 'feedback', 'createdAt'],
       },
       {
         model: Transaction,
         as: 'transactions',
-        attributes: ['amount', 'status', 'createdAt'],
+        attributes: ['amount', 'status', 'transactionDate', 'transactionType'],
       },
     ],
   });

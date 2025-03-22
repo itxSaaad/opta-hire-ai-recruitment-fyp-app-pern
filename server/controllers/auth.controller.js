@@ -19,8 +19,8 @@ const {
  *
  * @param {Object} req - The request object containing email and password.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the email or password is missing, or if the email is invalid, or if the credentials are invalid.
  */
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -38,6 +38,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({
     where: { email },
+    attributes: {
+      exclude: ['password', 'otp', 'otpExpires'],
+    },
   });
 
   if (!user) {
@@ -65,19 +68,7 @@ const loginUser = asyncHandler(async (req, res) => {
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Welcome back! You have successfully signed in.',
-    user: {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      isVerified: user.isVerified,
-      isLinkedinVerified: user.isLinkedinVerified,
-      isAdmin: user.isAdmin,
-      isRecruiter: user.isRecruiter,
-      isInterviewer: user.isInterviewer,
-      isCandidate: user.isCandidate,
-      isTopRated: user.isTopRated,
-    },
+    user,
     accessToken,
     timestamp: new Date().toISOString(),
   });
@@ -91,6 +82,7 @@ const loginUser = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
  */
 
@@ -123,8 +115,8 @@ const logoutUser = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the refresh token is missing or invalid.
  */
 
 const refreshToken = asyncHandler(async (req, res) => {
@@ -173,8 +165,8 @@ const refreshToken = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing user details.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the registration fails.
  */
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -251,7 +243,12 @@ const registerUser = asyncHandler(async (req, res) => {
   user.otp = verficationOTP;
   user.otpExpires = otpExpiresIn;
 
-  await user.save();
+  const updatedUser = await user.save();
+
+  if (!updatedUser) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Unable to update user. Please try again.');
+  }
 
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
@@ -262,9 +259,22 @@ const registerUser = asyncHandler(async (req, res) => {
       subject: 'Welcome to OptaHire - Verify Your Email',
       content: [
         {
+          type: 'heading',
+          value: 'Welcome to OptaHire!',
+        },
+        {
           type: 'text',
           value:
-            "Welcome to OptaHire! We're excited to have you join us. Please verify your email with this code:",
+            "Thank you for creating an account with us. We're excited to have you join our platform for optimized recruitment experiences.",
+        },
+        {
+          type: 'heading',
+          value: 'Verify Your Email',
+        },
+        {
+          type: 'text',
+          value:
+            'To complete your registration and access all features, please verify your email using the code below:',
         },
         {
           type: 'otp',
@@ -272,11 +282,33 @@ const registerUser = asyncHandler(async (req, res) => {
         },
         {
           type: 'text',
-          value: 'This code will expire in 10 minutes.',
+          value:
+            'This verification code will expire in 10 minutes for security purposes.',
+        },
+        {
+          type: 'heading',
+          value: 'Getting Started',
+        },
+        {
+          type: 'list',
+          value: [
+            'Complete your profile for better visibility',
+            'Explore available opportunities',
+            'Connect with recruiters and employers',
+            'Access our AI-powered recruitment tools',
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Verify Your Account',
+            link: `${process.env.CLIENT_URL}/verify-email`,
+          },
         },
         {
           type: 'text',
-          value: "Didn't create an account? Please ignore this email.",
+          value:
+            "If you didn't create an account, please ignore this email or contact our support team.",
         },
       ],
     }),
@@ -314,6 +346,7 @@ const registerUser = asyncHandler(async (req, res) => {
       isInterviewer: user.isInterviewer,
       isCandidate: user.isCandidate,
       isTopRated: user.isTopRated,
+      stripeAccountId: user.stripeAccountId,
     },
     accessToken,
     timestamp: new Date().toISOString(),
@@ -328,8 +361,8 @@ const registerUser = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing email.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the email is missing or invalid.
  */
 
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -381,6 +414,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
       subject: 'OptaHire - Reset Your Password',
       content: [
         {
+          type: 'heading',
+          value: 'Password Reset Request',
+        },
+        {
           type: 'text',
           value:
             'You recently requested to reset your password for your OptaHire account. Use the OTP below to reset it:',
@@ -394,9 +431,29 @@ const forgotPassword = asyncHandler(async (req, res) => {
           value: 'This OTP will expire in 10 minutes for security purposes.',
         },
         {
+          type: 'heading',
+          value: 'Security Reminder',
+        },
+        {
+          type: 'list',
+          value: [
+            'Never share your OTP with anyone',
+            'OptaHire staff will never ask for your OTP',
+            "Always ensure you're on the official OptaHire website before entering credentials",
+            'Consider using a password manager for stronger security',
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Reset Your Password',
+            link: `${process.env.CLIENT_URL}/reset-password`,
+          },
+        },
+        {
           type: 'text',
           value:
-            "If you didn't request a password reset, please ignore this email.",
+            "If you didn't request a password reset, please ignore this email or contact support immediately.",
         },
       ],
     }),
@@ -424,8 +481,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing email, OTP, and new password.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the email, OTP, or password is missing, or if the email is invalid, or if the OTP is invalid.
  */
 
 const resetPassword = asyncHandler(async (req, res) => {
@@ -486,18 +543,38 @@ const resetPassword = asyncHandler(async (req, res) => {
       subject: 'OptaHire - Password Reset Successful',
       content: [
         {
-          type: 'text',
-          value: 'Your password has been successfully reset.',
+          type: 'heading',
+          value: 'Password Reset Successful',
         },
         {
           type: 'text',
           value:
-            'If you did not make this change, please contact support immediately.',
+            'Your password has been successfully reset. You can now log in with your new password.',
+        },
+        {
+          type: 'heading',
+          value: 'Security Recommendations',
+        },
+        {
+          type: 'list',
+          value: [
+            'Use strong, unique passwords for all your accounts',
+            'Change passwords regularly',
+            'Never share your password with anyone',
+            'Enable two-factor authentication when available',
+          ],
         },
         {
           type: 'text',
           value:
-            'For enhanced security, we recommend using strong, unique passwords.',
+            'If you did not request this password change, please contact our support team immediately.',
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Log In to Your Account',
+            link: `${process.env.CLIENT_URL}/login`,
+          },
         },
       ],
     }),
@@ -527,7 +604,6 @@ const resetPassword = asyncHandler(async (req, res) => {
  * @param {Object} res - The response object.
  *
  * @returns {Promise<void>}
- * @throws {Error} If the email is missing or invalid.
  */
 
 const regenerateOTP = asyncHandler(async (req, res) => {
@@ -579,20 +655,41 @@ const regenerateOTP = asyncHandler(async (req, res) => {
       subject: 'OptaHire - Your New Verification Code',
       content: [
         {
+          type: 'heading',
+          value: 'New Verification Code Generated',
+        },
+        {
           type: 'text',
-          value: "You requested a new verification code. Here's your new OTP:",
+          value: 'You requested a new verification code. Here is your new OTP:',
         },
         {
           type: 'otp',
           value: verficationOTP,
         },
         {
-          type: 'text',
-          value: 'This code will expire in 10 minutes.',
+          type: 'heading',
+          value: 'Important Information',
+        },
+        {
+          type: 'list',
+          value: [
+            'This code will expire in 10 minutes',
+            'Enter this code to verify your account',
+            'Keep this code confidential',
+            'Do not share this code with anyone',
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Verify Your Account',
+            link: `${process.env.CLIENT_URL}/verify-email`,
+          },
         },
         {
           type: 'text',
-          value: "If you didn't request this code, please ignore this email.",
+          value:
+            "If you didn't request this code, please ignore this email or contact support immediately.",
         },
       ],
     }),

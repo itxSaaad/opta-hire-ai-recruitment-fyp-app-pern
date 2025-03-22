@@ -33,7 +33,7 @@ router.route('/login').post(limiter, loginUser);
 
 router.route('/logout').post(protectServer, logoutUser);
 
-router.route('/refresh-token').post(limiter, refreshToken);
+router.route('/refresh-token').post(protectServer, limiter, refreshToken);
 
 router.route('/register').post(registerUser);
 

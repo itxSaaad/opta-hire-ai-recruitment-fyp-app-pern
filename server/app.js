@@ -103,11 +103,6 @@ if (NODE_ENV === 'production') {
   app.use(morgan('combined'));
 }
 
-if (NODE_ENV === 'development') {
-  const swaggerDocs = swaggerJsdoc(swaggerOptions);
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-}
-
 app.get('/', (req, res) => {
   res
     .status(StatusCodes.OK)
@@ -121,6 +116,11 @@ app.get('/api/v1/test', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+if (NODE_ENV === 'development') {
+  const swaggerDocs = swaggerJsdoc(swaggerOptions);
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+}
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);

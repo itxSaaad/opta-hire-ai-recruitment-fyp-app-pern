@@ -16,19 +16,10 @@ const { validateString } = require('../utils/validation.utils');
  * @route   POST /api/interviewer-ratings
  * @access  Private (Recruiter, Admin)
  *
- * @param   {number} rating
- * @param   {string} feedback
- * @param   {string} interviewerId
- * @param   {string} recruiterId
- * @param   {string} jobId
- * @param   {string} contractId
+ * @param  req - Request object
+ * @param  res - Response object
  *
- * @returns {Promise<void>} Success message and newly created interviewer rating
- * @throws  {Error} If rating is not provided
- * @throws  {Error} If feedback is not provided
- * @throws  {Error} If interviewerId is not provided
- * @throws  {Error} If recruiterId is not provided
- * @throws  {Error} If jobId is not provided
+ * @returns {Promise<void>}
  */
 
 const createInterviewerRating = asyncHandler(async (req, res) => {
@@ -109,10 +100,15 @@ const createInterviewerRating = asyncHandler(async (req, res) => {
   }
 
   const emailContent = [
-    { type: 'heading', value: 'Interviewer Rating' },
+    { type: 'heading', value: 'New Interviewer Rating Submitted' },
     {
       type: 'text',
-      value: 'A new rating has been submitted for your interview performance.',
+      value:
+        'A new rating has been submitted for your interview performance. We appreciate your contribution to the hiring process.',
+    },
+    {
+      type: 'heading',
+      value: 'Rating Details',
     },
     {
       type: 'list',
@@ -124,9 +120,35 @@ const createInterviewerRating = asyncHandler(async (req, res) => {
         `Contract ID: ${contractId}`,
       ],
     },
+    {
+      type: 'heading',
+      value: 'What You Can Do Next',
+    },
+    {
+      type: 'list',
+      value: [
+        'Review your interview performance metrics',
+        'Apply for more interview opportunities',
+        'Update your availability for future sessions',
+        'Contact the recruiter for additional feedback',
+      ],
+    },
+    {
+      type: 'cta',
+      value: {
+        text: 'View Your Dashboard',
+        link: `${process.env.CLIENT_URL}/interviewer/dashboard`,
+      },
+    },
+    {
+      type: 'text',
+      value:
+        'If you have any questions about this rating, please contact our support team.',
+    },
   ];
 
   const isEmailSent = await sendEmail({
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: interviewer.email,
     subject: 'OptaHire - New Rating Received',
     html: generateEmailTemplate({
@@ -157,17 +179,10 @@ const createInterviewerRating = asyncHandler(async (req, res) => {
  * @route   GET /api/interviewer-ratings
  * @access  Private (Recruiter, Admin)
  *
- * @param   {number} rating
- * @param   {string} interviewerId
- * @param   {string} recruiterId
- * @param   {string} jobId
- * @param   {string} contractId
- * @param   {string} search
- * @param   {number} limit
+ * @param   req - Request object
+ * @param   res - Response object
  *
- * @returns {object} Success message, count of ratings, and interviewer ratings
- * @throws  {Error} If no ratings found
- *
+ * @returns {Promise<void>}
  */
 
 const getAllInterviewerRatings = asyncHandler(async (req, res) => {
@@ -236,11 +251,10 @@ const getAllInterviewerRatings = asyncHandler(async (req, res) => {
  * @route   GET /api/interviewer-ratings/:id
  * @access  Private (Recruiter, Admin, Interviewer)
  *
- * @param   {string} id
+ * @param   {object} req - Request object
+ * @param   {object} res - Response object
  *
- * @returns {object} Success message, interviewer rating, and timestamp
- * @throws  {Error} If rating not found
- * @throws  {Error} If interviewer not found
+ * @returns {Promise<void>}
  */
 
 const getInterviewerRatingById = asyncHandler(async (req, res) => {
@@ -280,8 +294,10 @@ const getInterviewerRatingById = asyncHandler(async (req, res) => {
  * @route   PUT /api/interviewer-ratings/:id
  * @access  Private (Recruiter, Admin)
  *
- * @returns {object} Success message, updated interviewer rating, and timestamp
- * @throws  {Error} If rating not found
+ * @param   {object} req - Request object
+ * @param   {object} res - Response object
+ *
+ * @returns {Promise<void>}
  *
  */
 
@@ -329,7 +345,15 @@ const updateInterviewerRating = asyncHandler(async (req, res) => {
 
   const emailContent = [
     { type: 'heading', value: 'Rating Update Notification' },
-    { type: 'text', value: 'Your interview rating has been updated.' },
+    {
+      type: 'text',
+      value:
+        'Your interview rating has been updated. We value your contribution to our platform and want to keep you informed of any changes to your ratings.',
+    },
+    {
+      type: 'heading',
+      value: 'Updated Rating Details',
+    },
     {
       type: 'list',
       value: [
@@ -340,9 +364,35 @@ const updateInterviewerRating = asyncHandler(async (req, res) => {
         `Contract ID: ${interviewerRating.contractId}`,
       ],
     },
+    {
+      type: 'heading',
+      value: 'What You Can Do Now',
+    },
+    {
+      type: 'list',
+      value: [
+        'Review your updated interview performance metrics',
+        'Apply for more interview opportunities',
+        'Update your availability for future sessions',
+        'Contact support if you have questions about this rating',
+      ],
+    },
+    {
+      type: 'cta',
+      value: {
+        text: 'View Your Dashboard',
+        link: `${process.env.CLIENT_URL}/interviewer/dashboard`,
+      },
+    },
+    {
+      type: 'text',
+      value:
+        'If you believe this rating update was made in error, please contact our support team.',
+    },
   ];
 
   const isEmailSent = await sendEmail({
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: interviewerRating.interviewer.email,
     subject: 'OptaHire - Rating Update',
     html: generateEmailTemplate({
@@ -405,7 +455,15 @@ const deleteInterviewerRating = asyncHandler(async (req, res) => {
 
   const emailContent = [
     { type: 'heading', value: 'Rating Deletion Notification' },
-    { type: 'text', value: 'Your interview rating has been deleted.' },
+    {
+      type: 'text',
+      value:
+        'We wanted to inform you that an interview rating associated with your account has been removed from our system.',
+    },
+    {
+      type: 'heading',
+      value: 'Deleted Rating Details',
+    },
     {
       type: 'list',
       value: [
@@ -416,11 +474,37 @@ const deleteInterviewerRating = asyncHandler(async (req, res) => {
         `Contract ID: ${interviewerRating.contractId}`,
       ],
     },
+    {
+      type: 'heading',
+      value: 'What You Can Do Now',
+    },
+    {
+      type: 'list',
+      value: [
+        'Review your current interview performance metrics',
+        'Apply for more interview opportunities',
+        'Update your availability for future sessions',
+        'Contact support if you have questions about this deletion',
+      ],
+    },
+    {
+      type: 'cta',
+      value: {
+        text: 'View Your Dashboard',
+        link: `${process.env.CLIENT_URL}/interviewer/dashboard`,
+      },
+    },
+    {
+      type: 'text',
+      value:
+        'If you believe this rating was removed in error, please contact our support team for assistance.',
+    },
   ];
 
   const isEmailSent = await sendEmail({
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: interviewerRating.interviewer.email,
-    subject: 'OptaHire - Rating Deletion',
+    subject: 'OptaHire - Rating Deletion Notification',
     html: generateEmailTemplate({
       firstName: interviewerRating.interviewer.firstName,
       subject: 'Rating Deletion Notification',

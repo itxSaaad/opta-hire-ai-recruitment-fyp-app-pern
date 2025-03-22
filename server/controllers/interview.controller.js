@@ -20,23 +20,7 @@ const { generateRoomId, generateRemarks } = require('../utils/interview.utils');
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  *
- * @body {String} roomId
- * @body {Date} scheduledTime
- * @body {Number} interviewerId
- * @body {Number} candidateId
- * @body {Number} jobId
- * @body {Number} applicationId
- * @body {String} remarks
- *
- * @returns {Object} Interview
- * @throws {Error} If required fields are missing
- * @throws {Error} If scheduled time is in the past
- * @throws {Error} If interviewer and candidate are the same
- * @throws {Error} If interviewer or candidate not found
- * @throws {Error} If job not found
- * @throws {Error} If chat room not found
- * @throws {Error} If interview already scheduled at this time
- * @throws {Error} If interview could not be scheduled
+ * @returns {Promise<void>}
  */
 
 const createInterview = asyncHandler(async (req, res) => {
@@ -142,10 +126,17 @@ const createInterview = asyncHandler(async (req, res) => {
 
   const emailContent = [
     {
+      type: 'heading',
+      value: 'Interview Scheduled!',
+    },
+    {
       type: 'text',
       value: `An interview has been scheduled between ${interviewer.firstName} ${interviewer.lastName} and ${candidate.firstName} ${candidate.lastName} for the position of ${job.title}.`,
     },
-    { type: 'heading', value: 'Interview Details' },
+    {
+      type: 'heading',
+      value: 'Interview Details',
+    },
     {
       type: 'list',
       value: [
@@ -163,6 +154,13 @@ const createInterview = asyncHandler(async (req, res) => {
     {
       type: 'text',
       value: `Please join the interview room at least 5 minutes before the scheduled time. Good luck!`,
+    },
+    {
+      type: 'cta',
+      value: {
+        text: 'Join Interview Room',
+        link: `${process.env.CLIENT_URL}/interview/${roomId}`,
+      },
     },
   ];
 
@@ -220,9 +218,7 @@ const createInterview = asyncHandler(async (req, res) => {
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  *
- * @returns {Object} Interviews
- * @throws {Error} If no interviews found
- * @throws {Error} If not authorized to view interviews
+ * @returns {Promise<void>}
  */
 
 const getAllInterviews = asyncHandler(async (req, res) => {
@@ -320,9 +316,7 @@ const getAllInterviews = asyncHandler(async (req, res) => {
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  *
- * @returns {Object} Interview
- * @throws {Error} If interview not found
- * @throws {Error} If not authorized to view interview
+ * @returns {Promise<void>}
  */
 
 const getInterviewById = asyncHandler(async (req, res) => {
@@ -367,12 +361,8 @@ const getInterviewById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - Request object
  * @param {Object} res - Response object
- * @param {String} req.params.jobId - Job ID
  *
- * @returns {Object} Interviews
- * @throws {Error} If job not found
- * @throws {Error} If no interviews found for this job
- * @throws {Error} If not authorized to view interviews
+ * @returns {Promise<void>}
  */
 
 const getInterviewsByJobId = asyncHandler(async (req, res) => {
@@ -457,17 +447,7 @@ const getInterviewsByJobId = asyncHandler(async (req, res) => {
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  *
- * @body {Date} scheduledTime
- * @body {String} summary
- * @body {String} status
- * @body {Number} rating
- *
- * @returns {Object} Interview
- * @throws {Error} If interview not found
- * @throws {Error} If scheduled time is in the past
- * @throws {Error} If room ID is required to complete an interview
- * @throws {Error} If interview could not be updated
- * @throws {Error} If email could not be sent
+ * @returns {Promise<void>}
  */
 
 const updateInterview = asyncHandler(async (req, res) => {
@@ -546,6 +526,10 @@ const updateInterview = asyncHandler(async (req, res) => {
 
   const emailContent = [
     {
+      type: 'heading',
+      value: 'Interview Update Notification',
+    },
+    {
       type: 'text',
       value: `The interview ${
         status
@@ -553,7 +537,10 @@ const updateInterview = asyncHandler(async (req, res) => {
           : 'details have been modified'
       }.`,
     },
-    { type: 'heading', value: 'Updated Interview Details' },
+    {
+      type: 'heading',
+      value: 'Updated Interview Details',
+    },
     {
       type: 'list',
       value: [
@@ -568,10 +555,18 @@ const updateInterview = asyncHandler(async (req, res) => {
         `Interview Status: ${updatedInterview.status}`,
       ],
     },
+    {
+      type: 'cta',
+      value: {
+        text: 'View Interview Details',
+        link: `${process.env.CLIENT_URL}/interviews/${updatedInterview.id}`,
+      },
+    },
   ];
 
   const isEmailSent = await Promise.all([
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: interviewer.email,
       subject: 'OptaHire - Interview Updated',
       html: generateEmailTemplate({
@@ -581,6 +576,7 @@ const updateInterview = asyncHandler(async (req, res) => {
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Interview Updated',
       html: generateEmailTemplate({
@@ -590,6 +586,7 @@ const updateInterview = asyncHandler(async (req, res) => {
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: candidate.email,
       subject: 'OptaHire - Interview Updated',
       html: generateEmailTemplate({
@@ -624,10 +621,7 @@ const updateInterview = asyncHandler(async (req, res) => {
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  *
- * @returns {Object} Message
- * @throws {Error} If interview not found
- * @throws {Error} If interview could not be deleted
- * @throws {Error} If email could not be sent
+ * @returns {Promise<void>}
  */
 
 const deleteInterview = asyncHandler(async (req, res) => {
@@ -652,10 +646,18 @@ const deleteInterview = asyncHandler(async (req, res) => {
 
   const emailContent = [
     {
-      type: 'text',
-      value: `This interview record has been permanently removed from the system.`,
+      type: 'heading',
+      value: 'Interview Record Deleted',
     },
-    { type: 'heading', value: 'Interview Details' },
+    {
+      type: 'text',
+      value:
+        'This interview record has been permanently removed from the system.',
+    },
+    {
+      type: 'heading',
+      value: 'Interview Details',
+    },
     {
       type: 'list',
       value: [
@@ -668,10 +670,16 @@ const deleteInterview = asyncHandler(async (req, res) => {
         `Interview Status: ${interview.status}`,
       ],
     },
+    {
+      type: 'text',
+      value:
+        'If you believe this was done in error, please contact the administrator.',
+    },
   ];
 
   const isEmailSent = await Promise.all([
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: interviewer.email,
       subject: 'OptaHire - Interview Record Deleted',
       html: generateEmailTemplate({
@@ -681,6 +689,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Interview Record Deleted',
       html: generateEmailTemplate({
@@ -690,6 +699,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: candidate.email,
       subject: 'OptaHire - Interview Record Deleted',
       html: generateEmailTemplate({

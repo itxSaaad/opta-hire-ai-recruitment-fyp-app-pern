@@ -14,8 +14,8 @@ const { validateString, validateArray } = require('../utils/validation.utils');
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const createResume = asyncHandler(async (req, res) => {
@@ -100,8 +100,8 @@ const createResume = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const getAllResumes = asyncHandler(async (req, res) => {
@@ -165,8 +165,8 @@ const getAllResumes = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const getResumeForUser = asyncHandler(async (req, res) => {
@@ -197,8 +197,8 @@ const getResumeForUser = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const updateResume = asyncHandler(async (req, res) => {
@@ -257,7 +257,12 @@ const updateResume = asyncHandler(async (req, res) => {
     throw new Error('No resume found. Please create a resume first');
   }
 
-  await profile.update(validatedData);
+  const updatedProfile = await profile.update(validatedData);
+
+  if (!updatedProfile) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Failed to update resume. Please try again later.');
+  }
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -275,8 +280,8 @@ const updateResume = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const deleteResume = asyncHandler(async (req, res) => {
@@ -311,8 +316,8 @@ const deleteResume = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const updateResumeById = asyncHandler(async (req, res) => {
@@ -378,38 +383,59 @@ const updateResumeById = asyncHandler(async (req, res) => {
     throw new Error('Unable to update resume. Please try again.');
   }
 
-  const emailContent = [
-    {
-      type: 'text',
-      value: 'Your resume has been updated successfully.',
-    },
-    { type: 'heading', value: 'Resume Details' },
-    {
-      type: 'list',
-      value: [
-        `Title: ${updatedProfile.title}`,
-        `Industry: ${updatedProfile.industry}`,
-        `Headline: ${updatedProfile.headline}`,
-        `Skills: ${updatedProfile.skills.join(', ')}`,
-        `Experience: ${updatedProfile.experience}`,
-        `Education: ${updatedProfile.education}`,
-      ],
-    },
-  ];
-
   const isEmailSent = await sendEmail({
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: updatedProfile.user.email,
     subject: 'OptaHire - Resume Updated',
     html: generateEmailTemplate({
       firstName: updatedProfile.user.firstName,
       subject: 'Resume Updated',
-      content: emailContent,
+      content: [
+        {
+          type: 'heading',
+          value: 'Resume Update Confirmation',
+        },
+        {
+          type: 'text',
+          value:
+            'Your resume has been updated successfully in our system. These changes are now visible to potential employers.',
+        },
+        {
+          type: 'heading',
+          value: 'Updated Resume Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Title: ${updatedProfile.title}`,
+            `Industry: ${updatedProfile.industry}`,
+            `Headline: ${updatedProfile.headline}`,
+            `Skills: ${updatedProfile.skills.join(', ')}`,
+            `Experience: ${updatedProfile.experience}`,
+            `Education: ${updatedProfile.education}`,
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'View Your Profile',
+            link: `${process.env.CLIENT_URL}/profile`,
+          },
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not authorize this update or notice any errors, please contact our support team immediately.',
+        },
+      ],
     }),
   });
 
   if (!isEmailSent) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Resume updated but notification email could not be sent.');
+    throw new Error(
+      'Resume updated but notification email could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({
@@ -428,8 +454,8 @@ const updateResumeById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const deleteResumeById = asyncHandler(async (req, res) => {
@@ -457,38 +483,54 @@ const deleteResumeById = asyncHandler(async (req, res) => {
     throw new Error('Failed to delete resume. Please try again later.');
   }
 
-  const emailContent = [
-    {
-      type: 'text',
-      value: 'Your resume has been removed from our system.',
-    },
-    { type: 'heading', value: 'Resume Details' },
-    {
-      type: 'list',
-      value: [
-        `Title: ${profile.title}`,
-        `Industry: ${profile.industry}`,
-        `Headline: ${profile.headline}`,
-        `Skills: ${profile.skills.join(', ')}`,
-        `Experience: ${profile.experience}`,
-        `Education: ${profile.education}`,
-      ],
-    },
-  ];
-
   const isEmailSent = await sendEmail({
+    from: process.env.NODEMAILER_SMTP_EMAIL,
     to: profile.user.email,
     subject: 'OptaHire - Resume Deleted',
     html: generateEmailTemplate({
       firstName: profile.user.firstName,
       subject: 'Resume Deleted',
-      content: emailContent,
+      content: [
+        {
+          type: 'heading',
+          value: 'Resume Deletion Notification',
+        },
+        {
+          type: 'text',
+          value:
+            'Your resume has been removed from our system by an administrator.',
+        },
+        {
+          type: 'heading',
+          value: 'Deleted Resume Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Title: ${profile.title}`,
+            `Industry: ${profile.industry || 'Not specified'}`,
+            `Headline: ${profile.headline || 'Not specified'}`,
+            `Skills: ${
+              profile.skills ? profile.skills.join(', ') : 'Not specified'
+            }`,
+            `Experience: ${profile.experience ? 'Included' : 'Not specified'}`,
+            `Education: ${profile.education ? 'Included' : 'Not specified'}`,
+          ],
+        },
+        {
+          type: 'text',
+          value:
+            'If you believe this was done in error, please contact our support team for assistance.',
+        },
+      ],
     }),
   });
 
   if (!isEmailSent) {
     res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Resume deleted but notification email could not be sent.');
+    throw new Error(
+      'Resume deleted but notification email could not be delivered.'
+    );
   }
 
   res.status(StatusCodes.OK).json({

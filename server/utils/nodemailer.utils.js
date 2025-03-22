@@ -273,6 +273,8 @@ const generateEmailTemplate = ({ firstName, subject, content = [] }) => {
         <main>
           <p class="content">Hello ${firstName},</p>
           ${renderContent(content)}
+          <p class="content">Thank you for choosing OptaHire. If you have any questions or need further assistance, please don't hesitate to contact us at <a href="mailto:optahire@gmail.com" style="color: var(--primary); text-decoration: none">optahire@gmail.com</a>.</p>
+          <p class="content">Best Regards,<br />The OptaHire Team</p>
         </main>
         <footer class="footer" role="contentinfo">
           <p>

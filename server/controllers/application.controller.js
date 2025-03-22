@@ -17,8 +17,8 @@ const {
  *
  * @param {Object} req - The request object containing the job ID.
  * @param {Object} res - The response object.
- * @returns {object} - A success message and the created application
- * @throws {Error} - If the candidate or job is not found, if the candidate has already applied for the job, or if the email could not be sent
+ *
+ * @returns {Promise<void>}
  */
 
 const createApplication = asyncHandler(async (req, res) => {
@@ -64,39 +64,54 @@ const createApplication = asyncHandler(async (req, res) => {
     applicationDate: new Date(),
   });
 
-  const emailContent = [
-    {
-      type: 'text',
-      value: `A new application has been received for the position of <strong>${job.title}</strong>.`,
-    },
-    { type: 'heading', value: 'Application Details' },
-    {
-      type: 'list',
-      value: [
-        `Candidate: ${candidate.firstName} ${candidate.lastName}`,
-        `Email: ${candidate.email}`,
-        `Application Date: ${application.applicationDate}`,
-        `Status: ${application.status}`,
-      ],
-    },
-    {
-      type: 'text',
-      value: 'You can view the application by logging into your account.',
-    },
-    { type: 'text', value: 'Thank you for using OptaHire.' },
-  ];
-
-  const emailHtml = generateEmailTemplate({
-    firstName: job.recruiter.firstName,
-    subject: 'OptaHire - New Application Received',
-    content: emailContent,
-  });
-
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - New Application Received',
-    html: emailHtml,
+    html: generateEmailTemplate({
+      firstName: job.recruiter.firstName,
+      subject: 'OptaHire - New Application Received',
+      content: [
+        {
+          type: 'heading',
+          value: 'New Application Received!',
+        },
+        {
+          type: 'text',
+          value: `A new application has been received for the position of <strong>${job.title}</strong> at ${job.company}.`,
+        },
+        {
+          type: 'heading',
+          value: 'Application Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Candidate: ${candidate.firstName} ${candidate.lastName}`,
+            `Email: ${candidate.email}`,
+            `Application Date: ${new Date(
+              application.applicationDate
+            ).toLocaleDateString()}`,
+            `Status: ${
+              application.status.charAt(0).toUpperCase() +
+              application.status.slice(1)
+            }`,
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Review Application',
+            link: `${process.env.CLIENT_URL}/applications/${application.id}`,
+          },
+        },
+        {
+          type: 'text',
+          value:
+            'If you have any questions or need assistance, our support team is always ready to help.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -122,8 +137,8 @@ const createApplication = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
- * @returns {object} - A success message and the retrieved applications
- * @throws {Error} - If no applications are found
+ *
+ * @returns {Promise<void>}
  */
 
 const getAllApplications = asyncHandler(async (req, res) => {
@@ -201,6 +216,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing the application ID.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
  */
 
@@ -243,8 +259,8 @@ const getApplicationById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing the job ID.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} - If the job is not found or if the user is not authorized to view applications for the job
  */
 
 const getApplicationsByJobId = asyncHandler(async (req, res) => {
@@ -295,6 +311,7 @@ const getApplicationsByJobId = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing the application ID.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
  *
  */
@@ -337,34 +354,67 @@ const updateApplication = asyncHandler(async (req, res) => {
 
   const emailContent = [
     {
-      type: 'text',
-      value: `Your application for the job <strong>${application.job.title}</strong> has been updated.`,
+      type: 'heading',
+      value: 'Application Status Update',
     },
-    { type: 'heading', value: 'New Application Status' },
     {
-      type: 'otp',
-      value: status.toUpperCase(),
+      type: 'text',
+      value: `The status of your application for the position of <strong>${application.job.title}</strong> has been updated to <strong>${application.status}</strong>.`,
+    },
+    {
+      type: 'heading',
+      value: 'Application Details',
+    },
+    {
+      type: 'list',
+      value: [
+        `Job Title: ${application.job.title}`,
+        `Job Location: ${application.job.location}`,
+        `Application Date: ${new Date(
+          application.applicationDate
+        ).toLocaleDateString()}`,
+        `Current Status: ${
+          application.status.charAt(0).toUpperCase() +
+          application.status.slice(1)
+        }`,
+      ],
+    },
+    {
+      type: 'cta',
+      value: {
+        text: 'View Application',
+        link: `${process.env.CLIENT_URL}/applications/${application.id}`,
+      },
     },
     {
       type: 'text',
       value:
-        'You can check the status of your application by logging into your account.',
+        'If you have any questions or need assistance, our support team is always ready to help.',
     },
-    { type: 'text', value: 'Thank you for using OptaHire.' },
   ];
 
-  const emailHtml = generateEmailTemplate({
-    firstName: application.candidate.firstName,
-    subject: 'OptaHire - Application Status Update',
-    content: emailContent,
-  });
-
-  const isEmailSent = await sendEmail({
-    from: process.env.NODEMAILER_SMTP_EMAIL,
-    to: application.candidate.email,
-    subject: 'OptaHire - Application Status Update',
-    html: emailHtml,
-  });
+  const isEmailSent = await Promise.all([
+    sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
+      to: application.candidate.email,
+      subject: 'OptaHire - Application Status Update',
+      html: generateEmailTemplate({
+        firstName: application.candidate.firstName,
+        subject: 'Application Status Update',
+        content: emailContent,
+      }),
+    }),
+    sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
+      to: application.job.recruiter.email,
+      subject: 'OptaHire - Application Status Update',
+      html: generateEmailTemplate({
+        firstName: application.job.recruiter.firstName,
+        subject: 'Application Status Update',
+        content: emailContent,
+      }),
+    }),
+  ]);
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -389,8 +439,8 @@ const updateApplication = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing the application ID.
  * @param {Object} res - The response object.
- * @returns {Promise<void>}
  *
+ * @returns {Promise<void>}
  */
 
 const deleteApplication = asyncHandler(async (req, res) => {
@@ -414,10 +464,17 @@ const deleteApplication = asyncHandler(async (req, res) => {
 
   const emailContent = [
     {
+      type: 'heading',
+      value: 'Application Record Deleted',
+    },
+    {
       type: 'text',
       value: `This application record has been permanently removed from the system.`,
     },
-    { type: 'heading', value: 'Application Details' },
+    {
+      type: 'heading',
+      value: 'Application Details',
+    },
     {
       type: 'list',
       value: [
@@ -434,6 +491,7 @@ const deleteApplication = asyncHandler(async (req, res) => {
 
   const isEmailSent = await Promise.all([
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Application Record Deleted',
       html: generateEmailTemplate({
@@ -443,6 +501,7 @@ const deleteApplication = asyncHandler(async (req, res) => {
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: candidate.email,
       subject: 'OptaHire - Application Record Deleted',
       html: generateEmailTemplate({

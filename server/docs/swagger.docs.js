@@ -98,6 +98,10 @@
  *           type: 'boolean'
  *           description: 'Indicates if the user is marked as top rated.'
  *           example: false
+ *         stripeAccountId:
+ *          type: 'string'  
+ *          description: 'Stripe account ID for processing payments.'    
+ *          example: 'acct_1J2k3l4m5n6o7p8q9'
  *         createdAt:
  *           type: 'string'
  *           format: 'date-time'
@@ -594,7 +598,7 @@
  *           description: 'Timestamp when the rating was last updated.'
  *     Transaction:
  *       type: 'object'
- *       required: ['amount', 'status', 'transactionDate', 'contractId']
+ *       required: ['amount', 'status', 'transactionDate', 'transactionType', 'contractId']
  *       properties:
  *         id:
  *           type: 'string'
@@ -603,7 +607,7 @@
  *           example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
  *         amount:
  *           type: 'number'
- *           format: 'float'
+ *           format: 'decimal'
  *           description: 'Amount of the transaction.'
  *           example: 250.0
  *           minimum: 0
@@ -617,6 +621,11 @@
  *           format: 'date-time'
  *           description: 'Date when the transaction occurred.'
  *           example: '2023-05-16T10:30:00Z'
+ *         transactionType:
+ *           type: 'string'
+ *           description: 'Type of the transaction.'
+ *           example: 'payment'
+ *           enum: ['payment', 'refund', 'payout']
  *         contractId:
  *           type: 'string'
  *           format: 'uuid'
@@ -720,6 +729,8 @@
  *       summary: Refreshes the access token.
  *       description: Validates the refresh token from cookies and issues a new access token.
  *       tags: [Auth]
+ *       security:
+ *        - bearerAuth: []  
  *       responses:
  *         200:
  *           description: Session refreshed successfully.
@@ -2248,4 +2259,1752 @@
  *           description: Job or applications not found.
  *         500:
  *           description: Internal server error.
+ * 
+ *   /api/v1/chat-rooms:
+ *     post:
+ *       summary: Create a new chat room
+ *       description: Creates a new chat room between a recruiter and an interviewer for a specific job.
+ *       tags: [Chat Rooms]
+ *       security:
+ *         - bearerAuth: []
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - interviewerId
+ *                 - jobId
+ *               properties:
+ *                 interviewerId:
+ *                   type: string
+ *                   format: uuid
+ *                   description: ID of the interviewer for the chat room.
+ *                   example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *                 jobId:
+ *                   type: string
+ *                   format: uuid
+ *                   description: ID of the job related to the chat room.
+ *                   example: "f490f1ee-8c54-4b01-90e6-d701748f0853"
+ *       responses:
+ *         201:
+ *           description: Chat room created successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Chat room created successfully"
+ *                   chatRoom:
+ *                     $ref: '#/components/schemas/ChatRoom'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         400:
+ *           description: Missing required fields
+ *         404:
+ *           description: Job or interviewer not found
+ *         500:
+ *           description: Internal server error
+ *
+ *     get:
+ *       summary: Get all chat rooms
+ *       description: Retrieves all chat rooms based on user role and optional filters.
+ *       tags: [Chat Rooms]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: query
+ *           name: role
+ *           schema:
+ *             type: string
+ *             enum: [recruiter, interviewer]
+ *           description: Filter by user role
+ *         - in: query
+ *           name: jobId
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: Filter by job ID
+ *         - in: query
+ *           name: interviewerId
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: Filter by interviewer ID
+ *         - in: query
+ *           name: recruiterId
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: Filter by recruiter ID
+ *       responses:
+ *         200:
+ *           description: Chat rooms retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Chat rooms fetched successfully"
+ *                   count:
+ *                     type: integer
+ *                     example: 5
+ *                   chatRooms:
+ *                     type: array
+ *                     items:
+ *                       allOf:
+ *                         - $ref: '#/components/schemas/ChatRoom'
+ *                         - type: object
+ *                           properties:
+ *                             messageCount:
+ *                               type: integer
+ *                               description: Count of messages in the chat room
+ *                               example: 24
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         404:
+ *           description: No chat rooms found matching the criteria
+ *         500:
+ *           description: Internal server error
+ * 
+ *   /api/v1/chat-rooms/{id}:
+ *     get:
+ *       summary: Get a chat room by ID
+ *       description: Retrieves the details of a specific chat room by its ID.
+ *       tags: [Chat Rooms]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: The chat room ID
+ *       responses:
+ *         200:
+ *           description: Chat room details retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Chat room details loaded successfully"
+ *                   chatRoom:
+ *                     $ref: '#/components/schemas/ChatRoom'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         400:
+ *           description: Invalid chat room ID
+ *         404:
+ *           description: Chat room not found
+ *         500:
+ *           description: Internal server error
+ *
+ *     delete:
+ *       summary: Delete a chat room
+ *       description: Permanently deletes a chat room and notifies associated users by email.
+ *       tags: [Chat Rooms]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: The chat room ID to delete
+ *       responses:
+ *         200:
+ *           description: Chat room deleted successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Chat room has been successfully deleted"
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         400:
+ *           description: Chat room deletion failed
+ *         404:
+ *           description: Chat room not found
+ *         500:
+ *           description: Internal server error
+ *
+ *   /api/v1/chat-rooms/{id}/messages:
+ *     get:
+ *       summary: Get all messages from a chat room
+ *       description: Retrieves all messages from a specific chat room in chronological order.
+ *       tags: [Chat Rooms]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: The chat room ID
+ *       responses:
+ *         200:
+ *           description: Messages retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Chat messages loaded successfully"
+ *                   count:
+ *                     type: integer
+ *                     example: 15
+ *                   messages:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/Message'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         400:
+ *           description: Invalid chat room ID
+ *         404:
+ *           description: Chat room not found or no messages available
+ *         500:
+ *           description: Internal server error
+ *
+ *   /api/v1/contracts:
+ *     post:
+ *       summary: Create a new contract
+ *       description: Creates a contract between a recruiter and interviewer for a job. Only recruiters and admins can create contracts.
+ *       tags: [Contracts]
+ *       security:
+ *         - bearerAuth: []
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - jobId
+ *                 - agreedPrice
+ *                 - recruiterId
+ *                 - interviewerId
+ *                 - roomId
+ *               properties:
+ *                 jobId:
+ *                   type: string
+ *                   format: uuid
+ *                   description: ID of the job for the contract
+ *                   example: "f490f1ee-8c54-4b01-90e6-d701748f0853"
+ *                 agreedPrice:
+ *                   type: number
+ *                   format: float
+ *                   description: Agreed price for the contract
+ *                   example: 250.0
+ *                 recruiterId:
+ *                   type: string
+ *                   format: uuid
+ *                   description: ID of the recruiter
+ *                   example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *                 interviewerId:
+ *                   type: string
+ *                   format: uuid
+ *                   description: ID of the interviewer
+ *                   example: "e380f1ee-7c54-4b01-90e6-d701748f0852"
+ *                 roomId:
+ *                   type: string
+ *                   format: uuid
+ *                   description: ID of the chat room
+ *                   example: "g590f1ee-9c54-4b01-90e6-d701748f0854"
+ *       responses:
+ *         201:
+ *           description: Contract created successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Contract created successfully"
+ *                   contract:
+ *                     $ref: '#/components/schemas/Contract'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         400:
+ *           description: Missing required fields or invalid data
+ *         404:
+ *           description: Job, recruiter, interviewer, or chat room not found
+ *         409:
+ *           description: Contract already exists
+ *         500:
+ *           description: Internal server error
+ *
+ *     get:
+ *       summary: Get all contracts
+ *       description: Retrieves all contracts with optional filtering. Available to admin users.
+ *       tags: [Contracts]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: query
+ *           name: search
+ *           schema:
+ *             type: string
+ *           description: Search term for job title or description
+ *         - in: query
+ *           name: status
+ *           schema:
+ *             type: string
+ *             enum: [pending, active, completed, cancelled]
+ *           description: Filter by contract status
+ *         - in: query
+ *           name: paymentStatus
+ *           schema:
+ *             type: string
+ *             enum: [pending, paid, failed, refunded]
+ *           description: Filter by payment status
+ *         - in: query
+ *           name: recruiterId
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: Filter by recruiter ID
+ *         - in: query
+ *           name: interviewerId
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: Filter by interviewer ID
+ *         - in: query
+ *           name: jobId
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: Filter by job ID
+ *         - in: query
+ *           name: limit
+ *           schema:
+ *             type: integer
+ *           description: Limit the number of contracts returned
+ *       responses:
+ *         200:
+ *           description: Contracts retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Successfully retrieved 5 contracts"
+ *                   count:
+ *                     type: integer
+ *                     example: 5
+ *                   contracts:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/Contract'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         404:
+ *           description: No contracts found
+ *         500:
+ *           description: Internal server error
+ *
+ *   /api/v1/contracts/{id}:
+ *     get:
+ *       summary: Get a contract by ID
+ *       description: Retrieves details of a specific contract by ID. Available to involved recruiters, interviewers, and admins.
+ *       tags: [Contracts]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: The contract ID
+ *       responses:
+ *         200:
+ *           description: Contract details retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Contract found"
+ *                   contract:
+ *                     $ref: '#/components/schemas/Contract'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         404:
+ *           description: Contract not found
+ *         500:
+ *           description: Internal server error
+ *
+ *     put:
+ *       summary: Update a contract by ID
+ *       description: Updates an existing contract. Available to involved recruiters, interviewers, and admins.
+ *       tags: [Contracts]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: The contract ID
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 agreedPrice:
+ *                   type: number
+ *                   format: float
+ *                   description: Updated agreed price
+ *                   example: 300.0
+ *                 status:
+ *                   type: string
+ *                   enum: [pending, active, completed, cancelled]
+ *                   description: Updated contract status
+ *                   example: "active"
+ *                 paymentStatus:
+ *                   type: string
+ *                   enum: [pending, paid, failed, refunded]
+ *                   description: Updated payment status
+ *                   example: "paid"
+ *       responses:
+ *         200:
+ *           description: Contract updated successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Contract updated successfully!"
+ *                   contract:
+ *                     $ref: '#/components/schemas/Contract'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         400:
+ *           description: Invalid data or missing fields
+ *         404:
+ *           description: Contract not found
+ *         500:
+ *           description: Internal server error
+ *
+ *     delete:
+ *       summary: Delete a contract by ID
+ *       description: Permanently deletes a contract. Available to admin users only.
+ *       tags: [Contracts]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: id
+ *           required: true
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: The contract ID
+ *       responses:
+ *         200:
+ *           description: Contract deleted successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Contract deleted successfully"
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         404:
+ *           description: Contract not found
+ *         500:
+ *           description: Internal server error
+ *
+ *   /api/v1/contracts/job/{jobId}:
+ *     get:
+ *       summary: Get contracts by job ID
+ *       description: Retrieves all contracts related to a specific job. Available to involved recruiters, interviewers, and admins.
+ *       tags: [Contracts]
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - in: path
+ *           name: jobId
+ *           required: true
+ *           schema:
+ *             type: string
+ *             format: uuid
+ *           description: The job ID
+ *       responses:
+ *         200:
+ *           description: Contracts retrieved successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   success:
+ *                     type: boolean
+ *                     example: true
+ *                   message:
+ *                     type: string
+ *                     example: "Successfully retrieved 3 contracts for this job"
+ *                   count:
+ *                     type: integer
+ *                     example: 3
+ *                   contracts:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/Contract'
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *         404:
+ *           description: Job not found or no contracts for this job
+ *         500:
+ *           description: Internal server error
+  * /api/v1/transactions:
+ *   post:
+ *     summary: Create a new transaction
+ *     description: Creates a new transaction for a contract. Only recruiters and interviewers can create transactions.
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - contractId
+ *               - amount
+ *               - status
+ *             properties:
+ *               contractId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the contract related to this transaction.
+ *                 example: "g590f1ee-9c54-4b01-90e6-d701748f0854"
+ *               amount:
+ *                 type: number
+ *                 format: float
+ *                 description: Amount of the transaction.
+ *                 example: 250.0
+ *               status:
+ *                 type: string
+ *                 enum: [pending, completed, failed, cancelled]
+ *                 description: Status of the transaction.
+ *                 example: "completed"
+ *     responses:
+ *       201:
+ *         description: Transaction created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transaction processed successfully"
+ *                 transaction:
+ *                   $ref: '#/components/schemas/Transaction'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid input data.
+ *       404:
+ *         description: Contract not found.
+ *       500:
+ *         description: Internal server error.
+ *
+ *   get:
+ *     summary: Get all transactions
+ *     description: Retrieves all transactions with optional filtering. Accessible to admins, recruiters, and interviewers.
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, completed, failed, cancelled]
+ *         description: Filter transactions by status.
+ *       - in: query
+ *         name: contractId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter transactions by contract ID.
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter transactions after this date.
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter transactions before this date.
+ *       - in: query
+ *         name: minAmount
+ *         schema:
+ *           type: number
+ *         description: Filter transactions with amount greater than or equal to this value.
+ *       - in: query
+ *         name: maxAmount
+ *         schema:
+ *           type: number
+ *         description: Filter transactions with amount less than or equal to this value.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Limit the number of transactions returned.
+ *     responses:
+ *       200:
+ *         description: Transactions retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "5 transactions retrieved successfully"
+ *                 count:
+ *                   type: integer
+ *                   example: 5
+ *                 transactions:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Transaction'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: No transactions found.
+ *       500:
+ *         description: Internal server error.
+ *
+ * /api/v1/transactions/{id}:
+ *   get:
+ *     summary: Get a transaction by ID
+ *     description: Retrieves details of a specific transaction by its ID.
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The transaction ID.
+ *     responses:
+ *       200:
+ *         description: Transaction details retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transaction details retrieved successfully"
+ *                 transaction:
+ *                   $ref: '#/components/schemas/Transaction'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Transaction not found.
+ *       500:
+ *         description: Internal server error.
+ *
+ *   put:
+ *     summary: Update a transaction
+ *     description: Updates a transaction by ID. Only accessible to admin users.
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The transaction ID.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *                 format: float
+ *                 description: Updated amount for the transaction.
+ *                 example: 300.0
+ *               status:
+ *                 type: string
+ *                 enum: [pending, completed, failed, cancelled]
+ *                 description: Updated status for the transaction.
+ *                 example: "completed"
+ *     responses:
+ *       200:
+ *         description: Transaction updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transaction updated successfully"
+ *                 updatedTransaction:
+ *                   $ref: '#/components/schemas/Transaction'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid input data.
+ *       404:
+ *         description: Transaction not found.
+ *       500:
+ *         description: Internal server error.
+ *
+ *   delete:
+ *     summary: Delete a transaction
+ *     description: Permanently deletes a transaction. Only accessible to admin users.
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The transaction ID.
+ *     responses:
+ *       200:
+ *         description: Transaction deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Transaction deleted successfully"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Transaction not found.
+ *       500:
+ *         description: Internal server error.
+ *
+ * /api/v1/transactions/contract/{contractId}:
+ *   get:
+ *     summary: Get transactions by contract
+ *     description: Retrieves all transactions related to a specific contract.
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contractId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The contract ID.
+ *     responses:
+ *       200:
+ *         description: Transactions retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "3 transactions retrieved successfully"
+ *                 count:
+ *                   type: integer
+ *                   example: 3
+ *                 transactions:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Transaction'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Contract not found or no transactions available.
+ *       500:
+ *         description: Internal server error.
+ * 
+ * /api/v1/interviews:
+ *   post:
+ *     summary: Create a new interview
+ *     description: Creates a new interview scheduling. Only authenticated interviewers can create interviews.
+ *     tags: [Interviews]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - scheduledTime
+ *               - candidateId
+ *               - jobId
+ *               - applicationId
+ *             properties:
+ *               scheduledTime:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2023-08-15T14:00:00Z"
+ *                 description: Scheduled time for the interview (must be in the future)
+ *               candidateId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "e380f1ee-7c54-4b01-90e6-d701748f0852"
+ *                 description: ID of the candidate to be interviewed
+ *               jobId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "f490f1ee-8c54-4b01-90e6-d701748f0853"
+ *                 description: ID of the related job
+ *               applicationId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "g590f1ee-9c54-4b01-90e6-d701748f0854"
+ *                 description: ID of the job application
+ *     responses:
+ *       201:
+ *         description: Interview scheduled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Interview has been successfully scheduled."
+ *                 interview:
+ *                   $ref: '#/components/schemas/Interview'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Bad request - missing required fields or validation error
+ *       404:
+ *         description: Job, candidate, or application not found
+ *       500:
+ *         description: Internal server error or email notification failure
+ *
+ *   get:
+ *     summary: Get all interviews
+ *     description: Retrieves a list of interviews. Can be filtered by role, status, scheduledTime, jobId, interviewerId, and candidateId.
+ *     tags: [Interviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [interviewer, candidate, recruiter]
+ *         description: Filter by user role
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [scheduled, ongoing, completed, cancelled]
+ *         description: Filter by interview status
+ *       - in: query
+ *         name: scheduledTime
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter by scheduled time (returns interviews after this date)
+ *       - in: query
+ *         name: jobId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by job ID
+ *       - in: query
+ *         name: interviewerId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by interviewer ID
+ *       - in: query
+ *         name: candidateId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by candidate ID
+ *     responses:
+ *       200:
+ *         description: Interviews retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Interviews retrieved successfully"
+ *                 interviews:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Interview'
+ *                 count:
+ *                   type: integer
+ *                   example: 5
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: No interviews found matching the criteria
+ *       500:
+ *         description: Internal server error
+ *
+ * /api/v1/interviews/{id}:
+ *   get:
+ *     summary: Get interview by ID
+ *     description: Retrieves the details of a specific interview by ID
+ *     tags: [Interviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The interview ID
+ *     responses:
+ *       200:
+ *         description: Interview details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Interview details retrieved successfully"
+ *                 interview:
+ *                   $ref: '#/components/schemas/Interview'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Interview not found
+ *       500:
+ *         description: Internal server error
+ *
+ *   put:
+ *     summary: Update interview details
+ *     description: Updates the details of a specific interview. Accessible to interviewers and admins.
+ *     tags: [Interviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The interview ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               scheduledTime:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2023-08-16T15:00:00Z"
+ *                 description: Updated scheduled time (must be in the future)
+ *               summary:
+ *                 type: string
+ *                 example: "The candidate demonstrated strong technical skills and problem-solving abilities."
+ *                 description: Interview summary or notes
+ *               status:
+ *                 type: string
+ *                 enum: [scheduled, ongoing, completed, cancelled]
+ *                 example: "completed"
+ *                 description: Updated status of the interview
+ *               rating:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0
+ *                 maximum: 5
+ *                 example: 4.5
+ *                 description: Rating given to the candidate (0-5 stars)
+ *     responses:
+ *       200:
+ *         description: Interview updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Interview details updated successfully."
+ *                 interview:
+ *                   $ref: '#/components/schemas/Interview'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Bad request - validation error
+ *       404:
+ *         description: Interview not found
+ *       500:
+ *         description: Internal server error or notification failure
+ *
+ *   delete:
+ *     summary: Delete an interview
+ *     description: Permanently deletes an interview record. Accessible only to admin users.
+ *     tags: [Interviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The interview ID to delete
+ *     responses:
+ *       200:
+ *         description: Interview deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Interview record has been successfully deleted"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Interview not found
+ *       500:
+ *         description: Internal server error or notification failure
+ *
+ * /api/v1/interviews/job/{jobId}:
+ *   get:
+ *     summary: Get interviews by job ID
+ *     description: Retrieves all interviews for a specific job. Can be filtered by role, status, and scheduledTime.
+ *     tags: [Interviews]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The job ID to filter interviews by
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [interviewer, candidate, recruiter]
+ *         description: Filter by user role
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [scheduled, ongoing, completed, cancelled]
+ *         description: Filter by interview status
+ *       - in: query
+ *         name: scheduledTime
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter by scheduled time (returns interviews after this date)
+ *     responses:
+ *       200:
+ *         description: Interviews retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Interviews retrieved successfully"
+ *                 interviews:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Interview'
+ *                 count:
+ *                   type: integer
+ *                   example: 3
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: No interviews found for this job
+ *       500:
+ *         description: Internal server error
+ * 
+ * /api/v1/interviewer-ratings:
+ *   post:
+ *     summary: Create a new interviewer rating
+ *     description: Creates a rating for an interviewer. Only accessible to recruiters and admins.
+ *     tags: [Interviewer Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rating
+ *               - feedback
+ *               - interviewerId
+ *               - recruiterId
+ *               - jobId
+ *               - contractId
+ *             properties:
+ *               rating:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 1
+ *                 maximum: 5
+ *                 example: 4.5
+ *                 description: Rating score (1-5)
+ *               feedback:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 500
+ *                 example: "Very knowledgeable and asked insightful questions during the interview"
+ *                 description: Feedback about the interviewer
+ *               interviewerId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+ *                 description: ID of the interviewer being rated
+ *               recruiterId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "e380f1ee-7c54-4b01-90e6-d701748f0852"
+ *                 description: ID of the recruiter submitting the rating
+ *               jobId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "f490f1ee-8c54-4b01-90e6-d701748f0853"
+ *                 description: ID of the job related to this rating
+ *               contractId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "g590f1ee-9c54-4b01-90e6-d701748f0854"
+ *                 description: ID of the contract related to this rating
+ *     responses:
+ *       201:
+ *         description: Rating submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Rating submitted successfully"
+ *                 interviewRating:
+ *                   $ref: '#/components/schemas/InterviewerRating'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Bad request - missing required fields or invalid rating
+ *       404:
+ *         description: Interviewer, recruiter, job, or contract not found
+ *       409:
+ *         description: Rating already exists for this interview session
+ *       500:
+ *         description: Internal server error or email delivery failure
+ *
+ *   get:
+ *     summary: Get all interviewer ratings
+ *     description: Retrieves all interviewer ratings with optional filtering. Accessible to recruiters and admins.
+ *     tags: [Interviewer Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: rating
+ *         schema:
+ *           type: number
+ *         description: Filter by rating value
+ *       - in: query
+ *         name: interviewerId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by interviewer ID
+ *       - in: query
+ *         name: recruiterId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by recruiter ID
+ *       - in: query
+ *         name: jobId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by job ID
+ *       - in: query
+ *         name: contractId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by contract ID
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for feedback content
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Limit the number of results returned
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved interviewer ratings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully retrieved 5 ratings"
+ *                 count:
+ *                   type: integer
+ *                   example: 5
+ *                 interviewerRatings:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/InterviewerRating'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: No interviewer ratings found matching the criteria
+ *       500:
+ *         description: Internal server error
+ *
+ * /api/v1/interviewer-ratings/{id}:
+ *   get:
+ *     summary: Get an interviewer rating by ID
+ *     description: Retrieves details of a specific interviewer rating by its ID. Accessible to recruiters, interviewers, and admins.
+ *     tags: [Interviewer Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique interviewer rating ID
+ *     responses:
+ *       200:
+ *         description: Rating found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Rating found"
+ *                 interviewerRating:
+ *                   $ref: '#/components/schemas/InterviewerRating'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Rating not found
+ *       500:
+ *         description: Internal server error
+ *
+ *   put:
+ *     summary: Update an interviewer rating
+ *     description: Updates an existing interviewer rating. Accessible to recruiters and admins.
+ *     tags: [Interviewer Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique interviewer rating ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rating:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0
+ *                 maximum: 5
+ *                 example: 4.0
+ *                 description: Updated rating score (0-5)
+ *               feedback:
+ *                 type: string
+ *                 minLength: 10
+ *                 maxLength: 1000
+ *                 example: "The interviewer demonstrated excellent technical knowledge and communication skills"
+ *                 description: Updated feedback about the interviewer
+ *     responses:
+ *       200:
+ *         description: Rating updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Rating updated successfully"
+ *                 interviewerRating:
+ *                   $ref: '#/components/schemas/InterviewerRating'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Bad request - no fields provided or invalid data
+ *       404:
+ *         description: Rating not found
+ *       500:
+ *         description: Internal server error or email notification failure
+ *
+ *   delete:
+ *     summary: Delete an interviewer rating
+ *     description: Permanently deletes an interviewer rating. Accessible only to admin users.
+ *     tags: [Interviewer Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique interviewer rating ID
+ *     responses:
+ *       200:
+ *         description: Rating deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Rating deleted successfully"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Rating not found
+ *       500:
+ *         description: Internal server error or email notification failure
+ *
+ * /api/v1/interviewer-ratings/job/{jobId}:
+ *   get:
+ *     summary: Get ratings by job ID
+ *     description: Retrieves all interviewer ratings for a specific job. Accessible to recruiters, interviewers, and admins.
+ *     tags: [Interviewer Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The job ID
+ *     responses:
+ *       200:
+ *         description: Ratings retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully retrieved 3 ratings"
+ *                 count:
+ *                   type: integer
+ *                   example: 3
+ *                 interviewerRatings:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/InterviewerRating'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: No ratings found for this job posting
+ *       500:
+ *         description: Internal server error
+ *
+ * /api/v1/interviewer-ratings/contract/{contractId}:
+ *   get:
+ *     summary: Get ratings by contract ID
+ *     description: Retrieves all interviewer ratings for a specific contract. Accessible to recruiters, interviewers, and admins.
+ *     tags: [Interviewer Ratings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contractId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The contract ID
+ *     responses:
+ *       200:
+ *         description: Ratings retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully retrieved 2 ratings"
+ *                 count:
+ *                   type: integer
+ *                   example: 2
+ *                 interviewerRatings:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/InterviewerRating'
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: No ratings found for this contract
+ *       500:
+ *         description: Internal server error
+ *
+ * /api/payment/checkout-session/{contractId}:
+ *   post:
+ *     summary: Create a checkout session for contract payment
+ *     description: Creates a new Stripe checkout session for a contract payment. Only accessible to recruiters.
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contractId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The contract ID for payment
+ *     responses:
+ *       200:
+ *         description: Payment session created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Payment session created successfully. Proceed to checkout."
+ *                 sessionId:
+ *                   type: string
+ *                   example: "cs_test_a1b2c3d4e5f6g7h8i9j0"
+ *                 timeStamp:
+ *                   type: string
+ *                   format: date-time
+ *       404:
+ *         description: Contract not found
+ *       500:
+ *         description: Internal server error or payment session creation failure
+ *
+ * /api/payment/capture/{contractId}:
+ *   post:
+ *     summary: Capture payment for a contract
+ *     description: Captures the payment that was previously authorized. Only accessible to interviewers.
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contractId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The contract ID for payment capture
+ *     responses:
+ *       200:
+ *         description: Payment captured successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Payment captured successfully. Your contract is now active."
+ *                 capturedPayment:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "pi_1HqtuI2eZvKYlo2C0u26KGjs"
+ *                     amount:
+ *                       type: integer
+ *                       example: 25000
+ *                     status:
+ *                       type: string
+ *                       example: "succeeded"
+ *                 timeStamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Payment information not found or invalid contract
+ *       500:
+ *         description: Internal server error or payment capture failure
+ *
+ * /api/payment/complete/{contractId}:
+ *   post:
+ *     summary: Complete contract payment and transfer funds
+ *     description: Completes the contract payment by transferring funds to the interviewer. Only accessible to recruiters.
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contractId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The contract ID to complete payment for
+ *     responses:
+ *       200:
+ *         description: Payment successfully transferred
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Payment successfully transferred to interviewer."
+ *                 transfer:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "tr_1HqtuJ2eZvKYlo2C0u26KGJS"
+ *                     amount:
+ *                       type: integer
+ *                       example: 24375
+ *                     currency:
+ *                       type: string
+ *                       example: "usd"
+ *                     destination:
+ *                       type: string
+ *                       example: "acct_1HqtuK2eZvKYlo2C"
+ *                 timeStamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Invalid request or payment status not paid
+ *       404:
+ *         description: Contract not found
+ *       500:
+ *         description: Internal server error or payment transfer failure
  */

@@ -3,6 +3,10 @@ const { StatusCodes } = require('http-status-codes');
 
 const { ChatRoom, Job, Message, User } = require('../models');
 
+const {
+  sendEmail,
+  generateEmailTemplate,
+} = require('../utils/nodemailer.utils');
 const { validateString } = require('../utils/validation.utils');
 
 /**
@@ -13,11 +17,8 @@ const { validateString } = require('../utils/validation.utils');
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If Interviewer ID or Job ID is not provided
- * @throws {Error} If Job with the provided ID does not exist
- * @throws {Error} If User with the provided ID does not exist
- * @throws {Error} If Chat Room could not be created
  */
 
 const createChatRoom = asyncHandler(async (req, res) => {
@@ -66,11 +67,8 @@ const createChatRoom = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If no chat rooms are found
- * @throws {Error} If no chat rooms are found for the user
- * @throws {Error} If no chat rooms are found for the recruiter
- * @throws {Error} If no chat rooms are found for the interviewer
  *
  */
 
@@ -155,9 +153,8 @@ const getAllChatRooms = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If Chat Room ID is invalid
- * @throws {Error} If Chat Room with the provided ID does not exist
  *
  */
 
@@ -209,10 +206,8 @@ const getChatRoomById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If Chat Room ID is invalid
- * @throws {Error} If Chat Room with the provided ID does not exist
- * @throws {Error} If Chat Room with the provided ID could not be deleted
  *
  */
 
@@ -238,40 +233,55 @@ const deleteChatRoom = asyncHandler(async (req, res) => {
 
   const recruiter = await User.findByPk(job.recruiterId);
 
-  const emailContent = [
-    {
-      type: 'text',
-      value: `This chat room has been permanently removed from the system.`,
-    },
-    { type: 'heading', value: 'Chat Room Details' },
-    {
-      type: 'list',
-      value: [
-        `Job Title: ${job.title}`,
-        `Interviewer: ${interviewer.firstName} ${interviewer.lastName}`,
-        `Recruiter: ${recruiter.firstName} ${recruiter.lastName}`,
-        `Created At: ${new Date(chatRoom.createdAt).toLocaleString()}`,
-      ],
-    },
-  ];
-
   const isEmailSent = await Promise.all([
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: interviewer.email,
       subject: 'OptaHire - Chat Room Deleted',
       html: generateEmailTemplate({
         firstName: interviewer.firstName,
         subject: 'Chat Room Deleted',
-        content: emailContent,
+        content: [
+          {
+            type: 'text',
+            value: `This chat room has been permanently removed from the system.`,
+          },
+          { type: 'heading', value: 'Chat Room Details' },
+          {
+            type: 'list',
+            value: [
+              `Job Title: ${job.title}`,
+              `Interviewer: ${interviewer.firstName} ${interviewer.lastName}`,
+              `Recruiter: ${recruiter.firstName} ${recruiter.lastName}`,
+              `Created At: ${new Date(chatRoom.createdAt).toLocaleString()}`,
+            ],
+          },
+        ],
       }),
     }),
     sendEmail({
+      from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Chat Room Deleted',
       html: generateEmailTemplate({
         firstName: recruiter.firstName,
         subject: 'Chat Room Deleted',
-        content: emailContent,
+        content: [
+          {
+            type: 'text',
+            value: `This chat room has been permanently removed from the system.`,
+          },
+          { type: 'heading', value: 'Chat Room Details' },
+          {
+            type: 'list',
+            value: [
+              `Job Title: ${job.title}`,
+              `Interviewer: ${interviewer.firstName} ${interviewer.lastName}`,
+              `Recruiter: ${recruiter.firstName} ${recruiter.lastName}`,
+              `Created At: ${new Date(chatRoom.createdAt).toLocaleString()}`,
+            ],
+          },
+        ],
       }),
     }),
   ]);
@@ -296,12 +306,8 @@ const deleteChatRoom = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If Chat Room ID is invalid
- * @throws {Error} If Chat Room with the provided ID does not exist
- * @throws {Error} If no messages are found in the chat room
- * @throws {Error} If messages could not be retrieved
- * @throws {Error} If no messages are found in this chat room
  */
 
 const getAllMessagesFromChatRoom = asyncHandler(async (req, res) => {

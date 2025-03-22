@@ -18,9 +18,8 @@ const {
  *
  * @param {Object} req - The request object containing the OTP.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
- * @throws {Error} If the email is already verified.
  */
 
 const verifyUserEmail = asyncHandler(async (req, res) => {
@@ -81,18 +80,38 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
       subject: 'Welcome to OptaHire - Email Verified',
       content: [
         {
-          type: 'text',
-          value:
-            'Congratulations! Your email has been verified successfully. You can now enjoy all the features of OptaHire.',
+          type: 'heading',
+          value: 'Email Verification Complete!',
         },
         {
           type: 'text',
           value:
-            'If you have any questions or need assistance, feel free to contact our support team.',
+            'Congratulations! Your email has been verified successfully. Your OptaHire account is now fully activated and ready to use.',
+        },
+        {
+          type: 'heading',
+          value: 'What You Can Do Now',
+        },
+        {
+          type: 'list',
+          value: [
+            'Complete your professional profile to stand out',
+            'Browse and apply for job opportunities',
+            'Connect with recruiters and hiring managers',
+            'Access AI-powered interview preparation tools',
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Complete Your Profile',
+            link: `${process.env.CLIENT_URL}/profile`,
+          },
         },
         {
           type: 'text',
-          value: 'Thank you for using OptaHire.',
+          value:
+            'If you have any questions or need assistance, our support team is always ready to help.',
         },
       ],
     }),
@@ -120,6 +139,7 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
       isInterviewer: user.isInterviewer,
       isCandidate: user.isCandidate,
       isTopRated: user.isTopRated,
+      stripeAccountId: user.stripeAccountId,
     },
     timestamp: new Date().toISOString(),
   });
@@ -133,8 +153,8 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const updateUserPassword = asyncHandler(async (req, res) => {
@@ -147,7 +167,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 
   const { currentPassword, newPassword } = req.body;
 
-  if (!(await user.matchPassword(currentPassword))) {
+  if (!(await user.validatePassword(currentPassword))) {
     res.status(StatusCodes.UNAUTHORIZED);
     throw new Error(
       'Current password is incorrect. Please check and try again.'
@@ -163,7 +183,12 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 
   user.password = newPassword;
 
-  await user.save();
+  const updatedUser = await user.save();
+
+  if (!updatedUser) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Password could not be updated. Please try again.');
+  }
 
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
@@ -174,13 +199,33 @@ const updateUserPassword = asyncHandler(async (req, res) => {
       subject: 'OptaHire - Password Updated',
       content: [
         {
-          type: 'text',
-          value:
-            'Your password has been updated successfully. If you did not make this change, please contact support immediately.',
+          type: 'heading',
+          value: 'Password Updated Successfully',
         },
         {
           type: 'text',
-          value: 'Thank you for using OptaHire.',
+          value:
+            'Your OptaHire account password has been changed. This change will take effect immediately.',
+        },
+        {
+          type: 'list',
+          value: [
+            'Log in using your new password',
+            'Update your password manager (if you use one)',
+            "Don't share your password with others",
+          ],
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not request this password change, please contact our support team immediately.',
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Go to Login Page',
+            link: `${process.env.CLIENT_URL}/login`,
+          },
         },
       ],
     }),
@@ -189,7 +234,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
-      'Password updated but confirmation email could not be sent.'
+      'Password updated but notification email could not be delivered.'
     );
   }
 
@@ -209,13 +254,13 @@ const updateUserPassword = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const getUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.user.id, {
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password', 'otp', 'otpExpires'] },
   });
 
   if (!user) {
@@ -229,6 +274,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
     success: true,
     message: 'Profile retrieved successfully.',
     user: {
+      id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
@@ -240,6 +286,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       isInterviewer: user.isInterviewer,
       isCandidate: user.isCandidate,
       isTopRated: user.isTopRated,
+      stripeAccountId: user.stripeAccountId,
     },
     timestamp: new Date().toISOString(),
   });
@@ -253,13 +300,13 @@ const getUserProfile = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing updated user details.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.user.id, {
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password', 'otp', 'otpExpires'] },
   });
 
   if (!user) {
@@ -293,23 +340,62 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
-    subject: 'OptaHire - Profile Updated',
+    subject: 'OptaHire - Profile Updated Successfully',
     html: generateEmailTemplate({
       firstName: user.firstName,
-      subject: 'OptaHire - Profile Updated',
+      subject: 'OptaHire - Profile Updated Successfully',
       content: [
         {
-          type: 'text',
-          value:
-            'Your profile has been updated successfully. If you did not make this change, please contact support immediately.',
+          type: 'heading',
+          value: 'Profile Update Confirmation',
         },
         {
           type: 'text',
-          value: 'Thank you for using OptaHire.',
+          value:
+            'Your OptaHire profile has been successfully updated with the following information:',
+        },
+        {
+          type: 'list',
+          value: [
+            `Name: ${user.firstName} ${user.lastName}`,
+            `Email: ${user.email}`,
+            `Phone: ${user.phone || 'Not provided'}`,
+          ],
+        },
+        {
+          type: 'heading',
+          value: 'Security Recommendation',
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not make these changes, please secure your account immediately by:',
+        },
+        {
+          type: 'list',
+          value: [
+            'Changing your password',
+            'Reviewing your recent account activity',
+            'Contacting our support team',
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'View Your Profile',
+            link: `${process.env.CLIENT_URL}/profile`,
+          },
         },
       ],
     }),
   });
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error(
+      'Profile updated but notification email could not be delivered.'
+    );
+  }
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -338,8 +424,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const deleteUserProfile = asyncHandler(async (req, res) => {
@@ -359,13 +445,35 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
       subject: 'OptaHire - Account Deletion Confirmation',
       content: [
         {
-          type: 'text',
-          value:
-            'We have successfully processed your account deletion request. If you did not initiate this action, please contact our support team immediately.',
+          type: 'heading',
+          value: 'Account Deletion Confirmation',
         },
         {
           type: 'text',
-          value: 'Thank you for being part of OptaHire.',
+          value:
+            'We have successfully processed your account deletion request. Your OptaHire account and associated data have been removed from our system.',
+        },
+        {
+          type: 'heading',
+          value: 'Important Information',
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not request this account deletion, please take the following steps immediately:',
+        },
+        {
+          type: 'list',
+          value: [
+            'Contact our support team as soon as possible',
+            'Report any suspicious activity on your email account',
+            'Consider changing passwords for other accounts that used the same email',
+          ],
+        },
+        {
+          type: 'text',
+          value:
+            'We value your privacy and data security. Thank you for being part of OptaHire.',
         },
       ],
     }),
@@ -374,7 +482,7 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
-      'Account deleted but confirmation email could not be sent.'
+      'Account deleted but notification email could not be delivered.'
     );
   }
 
@@ -395,6 +503,7 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
  */
 
@@ -467,6 +576,7 @@ const getAllUsersProfile = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
  */
 
@@ -498,15 +608,16 @@ const getUserProfileById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object containing updated user details.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const updateUserProfileById = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, phone, role } = req.body;
+  const { firstName, lastName, email, phone, role, isVerified, isTopRated } =
+    req.body;
 
   const user = await User.findByPk(req.params.id, {
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password', 'otp', 'otpExpires'] },
   });
 
   if (!user) {
@@ -516,11 +627,11 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
     );
   }
 
-  user.firstName = firstName || user.firstName;
-  user.lastName = lastName || user.lastName;
-  user.phone = phone || user.phone;
+  if (firstName) user.firstName = firstName;
+  if (lastName) user.lastName = lastName;
+  if (phone) user.phone = phone;
 
-  if (email) {
+  if (email && email !== user.email) {
     if (!emailValidator.validate(email)) {
       res.status(StatusCodes.BAD_REQUEST);
       throw new Error('Please enter a valid email address format.');
@@ -528,10 +639,40 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
     user.email = email;
   }
 
-  user.isAdmin = role === 'admin' ? true : user.isAdmin;
-  user.isRecruiter = role === 'recruiter' ? true : user.isRecruiter;
-  user.isInterviewer = role === 'interviewer' ? true : user.isInterviewer;
-  user.isCandidate = role === 'candidate' ? true : user.isCandidate;
+  if (isVerified !== undefined) {
+    user.isVerified = Boolean(isVerified);
+  }
+
+  if (isTopRated !== undefined) {
+    user.isTopRated = Boolean(isTopRated);
+  }
+
+  if (role) {
+    user.isAdmin = false;
+    user.isRecruiter = false;
+    user.isInterviewer = false;
+    user.isCandidate = false;
+
+    switch (role.toLowerCase()) {
+      case 'admin':
+        user.isAdmin = true;
+        break;
+      case 'recruiter':
+        user.isRecruiter = true;
+        break;
+      case 'interviewer':
+        user.isInterviewer = true;
+        break;
+      case 'candidate':
+        user.isCandidate = true;
+        break;
+      default:
+        res.status(StatusCodes.BAD_REQUEST);
+        throw new Error(
+          'Invalid role specified. Valid roles are: admin, recruiter, interviewer, candidate'
+        );
+    }
+  }
 
   const updatedUser = await user.save();
 
@@ -540,10 +681,92 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
     throw new Error('User profile could not be updated. Please try again.');
   }
 
+  const isEmailSent = await sendEmail({
+    from: process.env.NODEMAILER_SMTP_EMAIL,
+    to: user.email,
+    subject: 'OptaHire - Your Profile Has Been Updated',
+    html: generateEmailTemplate({
+      firstName: user.firstName,
+      subject: 'OptaHire - Profile Update Notification',
+      content: [
+        {
+          type: 'heading',
+          value: 'Your OptaHire Profile Has Been Updated',
+        },
+        {
+          type: 'text',
+          value:
+            'An administrator has made changes to your OptaHire account. Your profile information has been updated in our system.',
+        },
+        {
+          type: 'heading',
+          value: 'Updated Information',
+        },
+        {
+          type: 'list',
+          value: [
+            `Name: ${user.firstName} ${user.lastName}`,
+            `Email: ${user.email}`,
+            `Phone: ${user.phone || 'Not provided'}`,
+            `Account Role: ${
+              user.isAdmin
+                ? 'Administrator'
+                : user.isRecruiter
+                ? 'Recruiter'
+                : user.isInterviewer
+                ? 'Interviewer'
+                : 'Candidate'
+            }`,
+            `Verification Status: ${
+              user.isVerified ? 'Verified' : 'Not Verified'
+            }`,
+          ],
+        },
+        {
+          type: 'heading',
+          value: 'Important Note',
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not expect these changes or have any questions, please contact our support team immediately for assistance.',
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'View Your Profile',
+            link: `${process.env.CLIENT_URL}/profile`,
+          },
+        },
+      ],
+    }),
+  });
+
+  if (!isEmailSent) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error(
+      'Profile updated but notification email could not be delivered.'
+    );
+  }
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'User profile has been updated successfully.',
-    user,
+    user: {
+      id: updatedUser.id,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      email: updatedUser.email,
+      phone: updatedUser.phone,
+      isVerified: updatedUser.isVerified,
+      isLinkedinVerified: updatedUser.isLinkedinVerified,
+      isAdmin: updatedUser.isAdmin,
+      isRecruiter: updatedUser.isRecruiter,
+      isInterviewer: updatedUser.isInterviewer,
+      isCandidate: updatedUser.isCandidate,
+      isTopRated: updatedUser.isTopRated,
+      stripeAccountId: updatedUser.stripeAccountId,
+    },
     timestamp: new Date().toISOString(),
   });
 });
@@ -556,13 +779,13 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const deleteUserById = asyncHandler(async (req, res) => {
   const user = await User.findByPk(req.params.id, {
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ['password', 'otp', 'otpExpires'] },
   });
 
   if (!user) {
@@ -590,13 +813,38 @@ const deleteUserById = asyncHandler(async (req, res) => {
       subject: 'OptaHire - Account Deactivated',
       content: [
         {
-          type: 'text',
-          value:
-            'Your OptaHire account has been deactivated. If you believe this was done in error, please contact our support team.',
+          type: 'heading',
+          value: 'Account Deactivation Notice',
         },
         {
           type: 'text',
-          value: 'Thank you for being part of OptaHire.',
+          value:
+            'Your OptaHire account has been deactivated by an administrator. This means your profile is no longer accessible on our platform.',
+        },
+        {
+          type: 'heading',
+          value: 'What This Means',
+        },
+        {
+          type: 'list',
+          value: [
+            'Your profile is no longer visible to recruiters or employers',
+            'You cannot apply for jobs or access platform features',
+            'Your data remains stored in our system for potential reactivation',
+            'You can request account restoration by contacting support',
+          ],
+        },
+        {
+          type: 'text',
+          value:
+            'If you believe this action was taken in error or would like to discuss reactivating your account, please contact our support team.',
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Contact Support',
+            link: `${process.env.CLIENT_URL}/contact`,
+          },
         },
       ],
     }),
@@ -624,8 +872,8 @@ const deleteUserById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const deleteUserPermById = asyncHandler(async (req, res) => {
@@ -655,14 +903,47 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
       subject: 'OptaHire - Account Permanently Deleted',
       content: [
         {
-          type: 'text',
-          value:
-            'Your OptaHire account and all associated data have been permanently deleted.',
+          type: 'heading',
+          value: 'Account Permanently Deleted',
         },
         {
           type: 'text',
           value:
-            'If you did not request this action, please contact our support team immediately.',
+            'Your OptaHire account has been permanently deleted from our system. This action cannot be undone, and all associated data has been removed from our database.',
+        },
+        {
+          type: 'heading',
+          value: 'What Was Deleted',
+        },
+        {
+          type: 'list',
+          value: [
+            'Account profile and personal information',
+            'Application history and submitted documents',
+            'Messages and communication records',
+            'All saved preferences and settings',
+          ],
+        },
+        {
+          type: 'heading',
+          value: 'Important Notice',
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not request this permanent deletion or believe this action was taken in error, please contact our support team immediately.',
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'Contact Support',
+            link: `${process.env.CLIENT_URL}/contact`,
+          },
+        },
+        {
+          type: 'text',
+          value:
+            'If you wish to use OptaHire services in the future, you will need to create a new account with a new email address.',
         },
       ],
     }),

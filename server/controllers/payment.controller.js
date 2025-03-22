@@ -19,7 +19,6 @@ const {
  * @param {object} res - Response object
  *
  * @returns {object} - Success message and Checkout Session ID
- * @throws {Error} - If payment session creation fails
  */
 
 const createCheckoutSession = asyncHandler(async (req, res) => {
@@ -60,8 +59,8 @@ const createCheckoutSession = asyncHandler(async (req, res) => {
       capture_method: 'manual',
       metadata: { contractId: contract.id },
     },
-    // success_url: `${process.env.CLIENT_URL}/contract/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-    // cancel_url: `${process.env.CLIENT_URL}/contract/payment-cancelled`,
+    success_url: `${process.env.CLIENT_URL}/contract/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.CLIENT_URL}/contract/payment-cancelled`,
   });
 
   if (!session) {
@@ -115,7 +114,6 @@ const createCheckoutSession = asyncHandler(async (req, res) => {
  * @param {object} res - Response object
  *
  * @returns {object} - Success message and captured payment details
- * @throws {Error} - If payment capture fails
  */
 
 const capturePayment = asyncHandler(async (req, res) => {
@@ -171,47 +169,55 @@ const capturePayment = asyncHandler(async (req, res) => {
   }
 
   // Send email notification to the recruiter
-  const emailContent = [
-    {
-      type: 'text',
-      value: 'Your payment has been successfully processed.',
-    },
-    {
-      type: 'heading',
-      value: 'Payment Details',
-    },
-    {
-      type: 'list',
-      value: [
-        `Job Title: ${contract.job.title}`,
-        `Amount: $${contract.agreedPrice}`,
-        `Date: ${new Date().toLocaleDateString()}`,
-        `Status: ${contract.paymentStatus}`,
-      ],
-    },
-    {
-      type: 'text',
-      value: 'Your contract is now active. Thank you for using OptaHire.',
-    },
-  ];
-
-  const emailHtml = generateEmailTemplate({
-    firstName: contract.recruiter.firstName,
-    subject: 'OptaHire - Payment Successful',
-    content: emailContent,
-  });
-
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: contract.recruiter.email,
-    subject: 'OptaHire - Payment Successful',
-    html: emailHtml,
+    subject: 'OptaHire - Payment Confirmation',
+    html: generateEmailTemplate({
+      firstName: contract.recruiter.firstName,
+      subject: 'OptaHire - Payment Confirmation',
+      content: [
+        {
+          type: 'heading',
+          value: 'Payment Captured Successfully!',
+        },
+        {
+          type: 'text',
+          value: `Your payment of $${contract.agreedPrice} has been processed successfully.`,
+        },
+        {
+          type: 'heading',
+          value: 'Payment Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Job Title: ${contract.job.title}`,
+            `Amount: $${contract.agreedPrice}`,
+            `Date: ${new Date().toLocaleDateString()}`,
+            `Contract Status: ${contract.status}`,
+          ],
+        },
+        {
+          type: 'text',
+          value:
+            'Thank you for using OptaHire. You can view your contract details in your account dashboard.',
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'View Contract Details',
+            link: `${process.env.CLIENT_URL}/dashboard/contracts`,
+          },
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
-      'Payment processed successfully, but confirmation email could not be sent.'
+      'Payment processed successfully, but notification email could not be delivered.'
     );
   }
 
@@ -233,7 +239,6 @@ const capturePayment = asyncHandler(async (req, res) => {
  * @param {object} res - Response object
  *
  * @returns {object} - Success message and transfer details
- * @throws {Error} - If payment transfer fails
  */
 
 const completeContractPayment = asyncHandler(async (req, res) => {
@@ -319,47 +324,57 @@ const completeContractPayment = asyncHandler(async (req, res) => {
   }
 
   // Send email notification to interviewer
-  const emailContent = [
-    {
-      type: 'text',
-      value: 'Your payment has been successfully transferred.',
-    },
-    {
-      type: 'heading',
-      value: 'Payment Details',
-    },
-    {
-      type: 'list',
-      value: [
-        `Job Title: ${contract.job.title}`,
-        `Amount: $${(interviewerAmount / 100).toFixed(2)}`,
-        `Date: ${new Date().toLocaleDateString()}`,
-        `Status: completed`,
-      ],
-    },
-    {
-      type: 'text',
-      value: 'Thank you for using OptaHire. We appreciate your service.',
-    },
-  ];
-
-  const emailHtml = generateEmailTemplate({
-    firstName: contract.interviewer.firstName,
-    subject: 'OptaHire - Payment Received',
-    content: emailContent,
-  });
-
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: contract.interviewer.email,
-    subject: 'OptaHire - Payment Received',
-    html: emailHtml,
+    subject: 'OptaHire - Payment Transfer',
+    html: generateEmailTemplate({
+      firstName: contract.interviewer.firstName,
+      subject: 'OptaHire - Payment Transfer',
+      content: [
+        {
+          type: 'heading',
+          value: 'Payment Transfer Complete!',
+        },
+        {
+          type: 'text',
+          value: `A payment of $${(interviewerAmount / 100).toFixed(
+            2
+          )} has been transferred to your account for your interview services.`,
+        },
+        {
+          type: 'heading',
+          value: 'Payment Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Job Title: ${contract.job.title}`,
+            `Amount: $${(interviewerAmount / 100).toFixed(2)}`,
+            `Date: ${new Date().toLocaleDateString()}`,
+            `Contract Status: ${contract.status}`,
+          ],
+        },
+        {
+          type: 'text',
+          value:
+            'Thank you for using OptaHire. You can view your earnings in your account dashboard.',
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'View Your Earnings',
+            link: `${process.env.CLIENT_URL}/dashboard/earnings`,
+          },
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
-      'Payment transferred successfully, but confirmation email could not be sent.'
+      'Payment transferred successfully, but notification email could not be delivered.'
     );
   }
 

@@ -14,8 +14,7 @@ const { validateString } = require('../utils/validation.utils');
  * @desc   Create new transaction
  *
  * @route  POST /api/transactions
- * @access Private
- * @role   Recruiter, Interviewer
+ * @access Private (Recruiter, Interviewer)
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
@@ -72,6 +71,13 @@ const createTransaction = asyncHandler(async (req, res) => {
     throw new Error('Unable to process transaction. Please try again later.');
   }
 
+  const commonListItems = [
+    `Transaction Amount: $${amount}`,
+    `Status: ${status}`,
+    `Date: ${new Date().toLocaleDateString()}`,
+    `Contract ID: ${contractId}`,
+  ];
+
   const recruiterEmailContent = [
     {
       type: 'text',
@@ -82,21 +88,23 @@ const createTransaction = asyncHandler(async (req, res) => {
       value: 'Transaction Processed Successfully',
     },
     {
+      type: 'text',
+      value: 'Your transaction has been processed with the following details:',
+    },
+    {
       type: 'list',
-      value: [
-        `Transaction Amount: $${amount}`,
-        `Status: ${status}`,
-        `Date: ${new Date().toLocaleDateString()}`,
-        `Contract ID: ${contractId}`,
-      ],
+      value: commonListItems,
     },
     {
       type: 'text',
       value: 'Please check your account for the updated balance.',
     },
     {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
+      type: 'cta',
+      value: {
+        text: 'View Transaction Details',
+        link: `${process.env.CLIENT_URL}/transactions/${transaction.id}`,
+      },
     },
   ];
 
@@ -110,48 +118,46 @@ const createTransaction = asyncHandler(async (req, res) => {
       value: 'Transaction Processed Successfully',
     },
     {
+      type: 'text',
+      value: 'Your transaction has been processed with the following details:',
+    },
+    {
       type: 'list',
-      value: [
-        `Transaction Amount: $${amount}`,
-        `Status: ${status}`,
-        `Date: ${new Date().toLocaleDateString()}`,
-        `Contract ID: ${contractId}`,
-      ],
+      value: commonListItems,
     },
     {
       type: 'text',
       value: 'Please check your account for the updated balance.',
     },
     {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
+      type: 'cta',
+      value: {
+        text: 'View Transaction Details',
+        link: `${process.env.CLIENT_URL}/transactions/${transaction.id}`,
+      },
     },
   ];
-
-  const recruiterEmailHtml = generateEmailTemplate({
-    firstName: contract.recruiter.firstName,
-    subject: 'OptaHire - Transaction Processed',
-    content: recruiterEmailContent,
-  });
-
-  const interviewerEmailHtml = generateEmailTemplate({
-    firstName: contract.interviewer.firstName,
-    subject: 'OptaHire - Transaction Processed',
-    content: interviewerEmailContent,
-  });
 
   const isEmailSent = await Promise.all([
     sendEmail({
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.recruiter.email,
       subject: 'OptaHire - Transaction Processed',
-      html: recruiterEmailHtml,
+      html: generateEmailTemplate({
+        firstName: contract.recruiter.firstName,
+        subject: 'OptaHire - Transaction Processed',
+        content: recruiterEmailContent,
+      }),
     }),
     sendEmail({
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.interviewer.email,
       subject: 'OptaHire - Transaction Processed',
-      html: interviewerEmailHtml,
+      html: generateEmailTemplate({
+        firstName: contract.interviewer.firstName,
+        subject: 'OptaHire - Transaction Processed',
+        content: interviewerEmailContent,
+      }),
     }),
   ]);
 
@@ -174,8 +180,7 @@ const createTransaction = asyncHandler(async (req, res) => {
  * @desc   Get all transactions
  *
  * @route  GET /api/transactions
- * @access Private
- * @role   Admin, Recruiter, Interviewer
+ * @access Private (Admin, Recruiter, Interviewer)
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
@@ -319,8 +324,7 @@ const getTransactionById = asyncHandler(async (req, res) => {
  * @desc   Update transaction by ID
  *
  * @route  PUT /api/transactions/:id
- * @access Private
- * @role   Admin
+ * @access Private (Admin)
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
@@ -396,8 +400,8 @@ const updateTransactionById = asyncHandler(async (req, res) => {
   }
 
   const commonListItems = [
-    `Transaction Amount: $${updatedTransaction.amount}`,
-    `Status: ${updatedTransaction.status}`,
+    `Transaction Amount: $${amount}`,
+    `Status: ${status}`,
     `Date: ${new Date().toLocaleDateString()}`,
     `Contract ID: ${transaction.contractId}`,
   ];
@@ -405,11 +409,15 @@ const updateTransactionById = asyncHandler(async (req, res) => {
   const recruiterEmailContent = [
     {
       type: 'text',
-      value: `Hello ${transaction.contract.recruiter.firstName},`,
+      value: `Hello ${transaction.Contract.recruiter.firstName},`,
     },
     {
       type: 'heading',
       value: 'Transaction Updated',
+    },
+    {
+      type: 'text',
+      value: 'Your transaction has been updated with the following details:',
     },
     {
       type: 'list',
@@ -417,22 +425,30 @@ const updateTransactionById = asyncHandler(async (req, res) => {
     },
     {
       type: 'text',
-      value: 'Please check your account for the updated balance.',
+      value:
+        'Please check your account for the latest transaction information.',
     },
     {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
+      type: 'cta',
+      value: {
+        text: 'View Transaction Details',
+        link: `${process.env.CLIENT_URL}/transactions/${transaction.id}`,
+      },
     },
   ];
 
   const interviewerEmailContent = [
     {
       type: 'text',
-      value: `Hello ${transaction.contract.interviewer.firstName},`,
+      value: `Hello ${transaction.Contract.interviewer.firstName},`,
     },
     {
       type: 'heading',
       value: 'Transaction Updated',
+    },
+    {
+      type: 'text',
+      value: 'A transaction related to your contract has been updated:',
     },
     {
       type: 'list',
@@ -440,38 +456,38 @@ const updateTransactionById = asyncHandler(async (req, res) => {
     },
     {
       type: 'text',
-      value: 'Please check your account for the updated balance.',
+      value:
+        'Please check your account for the latest transaction information.',
     },
     {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
+      type: 'cta',
+      value: {
+        text: 'View Transaction Details',
+        link: `${process.env.CLIENT_URL}/transactions/${transaction.id}`,
+      },
     },
   ];
-
-  const recruiterEmailHtml = generateEmailTemplate({
-    firstName: transaction.contract.recruiter.firstName,
-    subject: 'OptaHire - Transaction Updated',
-    content: recruiterEmailContent,
-  });
-
-  const interviewerEmailHtml = generateEmailTemplate({
-    firstName: transaction.contract.interviewer.firstName,
-    subject: 'OptaHire - Transaction Updated',
-    content: interviewerEmailContent,
-  });
 
   const isEmailSent = await Promise.all([
     sendEmail({
       from: process.env.NODEMAILER_SMTP_EMAIL,
-      to: transaction.contract.recruiter.email,
+      to: transaction.Contract.recruiter.email,
       subject: 'OptaHire - Transaction Updated',
-      html: recruiterEmailHtml,
+      html: generateEmailTemplate({
+        firstName: transaction.Contract.recruiter.firstName,
+        subject: 'OptaHire - Transaction Updated',
+        content: recruiterEmailContent,
+      }),
     }),
     sendEmail({
       from: process.env.NODEMAILER_SMTP_EMAIL,
-      to: transaction.contract.interviewer.email,
+      to: transaction.Contract.interviewer.email,
       subject: 'OptaHire - Transaction Updated',
-      html: interviewerEmailHtml,
+      html: generateEmailTemplate({
+        firstName: transaction.Contract.interviewer.firstName,
+        subject: 'OptaHire - Transaction Updated',
+        content: interviewerEmailContent,
+      }),
     }),
   ]);
 
@@ -494,8 +510,7 @@ const updateTransactionById = asyncHandler(async (req, res) => {
  * @desc   Delete transaction by ID
  *
  * @route  DELETE /api/transactions/:id
- * @access Private
- * @role   Admin
+ * @access Private (Admin)
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
@@ -548,20 +563,25 @@ const deleteTransactionById = asyncHandler(async (req, res) => {
   }
 
   const commonListItems = [
+    `Transaction ID: ${transaction.id}`,
     `Transaction Amount: $${transaction.amount}`,
     `Status: ${transaction.status}`,
-    `Date: ${new Date().toLocaleDateString()}`,
+    `Date of Transaction: ${transaction.transactionDate.toLocaleDateString()}`,
     `Contract ID: ${transaction.contractId}`,
   ];
 
   const recruiterEmailContent = [
     {
       type: 'text',
-      value: `Hello ${transaction.contract.recruiter.firstName},`,
+      value: `Hello ${transaction.Contract.recruiter.firstName},`,
     },
     {
       type: 'heading',
       value: 'Transaction Deleted',
+    },
+    {
+      type: 'text',
+      value: 'A transaction has been deleted with the following details:',
     },
     {
       type: 'list',
@@ -569,22 +589,27 @@ const deleteTransactionById = asyncHandler(async (req, res) => {
     },
     {
       type: 'text',
-      value: 'Please contact support for more information.',
+      value: 'This transaction has been removed from our system.',
     },
     {
       type: 'text',
-      value: 'Thank you for using OptaHire.',
+      value:
+        'If you have any questions about this action, please contact our support team.',
     },
   ];
 
   const interviewerEmailContent = [
     {
       type: 'text',
-      value: `Hello ${transaction.contract.interviewer.firstName},`,
+      value: `Hello ${transaction.Contract.interviewer.firstName},`,
     },
     {
       type: 'heading',
       value: 'Transaction Deleted',
+    },
+    {
+      type: 'text',
+      value: 'A transaction related to your contract has been deleted:',
     },
     {
       type: 'list',
@@ -592,38 +617,35 @@ const deleteTransactionById = asyncHandler(async (req, res) => {
     },
     {
       type: 'text',
-      value: 'Please contact support for more information.',
+      value: 'This transaction has been removed from our system.',
     },
     {
       type: 'text',
-      value: 'Thank you for using OptaHire.',
+      value:
+        'If you have any questions about this action, please contact our support team.',
     },
   ];
-
-  const recruiterEmailHtml = generateEmailTemplate({
-    firstName: transaction.contract.recruiter.firstName,
-    subject: 'OptaHire - Transaction Deleted',
-    content: recruiterEmailContent,
-  });
-
-  const interviewerEmailHtml = generateEmailTemplate({
-    firstName: transaction.contract.interviewer.firstName,
-    subject: 'OptaHire - Transaction Deleted',
-    content: interviewerEmailContent,
-  });
 
   const isEmailSent = await Promise.all([
     sendEmail({
       from: process.env.NODEMAILER_SMTP_EMAIL,
-      to: transaction.contract.recruiter.email,
-      subject: 'OptaHire - Transaction Deleted',
-      html: recruiterEmailHtml,
+      to: transaction.Contract.recruiter.email,
+      subject: 'OptaHire - Transaction Record Deleted',
+      html: generateEmailTemplate({
+        firstName: transaction.Contract.recruiter.firstName,
+        subject: 'OptaHire - Transaction Record Deleted',
+        content: recruiterEmailContent,
+      }),
     }),
     sendEmail({
       from: process.env.NODEMAILER_SMTP_EMAIL,
-      to: transaction.contract.interviewer.email,
-      subject: 'OptaHire - Transaction Deleted',
-      html: interviewerEmailHtml,
+      to: transaction.Contract.interviewer.email,
+      subject: 'OptaHire - Transaction Record Deleted',
+      html: generateEmailTemplate({
+        firstName: transaction.Contract.interviewer.firstName,
+        subject: 'OptaHire - Transaction Record Deleted',
+        content: interviewerEmailContent,
+      }),
     }),
   ]);
 

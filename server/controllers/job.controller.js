@@ -20,8 +20,6 @@ const {
  * @param {Object} res - The response object.
  *
  * @returns {Promise<void>}
- * @throws {Error} If the job could not be created.
- * @throws {Error} If the email could not be sent.
  */
 
 const createJob = asyncHandler(async (req, res) => {
@@ -113,46 +111,67 @@ const createJob = asyncHandler(async (req, res) => {
     requirements: requirementsArrayJoined,
     benefits: benefitsArrayJoined,
   };
-
-  const emailContent = [
-    {
-      type: 'text',
-      value: 'You have successfully Created a new job on OptaHire.',
-    },
-    {
-      type: 'heading',
-      value: 'Job Details',
-    },
-    {
-      type: 'list',
-      value: [
-        `Title: ${job.title}`,
-        `Description: ${job.description}`,
-        `Requirements: ${requirementsArrayJoined}`,
-        `Benefits: ${benefitsArrayJoined}`,
-        `Company: ${job.company}`,
-        `Salary Range: ${job.salaryRange}`,
-        `Category: ${job.category}`,
-        `Location: ${job.location}`,
-      ],
-    },
-    {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
-    },
-  ];
-
-  const emailHtml = generateEmailTemplate({
-    firstName: recruiter.firstName,
-    subject: 'OptaHire - New Job Created',
-    content: emailContent,
-  });
-
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: recruiter.email,
-    subject: 'OptaHire - New Job Created',
-    html: emailHtml,
+    subject: 'OptaHire - New Job Created Successfully',
+    html: generateEmailTemplate({
+      firstName: recruiter.firstName,
+      subject: 'OptaHire - New Job Created Successfully',
+      content: [
+        {
+          type: 'heading',
+          value: 'Job Creation Complete!',
+        },
+        {
+          type: 'text',
+          value:
+            'Congratulations! Your job posting has been successfully created on OptaHire and is now live for candidates to view and apply.',
+        },
+        {
+          type: 'heading',
+          value: 'Job Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Title: ${job.title}`,
+            `Description: ${job.description}`,
+            `Requirements: ${requirementsArrayJoined}`,
+            `Benefits: ${benefitsArrayJoined}`,
+            `Company: ${job.company}`,
+            `Salary Range: ${job.salaryRange}`,
+            `Category: ${job.category}`,
+            `Location: ${job.location}`,
+          ],
+        },
+        {
+          type: 'heading',
+          value: 'Next Steps',
+        },
+        {
+          type: 'list',
+          value: [
+            'Review applications as they come in',
+            'Schedule interviews with promising candidates',
+            'Update the job posting if needed',
+            'Share the job on your professional networks',
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'View Your Job Posting',
+            link: `${process.env.CLIENT_URL}/jobs/${job.id}`,
+          },
+        },
+        {
+          type: 'text',
+          value:
+            'If you need any assistance with your job posting, our support team is here to help.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -178,6 +197,7 @@ const createJob = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
  */
 
@@ -264,8 +284,8 @@ const getAllJobs = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the job is not found.
  */
 
 const getJobById = asyncHandler(async (req, res) => {
@@ -324,8 +344,8 @@ const getJobById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the job is not found.
  */
 
 const updateJobById = asyncHandler(async (req, res) => {
@@ -429,46 +449,67 @@ const updateJobById = asyncHandler(async (req, res) => {
     benefits: benefitsArrayJoined,
   };
 
-  const emailContent = [
-    {
-      type: 'text',
-      value: 'Your job posting has been successfully updated on OptaHire.',
-    },
-    {
-      type: 'heading',
-      value: 'Updated Job Details',
-    },
-    {
-      type: 'list',
-      value: [
-        `Title: ${updatedJob.title}`,
-        `Description: ${updatedJob.description}`,
-        `Requirements: ${requirementsArrayJoined}`,
-        `Benefits: ${benefitsArrayJoined}`,
-        `Company: ${updatedJob.company}`,
-        `Salary Range: ${updatedJob.salaryRange}`,
-        `Category: ${updatedJob.category}`,
-        `Location: ${updatedJob.location}`,
-        `Status: ${updatedJob.isClosed ? 'Closed' : 'Open'}`,
-      ],
-    },
-    {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
-    },
-  ];
-
-  const emailHtml = generateEmailTemplate({
-    firstName: job.recruiter.firstName,
-    subject: 'OptaHire - Job Updated',
-    content: emailContent,
-  });
-
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Updated',
-    html: emailHtml,
+    html: generateEmailTemplate({
+      firstName: job.recruiter.firstName,
+      subject: 'OptaHire - Job Updated',
+      content: [
+        {
+          type: 'heading',
+          value: 'Job Update Complete!',
+        },
+        {
+          type: 'text',
+          value:
+            'Your job posting has been successfully updated on OptaHire and is now live for candidates to view and apply.',
+        },
+        {
+          type: 'heading',
+          value: 'Updated Job Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Title: ${updatedJob.title}`,
+            `Description: ${updatedJob.description}`,
+            `Requirements: ${requirementsArrayJoined}`,
+            `Benefits: ${benefitsArrayJoined}`,
+            `Company: ${updatedJob.company}`,
+            `Salary Range: ${updatedJob.salaryRange}`,
+            `Category: ${updatedJob.category}`,
+            `Location: ${updatedJob.location}`,
+          ],
+        },
+        {
+          type: 'heading',
+          value: 'Next Steps',
+        },
+        {
+          type: 'list',
+          value: [
+            'Review applications as they come in',
+            'Schedule interviews with promising candidates',
+            'Update the job posting if needed',
+            'Share the job on your professional networks',
+          ],
+        },
+        {
+          type: 'cta',
+          value: {
+            text: 'View Your Job Posting',
+            link: `${process.env.CLIENT_URL}/jobs/${updatedJob.id}`,
+          },
+        },
+        {
+          type: 'text',
+          value:
+            'If you need any assistance with your job posting, our support team is here to help.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
@@ -494,8 +535,8 @@ const updateJobById = asyncHandler(async (req, res) => {
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
+ *
  * @returns {Promise<void>}
- * @throws {Error} If the user is not found.
  */
 
 const deleteJobById = asyncHandler(async (req, res) => {
@@ -547,45 +588,47 @@ const deleteJobById = asyncHandler(async (req, res) => {
     benefits: benefitsArrayJoined,
   };
 
-  const emailContent = [
-    {
-      type: 'text',
-      value: 'Your job posting has been successfully deleted from OptaHire.',
-    },
-    {
-      type: 'heading',
-      value: 'Deleted Job Details',
-    },
-    {
-      type: 'list',
-      value: [
-        `Title: ${job.title}`,
-        `Description: ${job.description}`,
-        `Requirements: ${requirementsArrayJoined}`,
-        `Benefits: ${benefitsArrayJoined}`,
-        `Company: ${job.company}`,
-        `Salary Range: ${job.salaryRange}`,
-        `Category: ${job.category}`,
-        `Location: ${job.location}`,
-      ],
-    },
-    {
-      type: 'text',
-      value: 'Thank you for using OptaHire.',
-    },
-  ];
-
-  const emailHtml = generateEmailTemplate({
-    firstName: job.recruiter.firstName,
-    subject: 'OptaHire - Job Deleted',
-    content: emailContent,
-  });
-
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Deleted',
-    html: emailHtml,
+    html: generateEmailTemplate({
+      firstName: job.recruiter.firstName,
+      subject: 'OptaHire - Job Deleted',
+      content: [
+        {
+          type: 'heading',
+          value: 'Job Deletion Complete!',
+        },
+        {
+          type: 'text',
+          value:
+            'Your job posting has been successfully deleted from OptaHire. If you did not initiate this action, please contact our support team immediately.',
+        },
+        {
+          type: 'heading',
+          value: 'Deleted Job Details',
+        },
+        {
+          type: 'list',
+          value: [
+            `Title: ${job.title}`,
+            `Description: ${job.description}`,
+            `Requirements: ${requirementsArrayJoined}`,
+            `Benefits: ${benefitsArrayJoined}`,
+            `Company: ${job.company}`,
+            `Salary Range: ${job.salaryRange}`,
+            `Category: ${job.category}`,
+            `Location: ${job.location}`,
+          ],
+        },
+        {
+          type: 'text',
+          value:
+            'If you did not delete this job posting, please contact our support team immediately to secure your account.',
+        },
+      ],
+    }),
   });
 
   if (!isEmailSent) {
