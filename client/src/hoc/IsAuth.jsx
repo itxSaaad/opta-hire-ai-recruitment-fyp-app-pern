@@ -1,6 +1,9 @@
-import { useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { memo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
+
+import Loader from '../components/Loader';
 
 import { getExpectedRoute } from '../utils/helpers';
 
@@ -8,32 +11,56 @@ const IsAuth = (WrappedComponent) => {
   const WithAuthComponent = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { pathname } = location;
 
-    const user = useSelector((state) => state.auth.userInfo);
+    const { userInfo: user, loading } = useSelector((state) => state.auth);
 
     useEffect(() => {
-      if (!user || user === null) {
-        navigate('/auth/login');
+      if (loading) return;
+
+      if (!user) {
+        if (pathname !== '/auth/login') {
+          navigate('/auth/login', { replace: true });
+        }
         return;
       }
 
-      if (!user.isVerified && location.pathname !== '/auth/verify') {
-        navigate('/auth/verify');
+      if (!user.isVerified && pathname !== '/auth/verify') {
+        navigate('/auth/verify', { replace: true });
         return;
       }
 
       if (user.isVerified) {
         const expectedRoute = getExpectedRoute(user);
+
         if (
-          !location.pathname.startsWith(expectedRoute) &&
-          !location.pathname.startsWith('/auth')
+          pathname === '/auth/login' ||
+          pathname === '/auth/register' ||
+          pathname === '/auth/verify' ||
+          pathname === '/auth/reset-password'
         ) {
-          navigate(expectedRoute);
+          navigate(expectedRoute, { replace: true });
+          return;
+        }
+
+        const isAuthRoute = pathname.startsWith('/auth');
+        const isExpectedRoute = pathname.startsWith(expectedRoute);
+
+        if (!isExpectedRoute && !isAuthRoute) {
+          navigate(expectedRoute, { replace: true });
         }
       }
-    }, [user, navigate, location.pathname]);
+    }, [user, loading, navigate, pathname]);
 
-    if (location.pathname === '/auth/verify') {
+    if (loading) {
+      return <Loader />;
+    }
+
+    if (!user && pathname === '/auth/login') {
+      return <WrappedComponent {...props} />;
+    }
+
+    if (user && !user.isVerified && pathname === '/auth/verify') {
       return <WrappedComponent {...props} />;
     }
 
@@ -44,7 +71,15 @@ const IsAuth = (WrappedComponent) => {
     return null;
   };
 
-  return WithAuthComponent;
+  WithAuthComponent.displayName = `IsAuth(${
+    WrappedComponent.displayName || WrappedComponent.name || 'Component'
+  })`;
+
+  WithAuthComponent.propTypes = {
+    WrappedComponent: PropTypes.elementType.isRequired,
+  };
+
+  return memo(WithAuthComponent);
 };
 
 export default IsAuth;
