@@ -39,7 +39,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({
     where: { email },
     attributes: {
-      exclude: ['password', 'otp', 'otpExpires'],
+      exclude: ['otp', 'otpExpires'],
     },
   });
 
@@ -64,6 +64,8 @@ const loginUser = asyncHandler(async (req, res) => {
     sameSite: 'None',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
+
+  delete user.dataValues.password;
 
   res.status(StatusCodes.OK).json({
     success: true,
