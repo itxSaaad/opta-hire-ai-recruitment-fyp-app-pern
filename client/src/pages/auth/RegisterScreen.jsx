@@ -8,9 +8,6 @@ import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
-import { useRegisterMutation } from '../../features/auth/authApi';
-import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
-
 import { getExpectedRoute } from '../../utils/helpers';
 import {
   validateConfirmPassword,
@@ -20,7 +17,12 @@ import {
   validatePhone,
 } from '../../utils/validations';
 
-export default function RegisterScreen() {
+import { useRegisterMutation } from '../../features/auth/authApi';
+import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
+
+import IsAuth from '../../hoc/IsAuth';
+
+function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -257,3 +259,7 @@ export default function RegisterScreen() {
     </>
   );
 }
+
+const ProtectedRegisterScreen = IsAuth(RegisterScreen);
+
+export default ProtectedRegisterScreen;

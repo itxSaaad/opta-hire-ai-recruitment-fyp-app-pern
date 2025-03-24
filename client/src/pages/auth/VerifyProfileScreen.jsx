@@ -8,12 +8,13 @@ import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
-import IsAuth from '../../hoc/IsAuth';
-
 import { getExpectedRoute } from '../../utils/helpers';
 
 import { useRegenerateOTPMutation } from '../../features/auth/authApi';
-import { logoutUser } from '../../features/auth/authSlice';
+import { logoutUser, setUserInfo } from '../../features/auth/authSlice';
+import { useVerifyEmailMutation } from '../../features/user/userApi';
+
+import IsAuth from '../../hoc/IsAuth';
 
 function VerifyProfileScreen() {
   const [otp, setOtp] = useState('');
@@ -22,11 +23,10 @@ function VerifyProfileScreen() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const user = useSelector((state) => state.auth.userInfo);
+  const { userInfo: user } = useSelector((state) => state.auth);
 
-  // Uncomment and implement verifyEmail mutation when backend is ready.
-  // const [verifyEmail, { isLoading: isVerifying, error: verifyError }] =
-  //   useVerifyEmailMutation();
+  const [verifyEmail, { isLoading: isVerifyingEmail, error: verifyError }] =
+    useVerifyEmailMutation();
 
   const [regenerateOTP, { isLoading: isResendingOtp, error: resendError }] =
     useRegenerateOTPMutation();
@@ -44,18 +44,15 @@ function VerifyProfileScreen() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic OTP length validation.
     if (!otp || otp.length !== 6) {
       setErrorMsg('Please enter a valid 6-digit OTP.');
       return;
     }
 
     try {
-      // Uncomment the line below and use verifyEmail when ready.
-      // const result = await verifyEmail({ email: user.email, otp }).unwrap();
-      // dispatch(setUserInfo(result.user)); // Update the store with verified status.
+      const result = await verifyEmail({ email: user.email, otp }).unwrap();
+      dispatch(setUserInfo(result.user));
 
-      // For now, assume verification succeeds:
       const expectedRoute = getExpectedRoute(user);
       navigate(expectedRoute);
     } catch (err) {
@@ -103,11 +100,17 @@ function VerifyProfileScreen() {
             the OTP below to verify your email.
           </p>
 
-          {(resendError || errorMsg) && (
-            <ErrorMsg errorMsg={resendError?.data?.message || errorMsg} />
+          {(resendError || verifyError || errorMsg) && (
+            <ErrorMsg
+              errorMsg={
+                resendError?.data?.message ||
+                verifyError?.data?.message ||
+                errorMsg
+              }
+            />
           )}
 
-          {isResendingOtp ? (
+          {isResendingOtp || isVerifyingEmail ? (
             <Loader />
           ) : (
             <form className="space-y-4" onSubmit={handleSubmit}>

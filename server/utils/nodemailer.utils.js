@@ -264,7 +264,7 @@ const generateEmailTemplate = ({ firstName, subject, content = [] }) => {
     <body>
       <div class="container" role="main">
         <header class="header-container">
-          <img src="assets/logo.png" alt="OptaHire Logo" class="logo" />
+          <img src="https://opta-hire-develop-server.vercel.app/assets/logo.png" alt="OptaHire Logo" class="logo" />
           <div class="header" role="banner">
             <h1>OptaHire</h1>
             <h3 class="header-subheader">Optimizing Your Recruitment Journey</h3>

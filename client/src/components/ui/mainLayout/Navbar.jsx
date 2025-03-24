@@ -1,6 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { FaSignOutAlt } from 'react-icons/fa';
 import { FiMenu, FiX } from 'react-icons/fi';
-import { Link, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
+import { logoutUser } from '../../../features/auth/authSlice';
 
 import Logo from '../../../assets/images/logo.png';
 
@@ -25,7 +29,12 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { userInfo: user } = useSelector((state) => state.auth);
 
   const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
 
@@ -126,12 +135,25 @@ export default function Navbar() {
           {NavLinks.map((link, index) => renderNavLink(link, index))}
         </div>
 
-        <Link
-          to="/auth/login"
-          className="hidden md:flex text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out"
-        >
-          Login / Register
-        </Link>
+        {!user ? (
+          <Link
+            to="/auth/login"
+            className="hidden md:flex text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out"
+          >
+            Login / Register
+          </Link>
+        ) : (
+          <button
+            onClick={() => {
+              dispatch(logoutUser());
+              navigate('/auth/login');
+            }}
+            className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
+          >
+            <FaSignOutAlt className="inline-block -mt-1 mr-2" />
+            Logout
+          </button>
+        )}
 
         <div className="md:hidden">
           <button

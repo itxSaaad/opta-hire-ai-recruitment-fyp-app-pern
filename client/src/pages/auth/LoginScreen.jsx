@@ -14,7 +14,9 @@ import { validateEmail, validatePassword } from '../../utils/validations';
 import { useLoginMutation } from '../../features/auth/authApi';
 import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
 
-export default function LoginScreen() {
+import IsAuth from '../../hoc/IsAuth';
+
+function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
@@ -148,3 +150,7 @@ export default function LoginScreen() {
     </>
   );
 }
+
+const ProtectedLoginScreen = IsAuth(LoginScreen);
+
+export default ProtectedLoginScreen;
