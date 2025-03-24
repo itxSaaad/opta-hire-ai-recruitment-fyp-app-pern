@@ -7,6 +7,7 @@ const initialState = {
   accessToken: localStorage.getItem('accessToken')
     ? JSON.parse(localStorage.getItem('accessToken'))
     : null,
+  users: [],
 };
 
 const authSlice = createSlice({
@@ -21,9 +22,13 @@ const authSlice = createSlice({
       state.userInfo = action.payload;
       localStorage.setItem('userInfo', JSON.stringify(action.payload));
     },
+    setUsers: (state, action) => {
+      state.users = action.payload;
+    },
     logoutUser: (state) => {
       state.userInfo = null;
       state.accessToken = null;
+      state.users = [];
       localStorage.removeItem('userInfo');
       localStorage.removeItem('accessToken');
     },
