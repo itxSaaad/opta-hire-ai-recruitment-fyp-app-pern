@@ -2,6 +2,11 @@ import PropTypes from 'prop-types';
 import { FaChartLine, FaHandshake, FaUserTie } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
+import useTheme from '../../hooks/useTheme';
+
+import JobPortalDark from '../../assets/images/jobs_portal_dark.png';
+import JobPortalLight from '../../assets/images/jobs_portal_light.png';
+
 const features = [
   {
     icon: (
@@ -81,6 +86,8 @@ const SectionHeader = () => (
 );
 
 export default function ForCandidatesSection() {
+  const { theme } = useTheme();
+
   return (
     <section
       className="relative bg-light-background dark:bg-dark-background py-20 px-6 sm:px-12"
@@ -90,7 +97,7 @@ export default function ForCandidatesSection() {
         <SectionHeader />
         <div className="lg:w-1/2 order-last lg:order-first">
           <img
-            src="https://img.freepik.com/premium-vector/online-job-search-concept-group-people-are-looking-job-selection-resumes-interviews-via-internet_688351-112.jpg"
+            src={theme === 'dark' ? JobPortalDark : JobPortalLight}
             alt="For Candidates"
             className="rounded-xl shadow-lg w-full"
             loading="lazy"
