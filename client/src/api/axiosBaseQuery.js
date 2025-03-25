@@ -1,15 +1,19 @@
 import axiosInstance from './axiosInstance';
 
-export const axiosBaseQuery =
-  ({ baseUrl } = { baseUrl: '' }) =>
-  async ({ url, method, data, params, headers }) => {
+const axiosBaseQuery = ({ baseUrl } = { baseUrl: '' }) =>
+  async ({ url, method, data, params, headers }, { getState }) => {
     try {
+      const accessToken = getState().auth.accessToken;
+
       const result = await axiosInstance({
         url: baseUrl + url,
         method,
         data,
         params,
-        headers,
+        headers: {
+          ...headers,
+          Authorization: accessToken ? `Bearer ${accessToken}` : '',
+        },
       });
       return { data: result.data };
     } catch (axiosError) {

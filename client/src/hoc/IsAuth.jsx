@@ -18,6 +18,10 @@ const IsAuth = (WrappedComponent) => {
     useEffect(() => {
       if (loading) return;
 
+      if (!user && pathname === '/auth/reset-password') {
+        return;
+      }
+
       if (!user) {
         if (pathname !== '/auth/login') {
           navigate('/auth/login', { replace: true });
@@ -56,7 +60,10 @@ const IsAuth = (WrappedComponent) => {
       return <Loader />;
     }
 
-    if (!user && pathname === '/auth/login') {
+    if (
+      !user &&
+      (pathname === '/auth/login' || pathname === '/auth/reset-password')
+    ) {
       return <WrappedComponent {...props} />;
     }
 
@@ -76,7 +83,10 @@ const IsAuth = (WrappedComponent) => {
   })`;
 
   WithAuthComponent.propTypes = {
-    WrappedComponent: PropTypes.elementType.isRequired,
+    location: PropTypes.object,
+    navigate: PropTypes.func,
+    user: PropTypes.object,
+    loading: PropTypes.bool,
   };
 
   return memo(WithAuthComponent);
