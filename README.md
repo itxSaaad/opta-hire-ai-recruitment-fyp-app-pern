@@ -1,27 +1,27 @@
 # OptaHire - Optimizing Your Recruitment Journey
 
-> OptaHire is a modern AI-powered recruitment platform built on the MERN stack, designed to streamline hiring by connecting recruiters with verified interviewers and pre-screened candidates. This platform enhances the recruitment process by providing seamless interview scheduling, AI-based resume filtering, and video interview analysis.
+> This project is part of our Final Year Project (FYP) for the Bachelor's in Computer Science program at the University of the Punjab Gujranwala Campus (PUGC). The project aims to develop a web application that leverages AI and Machine Learning technologies to optimize the recruitment process for businesses and professionals. The project is developed using the MERN stack (MongoDB, Express.js, React.js, Node.js) and various other technologies and tools. The project is open-source and welcomes contributions from the community.
 
 <br/>
 <div align="center">
-  <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern">
+  <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern">
     <img src="/client/src/assets/images/logo.png" alt="Logo" width="100" height="100">
   </a>
 
   <h3 align="center">OptaHire</h3>
 
   <p align="center">
-    Optimize your recruitment journey with OptaHire!
+    Optimizing Your Recruitment Journey
     <br/>
     <br/>
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern"><strong>Explore the docs »</strong></a>
     <br/>
     <br/>
-    <a href="https://opta-hire-ai-recruitment-fyp-app-mern.vercel.app/">View Demo</a>
+    <a href="https://opta-hire-fyp-app-client.vercel.app/">View Demo</a>
     .
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues">Report Bug</a>
+    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues">Report Bug</a>
     .
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues">Request Feature</a>
+    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues">Request Feature</a>
   </p>
 </div>
 
@@ -39,13 +39,15 @@
     - [Production URLs](#production-urls)
     - [Development URLs](#development-urls)
   - [Features](#features)
-    - [1. Job Posting \& Management](#1-job-posting--management)
-    - [2. AI Resume Filtering](#2-ai-resume-filtering)
-    - [3. Interviewer Marketplace](#3-interviewer-marketplace)
-    - [4. Video Interviews with AI Summaries](#4-video-interviews-with-ai-summaries)
-    - [5. Secure Payment \& Verification](#5-secure-payment--verification)
-    - [6. Candidate Profile Import](#6-candidate-profile-import)
-    - [7. Automated Notifications](#7-automated-notifications)
+    - [1. User \& Authentication Management](#1-user--authentication-management)
+    - [2. Job Posting \& Management](#2-job-posting--management)
+    - [3. Application Processing](#3-application-processing)
+    - [4. Resume Management](#4-resume-management)
+    - [5. Interview Coordination](#5-interview-coordination)
+    - [6. Communication System](#6-communication-system)
+    - [7. Interviewer Marketplace](#7-interviewer-marketplace)
+    - [8. Contract \& Payment Processing](#8-contract--payment-processing)
+    - [9. System Security \& Performance](#9-system-security--performance)
   - [Built With](#built-with)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
@@ -58,7 +60,7 @@
 
 ## About The Project
 
-OptaHire revolutionizes hiring for busy professionals and businesses by enabling efficient recruitment through AI-powered tools. Recruiters can post jobs, connect with industry-experienced interviewers, schedule video interviews, and get AI-generated summaries for candidate evaluation. Designed for reliability and scalability, OptaHire aims to optimize recruitment with cutting-edge technologies.
+OptaHire is an AI-powered recruitment platform that aims to optimize the recruitment process for businesses and professionals. The platform offers a range of features such as job posting, resume filtering, interviewer marketplace, video interviews, secure payment processing, and communication tools. The platform leverages AI and Machine Learning technologies to automate and streamline the recruitment process, making it faster, more efficient, and cost-effective. The platform is designed to be user-friendly, secure, and scalable, catering to the needs of recruiters, candidates, and interviewers.
 
 ### Production URLs
 
@@ -72,66 +74,77 @@ OptaHire revolutionizes hiring for busy professionals and businesses by enabling
 
 ## Features
 
-### 1. Job Posting & Management
+### 1. User & Authentication Management
 
-- **Job Listings:** Post job openings with details such as Job Title, Description, Requirements, and Salary.
-- **Job Categories:** Organize jobs by categories such as Technology, Marketing, Sales, and Customer Service.
-- **Application Management:** View and manage job applications with candidate details and resume attachments.
-- **Job Search:** Find jobs by title, category, location, and salary range.
-- **Job Alerts:** Receive email notifications for new job postings based on preferences.
-- **Application Status:** Track application status with updates on shortlisting, interviews, and offers.
+- **User Profiles:** Create and manage user profiles with different roles (Candidate, Recruiter, Interviewer, Admin).
+- **Authentication:** Secure login, logout, and token refresh with JWT authentication.
+- **Security Features:** Rate limiting, protected routes, and role-based authorization.
+- **Password Management:** Update passwords, reset forgotten passwords, and verify email addresses.
+- **Profile Operations:** View, update, and delete user profiles with admin capabilities for user management.
 
-### 2. AI Resume Filtering
+### 2. Job Posting & Management
 
-- **Resume Parsing:** Extract candidate information from resumes for easy review and analysis.
-- **Skill Matching:** Match candidate skills with job requirements to identify suitable candidates.
-- **Keyword Search:** Search resumes for specific keywords, qualifications, or experience.
-- **Resume Summaries:** Get AI-generated summaries of candidate resumes for quick evaluation.
-- **Resume Ranking:** Rank resumes based on relevance to job criteria for efficient screening.
-- **Resume Storage:** Store and organize resumes securely for future reference.
+- **Job Listings:** Post job openings with comprehensive details via recruiter accounts.
+- **Job Operations:** Create, view, update, and delete job postings with role-based permissions.
+- **Job Accessibility:** Public job search and viewing with protected management functions.
+- **Application Tracking:** View all job applications associated with specific job postings.
 
-### 3. Interviewer Marketplace
+### 3. Application Processing
 
-- **Interviewer Profiles:** View profiles of experienced interviewers with ratings, reviews, and expertise.
-- **Interviewer Search:** Find interviewers by industry, experience, availability, and ratings.
-- **Interviewer Ratings:** Rate interviewers based on performance, professionalism, and communication.
-- **Interviewer Booking:** Schedule interviews with preferred interviewers based on availability.
-- **Interviewer Feedback:** Provide feedback on interviewer performance and interview quality.
+- **Application Submission:** Submit job applications as candidates with resume attachments.
+- **Application Management:** View, update, and manage applications with role-based permissions.
+- **Application Filtering:** Get applications by job ID for efficient management.
+- **Status Tracking:** Update and monitor application status through the hiring process.
 
-### 4. Video Interviews with AI Summaries
+### 4. Resume Management
 
-- **Video Interview Scheduling:** Schedule video interviews with candidates and interviewers at convenient times.
-- **Interview Recording:** Record video interviews for review, analysis, and feedback.
-- **AI Analysis:** Get AI-generated summaries of video interviews highlighting key points and insights.
-- **Interview Feedback:** Provide feedback on candidate responses, communication skills, and overall performance.
+- **Resume Creation:** Upload and create professional resumes with detailed information.
+- **Resume Operations:** View, update, and delete personal resumes.
+- **Admin Controls:** Administrative capabilities for resume management across the platform.
 
-### 5. Secure Payment & Verification
+### 5. Interview Coordination
 
-- **Payment Gateway:** Secure payment processing for job postings, interview bookings, and premium features.
-- **Verification Process:** Verify candidate identities, qualifications, and experience for authenticity.
-- **Fraud Prevention:** Prevent fraud and misuse through identity verification and secure payment methods.
-- **Data Protection:** Ensure data privacy and security with encryption, compliance, and secure storage.
+- **Interview Management:** Schedule, update, and manage interviews between candidates and interviewers.
+- **Job-Specific Interviews:** Associate interviews with specific job postings.
+- **Role-Based Controls:** Different permissions for interviewers, recruiters, and admins.
 
-### 6. Candidate Profile Import
+### 6. Communication System
 
-- **Profile Import:** Import candidate profiles from LinkedIn, Indeed, and other job portals for easy registration.
-- **Resume Upload:** Upload resumes in various formats such as PDF, DOC, and TXT for profile completion.
+- **Chat Rooms:** Create and manage chat rooms for secure communication.
+- **Message History:** Access complete history of communications within chat rooms.
+- **Controlled Access:** Role-based permissions for chat room creation and access.
 
-### 7. Automated Notifications
+### 7. Interviewer Marketplace
 
-- **Email Notifications:** Receive email notifications for job applications, interview schedules, and updates.
-- **SMS Alerts:** Get SMS alerts for urgent notifications, interview reminders, and application status changes.
-- **In-App Notifications:** View in-app notifications for new messages, job alerts, and system updates.
-- **Reminder Service:** Schedule reminders for interviews, application deadlines, and follow-ups.
+- **Interviewer Ratings:** Rate and review interviewers based on performance.
+- **Rating Management:** Create, view, update, and delete ratings with appropriate permissions.
+- **Job & Contract Association:** Associate ratings with specific jobs and contracts.
+
+### 8. Contract & Payment Processing
+
+- **Contract Management:** Create and manage contracts between recruiters and interviewers.
+- **Payment Processing:** Secure payment processing with Stripe integration.
+- **Transaction Tracking:** Record and monitor all financial transactions within the platform.
+- **Payment Workflow:** Structured checkout, capture, and completion process for payments.
+
+### 9. System Security & Performance
+
+- **Rate Limiting:** Prevent abuse with intelligent request rate limiting.
+- **Role Authorization:** Comprehensive role-based access control for all system functions.
+- **API Protection:** Secure API endpoints with authentication middleware.
+- **Transaction Security:** Secure payment processing and financial transaction management.
 
 ## Built With
 
-- **Frontend:** React.js (Vite.js) (Tailwind CSS) (React Router) (@reduxjs/toolkit) (React Redux)
-- **Backend:** Node.js (Express) (bcryptjs) (cors) (dotenv) (express-async-handler) (jsonwebtoken)
-- **Database:** MongoDB (Atlas) (Mongoose) (MongoDB Compass)
+- **Frontend:** React.js (Vite.js), Tailwind CSS, React Router, Redux Toolkit Query, React Redux, React Helmet, React Icons, Axios, Socket.io Client
+- **Backend:** Node.js, Express.js, bcryptjs, cors, dotenv, express-async-handler, jsonwebtoken, helmet, morgan, express-rate-limit, xss-clean, cookie-parser, Swagger UI
+- **Database:** PostgreSQL, Sequelize ORM
+- **Real-time Communication:** Socket.io, WebRTC
+- **Documentation:** Swagger JSDoc
 - **Authentication:** JSON Web Tokens (JWT)
+- **Payment Processing:** Stripe
 - **Version Control:** Git and GitHub
-- **Deployment:** Vercel (Frontend) (Heroku) (MongoDB Atlas)
+- **Deployment:** Vercel (Frontend), Heroku (Backend, PostrgeSQL)
 
 ## Getting Started
 
@@ -142,72 +155,113 @@ OptaHire revolutionizes hiring for busy professionals and businesses by enabling
 
 ### Installation
 
-1. Clone the repo
+1. Clone the repository
 
    ```sh
-    git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-mern.git
+     git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-pern.git
+     cd opta-hire-ai-recruitment-fyp-app-pern
    ```
 
-2. Install NPM packages from client and server directories
+2. Install dependencies for both client and server
 
    ```sh
-    npm install
+      # Install server dependencies
+      cd server
+      npm install
+
+      # Install client dependencies
+      cd ../client
+      npm install
    ```
 
-3. Create a `.env` file in the server directory and add the following
+3. Configure environment variables
+
+   **For the server (.env in server directory):**
+
+   ```
+      # Server Configuration
+      NODE_ENV=development
+      PORT=5000
+      SERVER_URL=http://localhost:5000
+      CLIENT_URL=http://localhost:5173
+      CORS_ORIGIN=http://localhost:5173
+
+      # Database Configuration
+      DATABASE_URL=postgresql://username:password@localhost:5432/optahire
+      DB_USERNAME=postgres
+      DB_PASSWORD=your_password
+      DB_DATABASE=optahire
+      DB_HOST=localhost
+      DB_PORT=5432
+
+      # Authentication
+      JWT_ACCESS_TOKEN_SECRET=your_access_token_secret
+      JWT_REFRESH_TOKEN_SECRET=your_refresh_token_secret
+      JWT_ACCESS_TOKEN_EXPIRY=15m
+      JWT_REFRESH_TOKEN_EXPIRY=7d
+
+      # Email Configuration
+      NODEMAILER_SMTP_SERVICE=gmail
+      NODEMAILER_SMTP_HOST=smtp.gmail.com
+      NODEMAILER_SMTP_PORT=587
+      NODEMAILER_SMTP_EMAIL=your-email@gmail.com
+      NODEMAILER_SMTP_PASSWORD=your_app_password
+
+      # Payments
+      STRIPE_SECRET_KEY=your_stripe_secret_key
+   ```
+
+   **For the client (.env in client directory):**
+
+   ```
+    VITE_SERVER_URL=http://localhost:5000
+    VITE_CLIENT_URL=http://localhost:5173
+   ```
+
+4. Set up the database
 
    ```sh
-    NODE_ENV = development
-    PORT = 5000
-    CORS_ORIGIN = <your_client_url>
-    DATABASE_URL = <your_postgres_database_url>
-    DB_USERNAME = <your_database_username>
-    DB_PASSWORD = <your_database_password
-    DB_DATABASE = <your_database_name>
-    DB_HOST = <your_database_host>
-    DB_PORT = <your_database_port>
-    JWT_ACCESS_TOKEN_SECRET = <your_access_token_secret>
-    JWT_REFRESH_TOKEN_SECRET = <your_refresh_token_secret>
-    JWT_ACCESS_TOKEN_EXPIRY = 15m
-    JWT_REFRESH_TOKEN_EXPIRY = 7d
-    NODEMAILER_SMTP_SERVICE = <your_smtp_service>
-    NODEMAILER_SMTP_HOST = <your_smtp_host>
-    NODEMAILER_SMTP_PORT = <your_smtp_port>
-    NODEMAILER_SMTP_EMAIL = <your_smtp_email>
-    NODEMAILER_SMTP_PASSWORD = <your_smtp_password>
+     # Navigate to server directory
+     cd ../server
+
+     # Create database tables with Sequelize migrations
+     npx sequelize-cli db:migrate
+
+     # Populate database with initial data
+     npx sequelize-cli db:seed:all
    ```
 
-4. Create a `.env` file in the client directory and add the following
+5. Start the development servers
 
    ```sh
-    VITE_SERVER_URL = <your_server_url>
-    VITE_CLIENT_URL = <your_client_url>
+      # Start the backend server (from server directory)
+      npm run dev
+
+      # In a new terminal, start the frontend
+      cd ../client
+      npm run dev
    ```
 
-5. Run the client from client directory
+6. Access the application
 
-   ```sh
-    npm run dev
-   ```
+- Frontend: [http://localhost:5173](http://localhost:5173)
+- Backend API: [http://localhost:5000](http://localhost:5000)
+- API Documentation: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 
-6. Run the server from server directory
-
-   ```sh
-    npm run dev
-   ```
+> **Note:** For production deployment, ensure you set appropriate environment variables with secure values and proper production configurations.
 
 ## Roadmap
 
-See the [open issues](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern) for a list of proposed features (and known issues).
+See the [open issues](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern) for a list of proposed features (and known issues).
 
 ## Contributing
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-- If you have suggestions for adding or removing projects, feel free to [open an issue](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues/new) to discuss it, or directly create a pull request after you edit the _README.md_ file with necessary changes.
+- If you have suggestions for adding or removing projects, feel free to [open an issue](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues/new) to discuss it, or directly create a pull request after you edit the _README.md_ file with necessary changes.
 - Please make sure you check your spelling and grammar.
 - Create individual PR for each suggestion.
-- Please also read through the [Code Of Conduct](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/blob/master/CODE_OF_CONDUCT.md) before posting your first idea as well.
+- Please also read through the [Code Of Conduct](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/blob/master/CODE_OF_CONDUCT.md) before posting your first idea as well.
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Don't forget to give the project a star! Thanks again!
 
@@ -224,7 +278,7 @@ If you have a suggestion that would make this better, please fork the repo and c
 - **Mirza Moiz** - Full Stack Developer - [mirza-moiz](https://github.com/mirza-moiz) - _Handling Backend and Database_ - _Documentation_
 - **Hassnain Raza** - Front End Developer - [hassnain512](https://github.com/hassnain512) - _Handling Frontend and Deployment_ - _Documentation_
 
-See also the list of [contributors](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/graphs/contributors)
+See also the list of [contributors](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/graphs/contributors)
 
 ## License
 
@@ -238,13 +292,13 @@ Give ⭐️ if you like this project!
 
 <!-- MARKDOWN LINKS & IMAGES -->
 
-[contributors-shield]: https://img.shields.io/github/contributors/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
-[contributors-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
-[forks-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/network/members
-[stars-shield]: https://img.shields.io/github/stars/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
-[stars-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/stargazers
-[issues-shield]: https://img.shields.io/github/issues/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
-[issues-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/issues
-[license-shield]: https://img.shields.io/github/license/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern.svg?style=for-the-badge
-[license-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-mern/blob/main/LICENSE.md
+[contributors-shield]: https://img.shields.io/github/contributors/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern.svg?style=for-the-badge
+[contributors-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern.svg?style=for-the-badge
+[forks-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/network/members
+[stars-shield]: https://img.shields.io/github/stars/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern.svg?style=for-the-badge
+[stars-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/stargazers
+[issues-shield]: https://img.shields.io/github/issues/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern.svg?style=for-the-badge
+[issues-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues
+[license-shield]: https://img.shields.io/github/license/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern.svg?style=for-the-badge
+[license-url]: https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/blob/main/LICENSE.md
