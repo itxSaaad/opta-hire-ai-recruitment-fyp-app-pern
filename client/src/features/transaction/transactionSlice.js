@@ -1,27 +1,35 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    transactions: [],
-    selectedTransaction: null,
+  selectedTransaction: null,
+  transactions: [],
 };
 
 const transactionSlice = createSlice({
-    name: 'transaction',
-    initialState,
-    reducers: {
-        setTransactions: (state, action) => {
-            state.transactions = action.payload;
-        },
-        setSelectedTransaction: (state, action) => {
-            state.selectedTransaction = action.payload;
-        },
-        clearSelectedTransaction: (state) => {
-            state.selectedTransaction = null;
-        },
+  name: 'transaction',
+  initialState,
+  reducers: {
+    setTransactions: (state, action) => {
+      state.transactions = action.payload;
     },
+    setSelectedTransaction: (state, action) => {
+      state.selectedTransaction = action.payload;
+    },
+    clearSelectedTransaction: (state) => {
+      state.selectedTransaction = null;
+    },
+    clearTransactionState: (state) => {
+      state.transactions = [];
+      state.selectedTransaction = null;
+    },
+  },
 });
 
-export const { setTransactions, setSelectedTransaction, clearSelectedTransaction } =
-    transactionSlice.actions;
+export const {
+  setTransactions,
+  setSelectedTransaction,
+  clearSelectedTransaction,
+  clearTransactionState,
+} = transactionSlice.actions;
 
 export default transactionSlice.reducer;

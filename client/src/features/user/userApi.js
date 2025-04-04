@@ -7,10 +7,10 @@ const ENDPOINTS = {
   UPDATE_PROFILE: '/users/profile',
   DELETE_PROFILE: '/users/profile',
   GET_ALL_USERS: '/users',
-  GET_USER_BY_ID: '/users/:id',
-  UPDATE_USER_BY_ID: '/users/:id',
-  DELETE_USER_BY_ID: '/users/:id',
-  DELETE_USER_PERMANENT: '/users/:id/permanent',
+  GET_USER_BY_ID: (id) => `/users/${id}`,
+  UPDATE_USER_BY_ID: (id) => `/users/${id}`,
+  DELETE_USER_BY_ID: (id) => `/users/${id}`,
+  DELETE_USER_PERMANENT: (id) => `/users/${id}/permanent`,
   VERIFY_EMAIL: '/users/verify-email',
   UPDATE_PASSWORD: '/users/update-password',
 };
@@ -51,14 +51,14 @@ export const userApi = createApi({
     }),
     getUserById: builder.query({
       query: (id) => ({
-        url: ENDPOINTS.GET_USER_BY_ID.replace(':id', id),
+        url: ENDPOINTS.GET_USER_BY_ID(id),
         method: 'GET',
       }),
       providesTags: ['User'],
     }),
     updateUserById: builder.mutation({
       query: ({ id, ...profileData }) => ({
-        url: ENDPOINTS.UPDATE_USER_BY_ID.replace(':id', id),
+        url: ENDPOINTS.UPDATE_USER_BY_ID(id),
         method: 'PUT',
         data: profileData,
       }),
@@ -66,14 +66,14 @@ export const userApi = createApi({
     }),
     deleteUserById: builder.mutation({
       query: (id) => ({
-        url: ENDPOINTS.DELETE_USER_BY_ID.replace(':id', id),
+        url: ENDPOINTS.DELETE_USER_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['User'],
     }),
     deleteUserPermanent: builder.mutation({
       query: (id) => ({
-        url: ENDPOINTS.DELETE_USER_PERMANENT.replace(':id', id),
+        url: ENDPOINTS.DELETE_USER_PERMANENT(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['User'],

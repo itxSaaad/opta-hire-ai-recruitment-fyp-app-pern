@@ -1,5 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+import { clearApplicationState } from '../application/applicationSlice';
+import { clearChatState } from '../chat/chatSlice';
+import { clearContractState } from '../contract/contractSlice';
+import { clearInterviewState } from '../interview/interviewSlice';
+import { clearInterviewerRatingState } from '../interviewerRating/interviewerRatingSlice';
+import { clearJobState } from '../job/jobSlice';
+import { clearResumeState } from '../resume/resumeSlice';
+import { clearTransactionState } from '../transaction/transactionSlice';
+
 const initialState = {
   userInfo: localStorage.getItem('userInfo')
     ? JSON.parse(localStorage.getItem('userInfo'))
@@ -31,6 +40,14 @@ const authSlice = createSlice({
       state.users = [];
       localStorage.removeItem('userInfo');
       localStorage.removeItem('accessToken');
+      clearApplicationState(state);
+      clearChatState(state);
+      clearContractState(state);
+      clearInterviewState(state);
+      clearInterviewerRatingState(state);
+      clearJobState(state);
+      clearResumeState(state);
+      clearTransactionState(state);
     },
   },
 });
