@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { FaTrash, FaUserEdit } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaUserEdit, FaTrash } from 'react-icons/fa';
-import PropTypes from 'prop-types';
 
 import ErrorMsg from '../components/ErrorMsg';
 import Loader from '../components/Loader';
+import Modal from '../components/Modal';
 import InputField from '../components/ui/mainLayout/InputField';
 
 import {
@@ -15,72 +15,15 @@ import {
   validatePhone,
 } from '../utils/validations';
 
+import { logoutUser, setUserInfo } from '../features/auth/authSlice';
 import {
-  useUpdateProfileMutation,
   useDeleteProfileMutation,
+  useUpdateProfileMutation,
 } from '../features/user/userApi';
-import { setUserInfo, logoutUser } from '../features/auth/authSlice';
 
-function Modal({ show, onClose, onConfirm }) {
-  Modal.propTypes = {
-    show: PropTypes.bool.isRequired,
-    onClose: PropTypes.func.isRequired,
-    onConfirm: PropTypes.func.isRequired,
-  };
-  const [display, setDisplay] = useState(show);
-  const [animate, setAnimate] = useState(false);
+import IsAuth from '../hoc/IsAuth';
 
-  useEffect(() => {
-    if (show) {
-      setDisplay(true);
-      setTimeout(() => setAnimate(true), 10);
-    } else {
-      setAnimate(false);
-      const timeout = setTimeout(() => setDisplay(false), 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [show]);
-
-  if (!display) return null;
-
-  return (
-    <div
-      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 ${
-        animate ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      <div
-        className={`bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-sm transform transition-all duration-300 ${
-          animate ? 'scale-100' : 'scale-95'
-        }`}
-      >
-        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
-          Confirm Deletion
-        </h2>
-        <p className="mb-6 text-gray-600 dark:text-gray-400">
-          Are you sure you want to delete your account? This action cannot be
-          undone.
-        </p>
-        <div className="flex justify-end space-x-2">
-          <button
-            className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
-            onClick={onClose}
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all duration-200"
-            onClick={onConfirm}
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function ProfileScreen() {
+function ProfileScreen() {
   const { userInfo: user, loading } = useSelector((state) => state.auth);
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
@@ -195,16 +138,16 @@ export function ProfileScreen() {
           content="View and update your profile information."
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-16 px-4 bg-gray-100 dark:bg-gray-900">
+      <section className="min-h-screen flex items-center justify-center pt-20 pb-14 px-4 bg-light-background dark:bg-dark-background">
         {loading || isLoading || isDeleting ? (
           <Loader />
         ) : (
-          <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="w-full max-w-md relative animate-fadeIn">
             <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+              <h2 className="text-3xl sm:text-4xl font-bold text-light-primary dark:text-dark-primary mb-4">
                 Your Profile
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-light-text dark:text-dark-text mb-6">
                 Manage your personal information
               </p>
             </div>
@@ -212,7 +155,11 @@ export function ProfileScreen() {
               {error && <ErrorMsg errorMsg={error.data?.message} />}
               {deleteError && <ErrorMsg errorMsg={deleteError.data?.message} />}
 
-              <form onSubmit={handleSubmit} noValidate>
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                className="space-y-4 sm:space-y-6"
+              >
                 <div className="grid grid-cols-1 sm:gap-4 sm:grid-cols-2">
                   <InputField
                     id="firstName"
@@ -252,24 +199,24 @@ export function ProfileScreen() {
                   className="cursor-not-allowed opacity-60"
                 />
 
-                <div className="mb-6">
-                  <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium">
+                <div className="mb-2">
+                  <label className="block text-light-text dark:text-dark-text text-sm font-medium mb-1">
                     Role
                   </label>
                   <input
                     type="text"
                     value={getRoleString()}
                     disabled
-                    className="mt-1 w-full p-3 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60"
+                    className="w-full p-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-light-text dark:text-dark-text cursor-not-allowed opacity-60"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className={`w-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-bold text-lg transition-all duration-300 shadow-xl ${
+                  className={`w-full flex items-center justify-center bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl ${
                     isLoading || !isFormChanged
                       ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:from-blue-600 hover:to-blue-700'
+                      : ''
                   }`}
                   disabled={isLoading || !isFormChanged}
                 >
@@ -279,10 +226,8 @@ export function ProfileScreen() {
 
                 <button
                   type="button"
-                  className={`w-full flex items-center justify-center bg-gradient-to-r from-red-500 to-red-600 text-white py-3 mt-4 rounded-lg font-bold text-lg transition-all duration-300 shadow-xl ${
-                    isDeleting
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:from-red-600 hover:to-red-700'
+                  className={`w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold text-lg active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                    isDeleting ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   onClick={() => setShowModal(true)}
                   disabled={isDeleting}
@@ -296,16 +241,39 @@ export function ProfileScreen() {
         )}
 
         <Modal
-          show={showModal}
+          isOpen={showModal}
           onClose={() => setShowModal(false)}
-          onConfirm={() => {
-            confirmDelete();
-            setShowModal(false);
-          }}
-        />
+          title="Confirm Deletion"
+        >
+          <div>
+            <p className="mb-6 text-light-text dark:text-dark-text">
+              Are you sure you want to delete your account? This action cannot
+              be undone.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all duration-200"
+                onClick={() => {
+                  confirmDelete();
+                  setShowModal(false);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
       </section>
     </>
   );
 }
 
-export default ProfileScreen;
+const ProtectedProfileScreen = IsAuth(ProfileScreen);
+
+export default ProtectedProfileScreen;

@@ -15,6 +15,8 @@ const IsAuth = (WrappedComponent) => {
 
     const { userInfo: user, loading } = useSelector((state) => state.auth);
 
+    const isAuthRoute = pathname.startsWith('/auth');
+
     useEffect(() => {
       if (loading) return;
 
@@ -34,27 +36,11 @@ const IsAuth = (WrappedComponent) => {
         return;
       }
 
-      if (user.isVerified) {
+      if (user.isVerified && isAuthRoute) {
         const expectedRoute = getExpectedRoute(user);
-
-        if (
-          pathname === '/auth/login' ||
-          pathname === '/auth/register' ||
-          pathname === '/auth/verify' ||
-          pathname === '/auth/reset-password'
-        ) {
-          navigate(expectedRoute, { replace: true });
-          return;
-        }
-
-        const isAuthRoute = pathname.startsWith('/auth');
-        const isExpectedRoute = pathname.startsWith(expectedRoute);
-
-        if (!isExpectedRoute && !isAuthRoute) {
-          navigate(expectedRoute, { replace: true });
-        }
+        navigate(expectedRoute, { replace: true });
       }
-    }, [user, loading, navigate, pathname]);
+    }, [user, loading, navigate, pathname, isAuthRoute]);
 
     if (loading) {
       return <Loader />;

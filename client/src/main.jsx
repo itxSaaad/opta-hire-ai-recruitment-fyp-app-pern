@@ -69,7 +69,9 @@ const router = createBrowserRouter(
 
       <Route element={<MainLayout />}>
         <Route index element={<HomeScreen />} />
-        <Route path="profile" element={<ProfileScreen />} />
+        <Route path="user">
+          <Route index path="profile" element={<ProfileScreen />} />
+        </Route>
         <Route path="jobs" element={<JobsScreen />} />
       </Route>
 
