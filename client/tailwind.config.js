@@ -10,7 +10,7 @@ export default {
           secondary: '#3946AE',
           background: '#FFFFFF',
           text: '#1A1A1A',
-          surface: '#F5F5F5',
+          surface: '#E8EDF5',
           border: '#E0E0E0',
         },
         dark: {

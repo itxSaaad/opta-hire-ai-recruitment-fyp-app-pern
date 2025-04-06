@@ -32,11 +32,11 @@ const Modal = ({ isOpen, onClose, children, title }) => {
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black opacity-50"
+        className="absolute inset-0 bg-black opacity-50 transition-opacity backdrop-blur-2xl"
         onClick={onClose}
       ></div>
 
-      <div className="relative bg-light-background dark:bg-dark-background rounded-lg shadow-lg z-10 w-full max-w-lg p-6">
+      <div className="relative bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg z-10 w-full max-w-lg p-6">
         <div className="flex justify-between items-center mb-4">
           {title && (
             <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">

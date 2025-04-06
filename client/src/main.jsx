@@ -43,12 +43,12 @@ import ResetPwdScreen from './pages/auth/ResetPwdScreen.jsx';
 import VerifyProfileScreen from './pages/auth/VerifyProfileScreen.jsx';
 import HomeScreen from './pages/HomeScreen.jsx';
 import JobsScreen from './pages/JobsScreen.jsx';
+import ProfileScreen from './pages/user/ProfileScreen.jsx';
+import ResumeScreen from './pages/user/ResumeScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
 import NotFoundScreen from './pages/NotFoundScreen.jsx';
-import ProfileScreen from './pages/ProfileScreen.jsx';
-import ResumeScreen from './pages/ResumeScreen.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
