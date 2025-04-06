@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FaSignOutAlt } from 'react-icons/fa';
+import {
+  FaFileAlt,
+  FaSignInAlt,
+  FaSignOutAlt,
+  FaUser,
+  FaHome,
+} from 'react-icons/fa';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { logoutUser } from '../../../features/auth/authSlice';
+
+import { getExpectedRoute } from '../../../utils/helpers';
 
 import Logo from '../../../assets/images/logo.png';
 
@@ -29,6 +37,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -104,6 +113,33 @@ export default function Navbar() {
     </Link>
   );
 
+  const getUserInitials = useCallback(() => {
+    if (!user) return 'U';
+
+    let initials = '';
+
+    if (user.firstName) {
+      initials += user.firstName[0].toUpperCase();
+    }
+
+    if (user.lastName) {
+      initials += user.lastName[0].toUpperCase();
+    }
+
+    return initials || 'U';
+  }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('.avatar-dropdown')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
+
   return (
     <header
       className={`fixed top-0 left-0 w-full z-50 transition-all p-4 ${
@@ -122,7 +158,7 @@ export default function Navbar() {
           <img
             src={Logo}
             alt="OptaHire Logo"
-            className={`w-10 h-10 transform transition-transform duration-500 ease-in-out ${
+            className={`w-10 h-10 transition-transform duration-500 ease-in-out ${
               isHover ? 'rotate-180 scale-110' : ''
             }`}
           />
@@ -138,27 +174,84 @@ export default function Navbar() {
         {!user ? (
           <Link
             to="/auth/login"
-            className="hidden md:flex text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out"
+            className="hidden md:flex text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out animate-fadeIn"
           >
             Login / Register
           </Link>
         ) : (
-          <button
-            onClick={() => {
-              dispatch(logoutUser());
-              navigate('/auth/login');
-            }}
-            className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
-          >
-            <FaSignOutAlt className="inline-block -mt-1 mr-2" />
-            Logout
-          </button>
+          <div className="relative avatar-dropdown hidden md:flex items-center">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-light-text dark:text-dark-text font-semibold">
+                {user.firstName} {user.lastName}
+              </p>
+              <button
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
+                className="w-10 h-10 rounded-full bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-dark-text font-semibold hover:ring-2 hover:ring-light-primary dark:hover:ring-dark-primary transition-all"
+                aria-label="User menu"
+              >
+                {getUserInitials()}
+              </button>
+            </div>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 z-50 rounded-lg bg-light-background dark:bg-dark-background shadow-xl ring-1 ring-light-border dark:ring-dark-border focus:outline-none transform-origin-top-right">
+                <div className="p-3 border-b border-light-border dark:border-dark-border">
+                  <p className="text-xs text-light-text/70 dark:text-dark-text/70">
+                    Signed in as
+                  </p>
+                  <p className="text-sm font-medium truncate text-light-primary dark:text-dark-primary">
+                    {user?.email || 'User'}
+                  </p>
+                </div>
+
+                <div className="py-1">
+                  <Link
+                    to={getExpectedRoute(user)}
+                    className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <FaHome className="mr-2" /> Dashboard
+                  </Link>
+
+                  <Link
+                    to="/user/profile"
+                    className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <FaUser className="mr-2" /> Profile
+                  </Link>
+
+                  <Link
+                    to="/user/resume"
+                    className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <FaFileAlt className="mr-2" /> Resume
+                  </Link>
+
+                  <div className="border-t border-light-border dark:border-dark-border my-1"></div>
+
+                  <button
+                    onClick={() => {
+                      dispatch(logoutUser());
+                      navigate('/auth/login');
+                    }}
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150"
+                  >
+                    <FaSignOutAlt className="mr-2" />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="md:hidden">
           <button
             onClick={toggleMenu}
             className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary z-20 transition duration-500 ease-in-out focus:outline-none"
+            aria-label="Menu"
           >
             {isMenuOpen ? (
               <FiX className="w-6 h-6 transform transition-transform duration-500 ease-in-out hover:rotate-180" />
@@ -172,14 +265,68 @@ export default function Navbar() {
               isMenuOpen ? 'translate-x-0' : 'translate-x-full'
             }`}
           >
-            {NavLinks.map((link, index) => renderNavLink(link, index, true))}
-            <Link
-              to="/auth/login"
-              className="block text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out mt-4"
-              onClick={toggleMenu}
-            >
-              Login / Register
-            </Link>
+            <div className="pt-4">
+              {NavLinks.map((link, index) => renderNavLink(link, index, true))}
+              {!user ? (
+                <Link
+                  to="/auth/login"
+                  className="block text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out mt-4"
+                  onClick={toggleMenu}
+                >
+                  <FaSignInAlt className="inline-block mr-2" />
+                  Login / Register
+                </Link>
+              ) : (
+                <>
+                  <div className="p-3 border-y border-light-border dark:border-dark-border">
+                    <p className="text-xs text-light-text/70 dark:text-dark-text/70">
+                      Signed in as
+                    </p>
+                    <p className="text-sm font-medium truncate text-light-primary dark:text-dark-primary">
+                      {user?.email || 'User'}
+                    </p>
+                  </div>
+
+                  <div className="py-1">
+                    <Link
+                      to={getExpectedRoute(user)}
+                      className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaHome className="mr-2" /> Dashboard
+                    </Link>
+                    <Link
+                      to="/user/profile"
+                      className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaUser className="mr-2" /> Profile
+                    </Link>
+
+                    <Link
+                      to="/user/resume"
+                      className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaFileAlt className="mr-2" /> Resume
+                    </Link>
+
+                    <div className="border-t border-light-border dark:border-dark-border my-1"></div>
+
+                    <button
+                      onClick={() => {
+                        dispatch(logoutUser());
+                        navigate('/auth/login');
+                      }}
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150"
+                    >
+                      <FaSignOutAlt className="mr-2" />
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </nav>
