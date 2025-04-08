@@ -1,6 +1,13 @@
 import PropTypes from 'prop-types';
 import { useCallback, useEffect, useState } from 'react';
-import { FaFileAlt, FaHome, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import {
+  FaFileAlt,
+  FaHome,
+  FaMoon,
+  FaSignOutAlt,
+  FaSun,
+  FaUser,
+} from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -10,6 +17,8 @@ import { logoutUser } from '../../../features/auth/authSlice';
 
 import { getExpectedRoute } from '../../../utils/helpers';
 
+import useTheme from '../../../hooks/useTheme';
+
 const TopNavbar = ({ navItems = [] }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isHover, setIsHover] = useState(false);
@@ -17,6 +26,8 @@ const TopNavbar = ({ navItems = [] }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+
+  const { theme, toggleTheme } = useTheme();
 
   const { userInfo: user } = useSelector((state) => state.auth);
 
@@ -97,86 +108,112 @@ const TopNavbar = ({ navItems = [] }) => {
           })}
         </div>
 
-        <div className="relative avatar-dropdown">
-          <div className="flex items-center space-x-3">
-            <p className="text-sm text-light-text dark:text-dark-text font-semibold">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <button
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className="w-10 h-10 rounded-full bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-dark-text font-semibold transition-all duration-300 hover:ring-2 hover:ring-light-primary dark:hover:ring-dark-primary hover:scale-105 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
-              aria-label="User menu"
-            >
-              {getUserInitials()}
-            </button>
+        <div className="flex flex-row-reverse md:flex-row items-center space-x-4 md:space-x-6">
+          <div className="relative avatar-dropdown">
+            <div className="flex items-center space-x-3">
+              <p className="hidden md:block text-sm text-light-text dark:text-dark-text font-semibold">
+                {user?.firstName} {user?.lastName}
+              </p>
+              <button
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
+                className="w-10 h-10 rounded-lg bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-dark-text font-semibold transition-all duration-300 hover:ring-2 hover:ring-light-primary dark:hover:ring-dark-primary hover:scale-105 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+                aria-label="User menu"
+              >
+                {getUserInitials()}
+              </button>
+            </div>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-full mt-6 w-60 z-50 rounded-lg bg-light-background dark:bg-dark-background shadow-xl ring-1 ring-light-border dark:ring-dark-border animate-slideUp">
+                <div className="p-4 border-b border-light-border dark:border-dark-border">
+                  <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-1">
+                    Signed in as
+                  </p>
+                  <p className="text-sm font-medium truncate text-light-primary dark:text-dark-primary">
+                    {user?.email || 'User'}
+                  </p>
+                </div>
+
+                <div className="py-2">
+                  <Link
+                    to={getExpectedRoute(user)}
+                    className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
+                      location.pathname === getExpectedRoute(user)
+                        ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
+                        : 'text-light-text dark:text-dark-text'
+                    }`}
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <FaHome className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
+                    Dashboard
+                  </Link>
+
+                  <Link
+                    to="/user/profile"
+                    className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
+                      location.pathname === '/user/profile'
+                        ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
+                        : 'text-light-text dark:text-dark-text'
+                    }`}
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <FaUser className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
+                    Profile
+                  </Link>
+
+                  <Link
+                    to="/user/resume"
+                    className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
+                      location.pathname === '/user/resume'
+                        ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
+                        : 'text-light-text dark:text-dark-text'
+                    }`}
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
+                    Resume
+                  </Link>
+
+                  <div className="border-t border-light-border dark:border-dark-border my-1.5"></div>
+
+                  <button
+                    onClick={() => {
+                      dispatch(logoutUser());
+                      navigate('/auth/login');
+                    }}
+                    className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group"
+                  >
+                    <FaSignOutAlt className="mr-3 group-hover:scale-110 transition-transform duration-200" />
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {isDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-60 z-50 rounded-lg bg-light-background dark:bg-dark-background shadow-xl ring-1 ring-light-border dark:ring-dark-border animate-slideUp">
-              <div className="p-4 border-b border-light-border dark:border-dark-border">
-                <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-1">
-                  Signed in as
-                </p>
-                <p className="text-sm font-medium truncate text-light-primary dark:text-dark-primary">
-                  {user?.email || 'User'}
-                </p>
-              </div>
-
-              <div className="py-2">
-                <Link
-                  to={getExpectedRoute(user)}
-                  className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
-                    location.pathname === getExpectedRoute(user)
-                      ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
-                      : 'text-light-text dark:text-dark-text'
+          <div className="flex items-center space-x-3">
+            <div className="relative inline-flex items-center">
+              <button
+                onClick={toggleTheme}
+                className={`w-12 h-7 rounded-full transition-colors duration-300 focus:outline-none ${
+                  theme === 'dark' ? 'bg-light-primary' : 'bg-gray-300'
+                }`}
+                aria-label="Toggle theme"
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-md transform duration-300 flex items-center justify-center ${
+                    theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
                   }`}
-                  onClick={() => setIsDropdownOpen(false)}
                 >
-                  <FaHome className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
-                  Dashboard
-                </Link>
-
-                <Link
-                  to="/user/profile"
-                  className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
-                    location.pathname === '/user/profile'
-                      ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
-                      : 'text-light-text dark:text-dark-text'
-                  }`}
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <FaUser className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
-                  Profile
-                </Link>
-
-                <Link
-                  to="/user/resume"
-                  className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
-                    location.pathname === '/user/resume'
-                      ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
-                      : 'text-light-text dark:text-dark-text'
-                  }`}
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
-                  Resume
-                </Link>
-
-                <div className="border-t border-light-border dark:border-dark-border my-1.5"></div>
-
-                <button
-                  onClick={() => {
-                    dispatch(logoutUser());
-                    navigate('/auth/login');
-                  }}
-                  className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group"
-                >
-                  <FaSignOutAlt className="mr-3 group-hover:scale-110 transition-transform duration-200" />
-                  Logout
-                </button>
-              </div>
+                  {theme === 'dark' ? (
+                    <FaMoon size={12} className="text-gray-600" />
+                  ) : (
+                    <FaSun size={12} className="text-yellow-500" />
+                  )}
+                </div>
+              </button>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </nav>

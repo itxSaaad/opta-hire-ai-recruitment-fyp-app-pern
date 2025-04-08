@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   FaFileAlt,
+  FaHome,
   FaSignInAlt,
   FaSignOutAlt,
   FaUser,
-  FaHome,
 } from 'react-icons/fa';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -186,7 +186,7 @@ export default function Navbar() {
               </p>
               <button
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="w-10 h-10 rounded-full bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-dark-text font-semibold hover:ring-2 hover:ring-light-primary dark:hover:ring-dark-primary transition-all"
+                className="w-10 h-10 rounded-lg bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-dark-text font-semibold hover:ring-2 hover:ring-light-primary dark:hover:ring-dark-primary transition-all"
                 aria-label="User menu"
               >
                 {getUserInitials()}
@@ -194,7 +194,7 @@ export default function Navbar() {
             </div>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-60 z-50 rounded-lg bg-light-background dark:bg-dark-background shadow-xl ring-1 ring-light-border dark:ring-dark-border animate-slideUp">
+              <div className="absolute right-0 top-full mt-6 w-60 z-50 rounded-lg bg-light-background dark:bg-dark-background shadow-xl ring-1 ring-light-border dark:ring-dark-border animate-slideUp">
                 <div className="p-4 border-b border-light-border dark:border-dark-border">
                   <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-1">
                     Signed in as

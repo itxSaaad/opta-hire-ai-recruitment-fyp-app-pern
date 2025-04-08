@@ -210,7 +210,7 @@ function ResumeScreen() {
           content="View and manage your resume details."
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-20 px-4 bg-light-background dark:bg-dark-background">
+      <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background">
         <div className="max-w-7xl relative animate-fadeIn">
           {overallLoading ? (
             <Loader />

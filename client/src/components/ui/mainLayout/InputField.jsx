@@ -92,7 +92,14 @@ const InputField = ({
 
 InputField.propTypes = {
   id: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['number', 'text', 'textarea', 'select']).isRequired,
+  type: PropTypes.oneOf([
+    'number',
+    'email',
+    'text',
+    'textarea',
+    'select',
+    'password',
+  ]).isRequired,
   label: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,

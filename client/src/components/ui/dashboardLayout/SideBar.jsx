@@ -1,22 +1,12 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import {
-  FaBars,
-  FaBriefcase,
-  FaChartBar,
-  FaCog,
-  FaHome,
-  FaSignOutAlt,
-  FaTimes,
-  FaUsers,
-} from 'react-icons/fa';
+import { FaBars, FaSignOutAlt, FaTimes } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-
 import { logoutUser } from '../../../features/auth/authSlice';
 
 const SideBar = ({ navItems = [] }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -24,35 +14,7 @@ const SideBar = ({ navItems = [] }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [defaultNavItems] = useState([
-    {
-      label: 'Dashboard',
-      path: '/admin',
-      icon: <FaHome className="text-lg" />,
-    },
-    {
-      label: 'Users',
-      path: '/admin/users',
-      icon: <FaUsers className="text-lg" />,
-    },
-    {
-      label: 'Jobs',
-      path: '/admin/jobs',
-      icon: <FaBriefcase className="text-lg" />,
-    },
-    {
-      label: 'Analytics',
-      path: '/admin/analytics',
-      icon: <FaChartBar className="text-lg" />,
-    },
-    {
-      label: 'Settings',
-      path: '/admin/settings',
-      icon: <FaCog className="text-lg" />,
-    },
-  ]);
-
-  const itemsToDisplay = navItems.length > 0 ? navItems : defaultNavItems;
+  const itemsToDisplay = navItems.length > 0 ? navItems : [];
 
   useEffect(() => {
     window.dispatchEvent(
@@ -82,15 +44,16 @@ const SideBar = ({ navItems = [] }) => {
 
   const toggleCollapse = () => {
     setCollapsed(!collapsed);
+    setIsVisible(!isVisible);
   };
 
   return (
     <>
       {isMobile && (
         <button
-          onClick={() => setIsVisible(!isVisible)}
+          onClick={toggleCollapse}
           aria-label={isVisible ? 'Close sidebar' : 'Open sidebar'}
-          className={`fixed bottom-20 left-4 z-50 bg-light-secondary dark:bg-dark-secondary text-dark-text rounded-full p-2 shadow-lg transition-transform duration-300 ease-in-out transform hover:scale-110 ${isVisible ? 'translate-y-0' : 'translate-y-full'} ${collapsed ? 'rotate-180' : ''}`}
+          className={`fixed bottom-20 left-4 z-50 bg-light-secondary dark:bg-dark-secondary text-dark-text rounded-lg p-3 shadow-lg transition-transform duration-300 ease-in-out transform hover:scale-110 ${isVisible ? 'translate-y-0' : 'translate-y-full'} ${collapsed ? 'rotate-180' : ''}`}
         >
           {isVisible ? (
             <FaTimes className="text-lg" />

@@ -41,9 +41,7 @@ const MainContent = ({ children, withSidebar = true }) => {
 
   return (
     <main
-      className={`flex-1 bg-light-background dark:bg-dark-background border-light-border dark:border-dark-border transition-all duration-300 ease-in-out max-w-[1600px] mx-auto rounded-lg shadow-sm dark:shadow-md ${
-        mounted ? 'animate-slideUp' : 'opacity-0'
-      } ${withSidebar && !isMobile ? (sidebarVisible ? (collapsed ? 'md:ml-24' : 'md:ml-80') : 'md:ml-0') : ''}`}
+      className={`flex-1 w-full bg-light-background dark:bg-dark-background border-light-border dark:border-dark-border transition-all duration-300 ease-in-out  mx-auto rounded-lg shadow-sm dark:shadow-md ${mounted ? 'animate-slideUp' : 'opacity-0'} ${withSidebar && !isMobile ? (sidebarVisible ? (collapsed ? 'md:ml-24 max-w-[90vw]' : 'md:ml-80 max-w-[70vw]') : 'md:ml-0') : ''}`}
     >
       {children}
     </main>
