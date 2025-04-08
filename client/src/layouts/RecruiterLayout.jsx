@@ -1,17 +1,20 @@
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 
-import Footer from '../components/ui/mainLayout/Footer';
-import Navbar from '../components/ui/mainLayout/Navbar';
+import BottomNavbar from '../components/ui/dashboardLayout/BottomNavbar';
+import MainContent from '../components/ui/dashboardLayout/MainContent';
+import TopNavbar from '../components/ui/dashboardLayout/TopNavbar';
 
 import IsAuth from '../hoc/IsAuth';
 
 function RecruiterLayout() {
   return (
     <>
-      <Navbar />
-      <Outlet />
+      <TopNavbar />
+      <MainContent withSidebar={false}>
+        <Outlet />
+      </MainContent>
+      <BottomNavbar />
       <ScrollRestoration />
-      <Footer />
     </>
   );
 }

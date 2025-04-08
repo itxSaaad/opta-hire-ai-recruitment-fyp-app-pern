@@ -1,20 +1,43 @@
+import { FaTachometerAlt, FaUserShield, FaUsers } from 'react-icons/fa';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 
-import Footer from '../components/ui/mainLayout/Footer';
-import Navbar from '../components/ui/mainLayout/Navbar';
+import MainContent from '../components/ui/dashboardLayout/MainContent';
+import SideBar from '../components/ui/dashboardLayout/SideBar';
+import TopNavbar from '../components/ui/dashboardLayout/TopNavbar';
 
 import IsAuth from '../hoc/IsAuth';
 
 const AdminLayout = () => {
+  const navItems = [
+    {
+      label: 'Dashboard',
+      icon: <FaTachometerAlt />,
+      path: '/admin/dashboard',
+    },
+    {
+      label: 'Users',
+      icon: <FaUsers />,
+      path: '/admin/users',
+    },
+    {
+      label: 'Roles',
+      icon: <FaUserShield />,
+      path: '/admin/roles',
+    },
+  ];
+
   return (
     <>
-      <Navbar />
-      <Outlet />
+      <TopNavbar />
+      <SideBar navItems={navItems} />
+      <MainContent withSidebar={true}>
+        <Outlet />
+      </MainContent>
       <ScrollRestoration />
-      <Footer />
     </>
   );
 };
 
 const ProtectedAdminLayout = IsAuth(AdminLayout);
+
 export default ProtectedAdminLayout;
