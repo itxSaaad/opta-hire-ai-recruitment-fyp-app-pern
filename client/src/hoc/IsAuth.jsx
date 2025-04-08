@@ -5,9 +5,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import Loader from '../components/Loader';
 
-import { getExpectedRoute } from '../utils/helpers';
+import { getExpectedRoute, getUserRole } from '../utils/helpers';
 
-const IsAuth = (WrappedComponent) => {
+const IsAuth = (WrappedComponent, allowedRoles = null) => {
   const WithAuthComponent = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -19,10 +19,6 @@ const IsAuth = (WrappedComponent) => {
 
     useEffect(() => {
       if (loading) return;
-
-      if (!user && pathname === '/auth/reset-password') {
-        return;
-      }
 
       if (!user) {
         if (pathname !== '/auth/login') {
@@ -36,32 +32,25 @@ const IsAuth = (WrappedComponent) => {
         return;
       }
 
+      if (!user && pathname === '/auth/reset-password') {
+        return;
+      }
+
+      if (allowedRoles && !allowedRoles.includes(getUserRole(user))) {
+        const expectedRoute = getExpectedRoute(user);
+        navigate(expectedRoute, { replace: true });
+      }
+
       if (user.isVerified && isAuthRoute) {
         const expectedRoute = getExpectedRoute(user);
         navigate(expectedRoute, { replace: true });
       }
-    }, [user, loading, navigate, pathname, isAuthRoute]);
+    }, [loading, user, pathname, navigate, allowedRoles, isAuthRoute]);
 
     if (loading) {
       return <Loader />;
     }
-
-    if (
-      !user &&
-      (pathname === '/auth/login' || pathname === '/auth/reset-password')
-    ) {
-      return <WrappedComponent {...props} />;
-    }
-
-    if (user && !user.isVerified && pathname === '/auth/verify') {
-      return <WrappedComponent {...props} />;
-    }
-
-    if (user && user.isVerified) {
-      return <WrappedComponent {...props} />;
-    }
-
-    return null;
+    return <WrappedComponent {...props} />;
   };
 
   WithAuthComponent.displayName = `IsAuth(${

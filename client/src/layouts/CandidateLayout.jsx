@@ -44,6 +44,6 @@ function CandidateLayout() {
   );
 }
 
-const ProtectedCandidateLayout = IsAuth(CandidateLayout);
+const ProtectedCandidateLayout = IsAuth(CandidateLayout, ['candidate']);
 
 export default ProtectedCandidateLayout;

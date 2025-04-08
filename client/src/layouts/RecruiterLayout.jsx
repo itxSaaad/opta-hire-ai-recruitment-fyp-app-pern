@@ -66,6 +66,6 @@ function RecruiterLayout() {
   );
 }
 
-const ProtectedRecruiterLayout = IsAuth(RecruiterLayout);
+const ProtectedRecruiterLayout = IsAuth(RecruiterLayout, ['recruiter']);
 
 export default ProtectedRecruiterLayout;

@@ -44,6 +44,6 @@ const AdminLayout = () => {
   );
 };
 
-const ProtectedAdminLayout = IsAuth(AdminLayout);
+const ProtectedAdminLayout = IsAuth(AdminLayout, ['admin']);
 
 export default ProtectedAdminLayout;

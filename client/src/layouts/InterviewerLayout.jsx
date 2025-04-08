@@ -54,6 +54,6 @@ function InterviewerLayout() {
   );
 }
 
-const ProtectedInterviewerLayout = IsAuth(InterviewerLayout);
+const ProtectedInterviewerLayout = IsAuth(InterviewerLayout, ['interviewer']);
 
 export default ProtectedInterviewerLayout;

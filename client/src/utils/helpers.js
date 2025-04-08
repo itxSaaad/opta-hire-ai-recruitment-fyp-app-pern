@@ -5,3 +5,11 @@ export const getExpectedRoute = (user) => {
   if (user.isCandidate) return '/candidate/dashboard';
   return '/';
 };
+
+export const getUserRole = (user) => {
+  if (user.isAdmin) return 'admin';
+  if (user.isRecruiter) return 'recruiter';
+  if (user.isInterviewer) return 'interviewer';
+  if (user.isCandidate) return 'candidate';
+  return 'user';
+};
