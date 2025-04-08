@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
+  FaAlignLeft,
+  FaBuilding,
+  FaCalendarAlt,
+  FaClipboardList,
+  FaEdit,
+  FaGraduationCap,
+  FaHeading,
+  FaIndustry,
+  FaRegAddressCard,
   FaSave,
+  FaTimes,
+  FaToolbox,
   FaTrash,
   FaUndo,
-  FaEdit,
-  FaEye,
-  FaTimes,
   FaUser,
-  FaToolbox,
-  FaClipboardList,
-  FaGraduationCap,
-  FaIndustry,
-  FaCalendarAlt,
-  FaBuilding,
-  FaRegAddressCard,
-  FaHeading,
-  FaAlignLeft,
 } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -27,19 +26,42 @@ import Modal from '../../components/Modal';
 import InputField from '../../components/ui/mainLayout/InputField';
 
 import {
+  useDeleteResumeMutation,
   useGetResumeForUserQuery,
   useUpdateResumeMutation,
-  useDeleteResumeMutation,
 } from '../../features/resume/resumeApi';
+
 import IsAuth from '../../hoc/IsAuth';
 
 function ResumeScreen() {
   const { userInfo: user, loading: authLoading } = useSelector(
     (state) => state.auth
   );
+
+  const [title, setTitle] = useState('');
+  const [headline, setHeadline] = useState('');
+  const [summary, setSummary] = useState('');
+  const [skills, setSkills] = useState([]);
+  const [newSkill, setNewSkill] = useState('');
+  const [experience, setExperience] = useState('');
+  const [education, setEducation] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [availability, setAvailability] = useState('Immediate');
+  const [company, setCompany] = useState('');
+  const [achievements, setAchievements] = useState('');
+  const [rating, setRating] = useState('');
+  const [portfolio, setPortfolio] = useState('');
+  const [lastDeletedSkill, setLastDeletedSkill] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Edit mode flags for individual sections
+  const [editOverview, setEditOverview] = useState(false);
+  const [editSkills, setEditSkills] = useState(false);
+  const [editExpEdu, setEditExpEdu] = useState(false);
+  const [editAdditional, setEditAdditional] = useState(false);
+
   const navigate = useNavigate();
 
-  // Query & mutation hooks
   const {
     data: resumeData,
     isLoading: resumeLoading,
@@ -50,34 +72,6 @@ function ResumeScreen() {
   const [deleteResume, { isLoading: deletingResume, error: deleteError }] =
     useDeleteResumeMutation();
 
-  // Local state for resume fields
-  const [title, setTitle] = useState('');
-  const [headline, setHeadline] = useState('');
-  const [summary, setSummary] = useState('');
-  const [skills, setSkills] = useState([]); // array of strings
-  const [newSkill, setNewSkill] = useState('');
-  const [experience, setExperience] = useState('');
-  const [education, setEducation] = useState('');
-  const [industry, setIndustry] = useState('');
-  const [availability, setAvailability] = useState('Immediate');
-  const [company, setCompany] = useState('');
-  const [achievements, setAchievements] = useState('');
-  const [rating, setRating] = useState('');
-  const [portfolio, setPortfolio] = useState('');
-
-  // For undo functionality in Skills
-  const [lastDeletedSkill, setLastDeletedSkill] = useState(null);
-
-  // For delete resume modal
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  // Edit mode flags for individual sections
-  const [editOverview, setEditOverview] = useState(false);
-  const [editSkills, setEditSkills] = useState(false);
-  const [editExpEdu, setEditExpEdu] = useState(false);
-  const [editAdditional, setEditAdditional] = useState(false);
-
-  // Load resume data into state when available
   useEffect(() => {
     if (resumeData && resumeData.profile) {
       const profile = resumeData.profile;
@@ -100,7 +94,6 @@ function ResumeScreen() {
     }
   }, [resumeData]);
 
-  // Save all changes (for each section, we use the same saveSection update)
   const saveSection = async () => {
     try {
       await updateResume({
@@ -117,7 +110,6 @@ function ResumeScreen() {
         rating: parseFloat(rating),
         portfolio,
       }).unwrap();
-      // Exit edit modes after saving
       setEditOverview(false);
       setEditSkills(false);
       setEditExpEdu(false);
@@ -127,7 +119,6 @@ function ResumeScreen() {
     }
   };
 
-  // Reset functions for each section
   const resetOverview = () => {
     if (resumeData?.profile) {
       const { title, headline, summary } = resumeData.profile;
@@ -176,7 +167,6 @@ function ResumeScreen() {
     setEditAdditional(false);
   };
 
-  // Skills handlers
   const handleAddNewSkill = () => {
     if (newSkill.trim() !== '') {
       setSkills([...skills, newSkill.trim()]);
@@ -199,7 +189,6 @@ function ResumeScreen() {
     }
   };
 
-  // Delete resume with modal confirmation
   const confirmDeleteResume = async () => {
     try {
       await deleteResume().unwrap();
@@ -210,20 +199,19 @@ function ResumeScreen() {
   };
 
   const overallLoading =
-    useSelector((state) => state.auth.loading) ||
-    authLoading ||
-    resumeLoading ||
-    updatingResume ||
-    deletingResume;
+    authLoading || resumeLoading || updatingResume || deletingResume;
 
   return (
     <>
       <Helmet>
         <title>Resume - OptaHire</title>
-        <meta name="description" content="View and update your resume." />
+        <meta
+          name="description"
+          content="View and manage your resume details."
+        />
       </Helmet>
-      <section className="min-h-screen py-20 px-4 bg-light-background dark:bg-dark-background">
-        <div className="max-w-7xl mx-auto relative animate-fadeIn">
+      <section className="min-h-screen flex items-center justify-center py-20 px-4 bg-light-background dark:bg-dark-background">
+        <div className="max-w-7xl relative animate-fadeIn">
           {overallLoading ? (
             <Loader />
           ) : (
@@ -248,16 +236,13 @@ function ResumeScreen() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  {/* Overview Card */}
-                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
-                          Overview
-                        </h3>
-                      </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6 animate-slideInLeft">
+                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
+                        Overview
+                      </h3>
                       {editOverview ? (
                         <button
                           type="button"
@@ -279,7 +264,7 @@ function ResumeScreen() {
                       )}
                     </div>
                     {editOverview ? (
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         <div className="flex flex-col gap-4">
                           <InputField
                             id="title"
@@ -295,7 +280,7 @@ function ResumeScreen() {
                             label="Headline"
                             value={headline}
                             onChange={(e) => setHeadline(e.target.value)}
-                            icon={<FaUser className="text-gray-400" />}
+                            icon={<FaHeading className="text-gray-400" />}
                           />
                         </div>
                         <InputField
@@ -305,7 +290,7 @@ function ResumeScreen() {
                           value={summary}
                           onChange={(e) => setSummary(e.target.value)}
                           rows={4}
-                          icon={<FaEye className="text-gray-400" />}
+                          icon={<FaAlignLeft className="text-gray-400" />}
                         />
                         <div className="flex justify-end">
                           <button
@@ -338,7 +323,6 @@ function ResumeScreen() {
                           </div>
                         </div>
 
-                        {/* Headline */}
                         <div className="border-b border-light-border dark:border-dark-border pb-4">
                           <div className="flex items-start">
                             <FaHeading
@@ -356,7 +340,6 @@ function ResumeScreen() {
                           </div>
                         </div>
 
-                        {/* Summary */}
                         <div className="pb-2">
                           <div className="flex items-start">
                             <FaAlignLeft
@@ -377,9 +360,8 @@ function ResumeScreen() {
                     )}
                   </div>
 
-                  {/* Skills Card */}
-                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
+                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
+                    <div className="flex justify-between items-center mb-6">
                       <div className="flex items-center gap-2">
                         <FaToolbox
                           className="text-light-primary dark:text-dark-primary"
@@ -411,7 +393,7 @@ function ResumeScreen() {
                     </div>
                     {editSkills ? (
                       <div>
-                        <div className="flex flex-wrap gap-2 mb-2">
+                        <div className="flex flex-wrap gap-2 mb-4">
                           {skills.map((skill, index) => (
                             <div
                               key={index}
@@ -421,14 +403,14 @@ function ResumeScreen() {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteSkill(index)}
-                                className="ml-1"
+                                className="ml-2"
                               >
                                 <FaTrash className="text-red-500" />
                               </button>
                             </div>
                           ))}
                         </div>
-                        <div className="flex items-start  gap-2">
+                        <div className="flex items-start gap-2">
                           <div className="flex-1">
                             <InputField
                               id="new-skill"
@@ -436,7 +418,6 @@ function ResumeScreen() {
                               label="Add a skill"
                               value={newSkill}
                               onChange={(e) => setNewSkill(e.target.value)}
-                              validationMessage={null}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                   e.preventDefault();
@@ -448,22 +429,26 @@ function ResumeScreen() {
                           <button
                             type="button"
                             onClick={handleAddNewSkill}
-                            className="mt-2 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                            className="mt-8 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
                           >
                             <FaSave />
                             Add
                           </button>
-                          {lastDeletedSkill !== null && (
+                        </div>
+
+                        {lastDeletedSkill !== null && (
+                          <div className="mt-2 flex justify-end">
                             <button
                               type="button"
                               onClick={handleUndoSkill}
-                              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full font-semibold transition-all duration-200 flex items-center gap-1"
+                              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
                             >
                               <FaUndo />
                               Undo
                             </button>
-                          )}
-                        </div>
+                          </div>
+                        )}
+
                         <div className="flex justify-end mt-4">
                           <button
                             type="button"
@@ -493,14 +478,11 @@ function ResumeScreen() {
                     )}
                   </div>
 
-                  {/* Experience & Education Card */}
-                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
-                          Experience & Education
-                        </h3>
-                      </div>
+                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
+                        Experience & Education
+                      </h3>
                       {editExpEdu ? (
                         <button
                           type="button"
@@ -522,7 +504,7 @@ function ResumeScreen() {
                       )}
                     </div>
                     {editExpEdu ? (
-                      <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-6">
                         <InputField
                           id="experience"
                           type="textarea"
@@ -554,7 +536,6 @@ function ResumeScreen() {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {/* Experience */}
                         <div className="border-b border-light-border dark:border-dark-border pb-4">
                           <div className="flex items-start">
                             <FaClipboardList
@@ -594,15 +575,12 @@ function ResumeScreen() {
                   </div>
                 </div>
 
-                {/* Right Column: Additional Details Card */}
-                <div>
-                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
-                          Additional Details
-                        </h3>
-                      </div>
+                <div className="space-y-6 animate-slideIn">
+                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
+                        Additional Details
+                      </h3>
                       {editAdditional ? (
                         <button
                           type="button"
@@ -624,58 +602,50 @@ function ResumeScreen() {
                       )}
                     </div>
                     {editAdditional ? (
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-2">
-                          <InputField
-                            id="industry"
-                            type="text"
-                            label="Industry"
-                            value={industry}
-                            onChange={(e) => setIndustry(e.target.value)}
-                            icon={<FaIndustry className="text-gray-400" />}
-                          />
-                        </div>
-                        <div className="flex flex-col">
-                          <InputField
-                            id="availability"
-                            type="select"
-                            label="Availability"
-                            value={availability}
-                            onChange={(e) => setAvailability(e.target.value)}
-                            options={[
-                              { value: 'Immediate', label: 'Immediate' },
-                              { value: 'Two weeks', label: 'Two weeks' },
-                              { value: 'One month', label: 'One month' },
-                              {
-                                value: 'More than a month',
-                                label: 'More than a month',
-                              },
-                              { value: 'Full-Time', label: 'Full-Time' },
-                            ]}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <InputField
-                            id="company"
-                            type="text"
-                            label="Company"
-                            value={company}
-                            onChange={(e) => setCompany(e.target.value)}
-                            icon={<FaBuilding className="text-gray-400" />}
-                          />
-                        </div>
-                        <div className="sm:col-span-3">
-                          <InputField
-                            id="achievements"
-                            type="textarea"
-                            label="Achievements"
-                            value={achievements}
-                            onChange={(e) => setAchievements(e.target.value)}
-                            rows={3}
-                            icon={<FaClipboardList className="text-gray-400" />}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:gap-4">
+                      <div className="flex flex-col gap-6">
+                        <InputField
+                          id="industry"
+                          type="text"
+                          label="Industry"
+                          value={industry}
+                          onChange={(e) => setIndustry(e.target.value)}
+                          icon={<FaIndustry className="text-gray-400" />}
+                        />
+                        <InputField
+                          id="availability"
+                          type="select"
+                          label="Availability"
+                          value={availability}
+                          onChange={(e) => setAvailability(e.target.value)}
+                          options={[
+                            { value: 'Immediate', label: 'Immediate' },
+                            { value: 'Two weeks', label: 'Two weeks' },
+                            { value: 'One month', label: 'One month' },
+                            {
+                              value: 'More than a month',
+                              label: 'More than a month',
+                            },
+                            { value: 'Full-Time', label: 'Full-Time' },
+                          ]}
+                        />
+                        <InputField
+                          id="company"
+                          type="text"
+                          label="Company"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          icon={<FaBuilding className="text-gray-400" />}
+                        />
+                        <InputField
+                          id="achievements"
+                          type="textarea"
+                          label="Achievements"
+                          value={achievements}
+                          onChange={(e) => setAchievements(e.target.value)}
+                          rows={3}
+                          icon={<FaClipboardList className="text-gray-400" />}
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <InputField
                             id="rating"
                             type="number"
@@ -696,7 +666,7 @@ function ResumeScreen() {
                             icon={<FaClipboardList className="text-gray-400" />}
                           />
                         </div>
-                        <div className="flex justify-end mt-4">
+                        <div className="flex justify-end">
                           <button
                             type="button"
                             onClick={saveSection}
@@ -709,7 +679,6 @@ function ResumeScreen() {
                       </div>
                     ) : (
                       <div className="space-y-6">
-                        {/* Industry */}
                         <div className="border-b border-light-border dark:border-dark-border pb-4">
                           <div className="flex items-start">
                             <FaIndustry
@@ -727,7 +696,6 @@ function ResumeScreen() {
                           </div>
                         </div>
 
-                        {/* Availability */}
                         <div className="border-b border-light-border dark:border-dark-border pb-4">
                           <div className="flex items-start">
                             <FaCalendarAlt
@@ -745,7 +713,6 @@ function ResumeScreen() {
                           </div>
                         </div>
 
-                        {/* Company */}
                         <div className="border-b border-light-border dark:border-dark-border pb-4">
                           <div className="flex items-start">
                             <FaBuilding
@@ -763,7 +730,6 @@ function ResumeScreen() {
                           </div>
                         </div>
 
-                        {/* Achievements */}
                         <div className="border-b border-light-border dark:border-dark-border pb-4">
                           <div className="flex items-start">
                             <FaClipboardList
@@ -781,7 +747,6 @@ function ResumeScreen() {
                           </div>
                         </div>
 
-                        {/* Rating */}
                         <div className="border-b border-light-border dark:border-dark-border pb-4">
                           <div className="flex items-start">
                             <FaCalendarAlt
@@ -799,7 +764,6 @@ function ResumeScreen() {
                           </div>
                         </div>
 
-                        {/* Portfolio */}
                         <div className="pb-2">
                           <div className="flex items-start">
                             <FaClipboardList
@@ -821,33 +785,25 @@ function ResumeScreen() {
                   </div>
                 </div>
               </div>
-
-              {/* Delete Resume Section */}
-              {!(
-                editOverview ||
-                editSkills ||
-                editExpEdu ||
-                editAdditional
-              ) && (
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg p-6 my-6">
-                  <h3 className="text-xl font-semibold text-red-600 dark:text-red-500 mb-4">
-                    Delete Resume
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <div className="animate-slideIn bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 mt-6">
+                <h3 className="text-xl font-semibold text-red-600 dark:text-red-500 mb-4">
+                  Delete Resume
+                </h3>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <p className="text-gray-600 dark:text-gray-400">
                     Once you delete your resume, it cannot be recovered.
                   </p>
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setShowDeleteModal(true)}
-                      className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-lg font-semibold text-lg transition-all duration-300"
-                    >
-                      <FaTrash className="mr-2" />
-                      Delete Resume
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteModal(true)}
+                    className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg font-semibold text-md transition-all duration-300 shadow-md hover:shadow-lg ml-auto sm:ml-0"
+                    disabled={deletingResume}
+                  >
+                    <FaTrash className="mr-2" />
+                    Delete Resume
+                  </button>
                 </div>
-              )}
+              </div>
             </>
           )}
         </div>

@@ -38,6 +38,7 @@ import IsAuth from '../../hoc/IsAuth';
 
 function ProfileScreen() {
   const { userInfo: user, loading } = useSelector((state) => state.auth);
+
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [phone, setPhone] = useState(user?.phone || '');
@@ -236,8 +237,8 @@ function ProfileScreen() {
           content="Manage your personal information and account security on OptaHire."
         />
       </Helmet>
-      <section className="min-h-screen py-20 px-4 bg-light-background dark:bg-dark-background">
-        <div className="max-w-7xl mx-auto relative animate-fadeIn">
+      <section className="min-h-screen flex items-center justify-center py-20 px-4 bg-light-background dark:bg-dark-background">
+        <div className="max-w-7xl relative animate-fadeIn">
           {loading || isLoading || isDeleting ? (
             <Loader />
           ) : (
