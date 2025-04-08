@@ -1,8 +1,8 @@
 import {
-  FaPaperPlane,
+  FaBriefcase,
+  FaCalendarAlt,
+  FaEnvelope,
   FaTachometerAlt,
-  FaUserTie,
-  FaVideo,
 } from 'react-icons/fa';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 
@@ -17,29 +17,21 @@ function CandidateLayout() {
     {
       label: 'Dashboard',
       path: '/candidate/dashboard',
-      icon: <FaTachometerAlt className="text-xl" />,
+      icon: <FaTachometerAlt />,
     },
-    {
-      label: 'Jobs',
-      path: '/candidate/jobs',
-      icon: <FaUserTie className="text-xl" />,
-    },
+    { label: 'Jobs', path: '/candidate/jobs', icon: <FaBriefcase /> },
     {
       label: 'Applications',
       path: '/candidate/applications',
-      icon: <FaPaperPlane className="text-xl" />,
+      icon: <FaEnvelope />,
     },
     {
       label: 'Interviews',
       path: '/candidate/interviews',
-      icon: <FaVideo className="text-xl" />,
-    },
-    {
-      label: 'Profile',
-      path: '/candidate/profile',
-      icon: <FaUserTie className="text-xl" />,
+      icon: <FaCalendarAlt />,
     },
   ];
+
   return (
     <>
       <TopNavbar navItems={navItems} />

@@ -1,4 +1,13 @@
-import { FaTachometerAlt, FaUserShield, FaUsers } from 'react-icons/fa';
+import {
+  FaBriefcase,
+  FaCalendarAlt,
+  FaChartBar,
+  FaCog,
+  FaEnvelopeOpenText,
+  FaFileContract,
+  FaTachometerAlt,
+  FaUsers,
+} from 'react-icons/fa';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 
 import MainContent from '../components/ui/dashboardLayout/MainContent';
@@ -9,21 +18,18 @@ import IsAuth from '../hoc/IsAuth';
 
 const AdminLayout = () => {
   const navItems = [
+    { label: 'Dashboard', path: '/admin/dashboard', icon: <FaTachometerAlt /> },
+    { label: 'Users', path: '/admin/users', icon: <FaUsers /> },
+    { label: 'Jobs', path: '/admin/jobs', icon: <FaBriefcase /> },
     {
-      label: 'Dashboard',
-      icon: <FaTachometerAlt />,
-      path: '/admin/dashboard',
+      label: 'Applications',
+      path: '/admin/applications',
+      icon: <FaEnvelopeOpenText />,
     },
-    {
-      label: 'Users',
-      icon: <FaUsers />,
-      path: '/admin/users',
-    },
-    {
-      label: 'Roles',
-      icon: <FaUserShield />,
-      path: '/admin/roles',
-    },
+    { label: 'Contracts', path: '/admin/contracts', icon: <FaFileContract /> },
+    { label: 'Interviews', path: '/admin/interviews', icon: <FaCalendarAlt /> },
+    { label: 'Reports', path: '/admin/reports', icon: <FaChartBar /> },
+    { label: 'Settings', path: '/admin/settings', icon: <FaCog /> },
   ];
 
   return (
