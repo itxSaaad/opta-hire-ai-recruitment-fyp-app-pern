@@ -37,15 +37,17 @@ import InterviewerLayout from './layouts/InterviewerLayout';
 import MainLayout from './layouts/MainLayout';
 import RecruiterLayout from './layouts/RecruiterLayout';
 
+import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
+
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
 import ResetPwdScreen from './pages/auth/ResetPwdScreen.jsx';
 import VerifyProfileScreen from './pages/auth/VerifyProfileScreen.jsx';
-import HomeScreen from './pages/HomeScreen.jsx';
-import JobsScreen from './pages/JobsScreen.jsx';
 import ProfileScreen from './pages/user/ProfileScreen.jsx';
 import ResumeScreen from './pages/user/ResumeScreen.jsx';
 
+import HomeScreen from './pages/HomeScreen.jsx';
+import JobsScreen from './pages/JobsScreen.jsx';
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
 import NotFoundScreen from './pages/NotFoundScreen.jsx';
@@ -54,8 +56,16 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" errorElement={<ErrorScreen />}>
       <Route path="admin" element={<AdminLayout />}>
-        <Route index element={<ComingSoon />} />
+        <Route index path="dashboard" element={<AdminDashboardScreen />} />
         <Route path="*" element={<ComingSoon />} />
+      </Route>
+
+      <Route path="auth">
+        <Route index element={<NotFoundScreen />} />
+        <Route path="login" element={<LoginScreen />} />
+        <Route path="register" element={<RegisterScreen />} />
+        <Route path="reset-password" element={<ResetPwdScreen />} />
+        <Route path="verify" element={<VerifyProfileScreen />} />
       </Route>
 
       <Route path="candidate" element={<CandidateLayout />}>
@@ -80,14 +90,6 @@ const router = createBrowserRouter(
       <Route path="recruiter" element={<RecruiterLayout />}>
         <Route index element={<ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
-      </Route>
-
-      <Route path="auth">
-        <Route index element={<NotFoundScreen />} />
-        <Route path="login" element={<LoginScreen />} />
-        <Route path="register" element={<RegisterScreen />} />
-        <Route path="reset-password" element={<ResetPwdScreen />} />
-        <Route path="verify" element={<VerifyProfileScreen />} />
       </Route>
 
       <Route path="*" element={<NotFoundScreen />} />
