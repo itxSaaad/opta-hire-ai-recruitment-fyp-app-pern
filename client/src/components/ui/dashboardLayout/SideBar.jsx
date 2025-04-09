@@ -74,12 +74,21 @@ const SideBar = ({ navItems = [] }) => {
                 <li key={index}>
                   <Link
                     to={item.path}
+                    onClick={() => {
+                      if (!collapsed) toggleCollapse();
+                      if (isMobile) setIsVisible(false);
+                      window.dispatchEvent(
+                        new CustomEvent('sidebarChange', {
+                          detail: { collapsed: true },
+                        })
+                      );
+                    }}
                     className={`flex items-center p-2 rounded-lg transition-all duration-200
-                                ${
-                                  isActive
-                                    ? 'bg-light-primary dark:bg-dark-primary text-white'
-                                    : 'text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface'
-                                } ${collapsed ? 'justify-center' : ''}`}
+                        ${
+                          isActive
+                            ? 'bg-light-primary dark:bg-dark-primary text-white'
+                            : 'text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface'
+                        } ${collapsed ? 'justify-center' : ''}`}
                   >
                     <span
                       className={`${isActive ? '' : 'text-light-text/70 dark:text-dark-text/70'} text-lg`}

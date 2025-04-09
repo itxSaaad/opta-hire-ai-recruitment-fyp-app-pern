@@ -38,6 +38,7 @@ import MainLayout from './layouts/MainLayout';
 import RecruiterLayout from './layouts/RecruiterLayout';
 
 import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
+import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
@@ -46,10 +47,10 @@ import VerifyProfileScreen from './pages/auth/VerifyProfileScreen.jsx';
 import ProfileScreen from './pages/user/ProfileScreen.jsx';
 import ResumeScreen from './pages/user/ResumeScreen.jsx';
 
-import HomeScreen from './pages/HomeScreen.jsx';
-import JobsScreen from './pages/JobsScreen.jsx';
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
+import HomeScreen from './pages/HomeScreen.jsx';
+import JobsScreen from './pages/JobsScreen.jsx';
 import NotFoundScreen from './pages/NotFoundScreen.jsx';
 
 const router = createBrowserRouter(
@@ -57,6 +58,7 @@ const router = createBrowserRouter(
     <Route path="/" errorElement={<ErrorScreen />}>
       <Route path="admin" element={<AdminLayout />}>
         <Route index path="dashboard" element={<AdminDashboardScreen />} />
+        <Route path="users" element={<AdminUsersScreen />} />
         <Route path="*" element={<ComingSoon />} />
       </Route>
 
