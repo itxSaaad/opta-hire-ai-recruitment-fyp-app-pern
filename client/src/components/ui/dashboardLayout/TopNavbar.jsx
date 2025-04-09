@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useCallback, useEffect, useState } from 'react';
 import {
+  FaAngleDown,
   FaFileAlt,
   FaHome,
   FaMoon,
@@ -108,19 +109,25 @@ const TopNavbar = ({ navItems = [] }) => {
           })}
         </div>
 
-        <div className="flex flex-row-reverse md:flex-row items-center space-x-4 md:space-x-6">
-          <div className="relative avatar-dropdown">
-            <div className="flex items-center space-x-3">
+        <div className="flex flex-row-reverse md:flex-row items-center space-x-0 space-x-reverse">
+          <div
+            className="relative avatar-dropdown flex items-center cursor-pointer p-2"
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
+          >
+            <div className="flex items-center space-x-2">
               <p className="hidden md:block text-sm text-light-text dark:text-dark-text font-semibold">
-                {user?.firstName} {user?.lastName}
+                {user.firstName} {user.lastName}
               </p>
-              <button
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="w-10 h-10 rounded-lg bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-dark-text font-semibold transition-all duration-300 hover:ring-2 hover:ring-light-primary dark:hover:ring-dark-primary hover:scale-105 focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
-                aria-label="User menu"
-              >
-                {getUserInitials()}
-              </button>
+              <div className="flex items-center space-x-1 p-1 rounded-full border border-light-border dark:border-dark-border hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200">
+                <span className="w-6 h-6 rounded-full bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-xs text-dark-text font-semibold">
+                  {getUserInitials()}
+                </span>
+                <FaAngleDown
+                  className={`text-light-text dark:text-dark-text transition-transform duration-200 ${
+                    isDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
             </div>
 
             {isDropdownOpen && (
@@ -137,11 +144,7 @@ const TopNavbar = ({ navItems = [] }) => {
                 <div className="py-2">
                   <Link
                     to={getExpectedRoute(user)}
-                    className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
-                      location.pathname === getExpectedRoute(user)
-                        ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
-                        : 'text-light-text dark:text-dark-text'
-                    }`}
+                    className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     <FaHome className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
@@ -150,11 +153,7 @@ const TopNavbar = ({ navItems = [] }) => {
 
                   <Link
                     to="/user/profile"
-                    className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
-                      location.pathname === '/user/profile'
-                        ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
-                        : 'text-light-text dark:text-dark-text'
-                    }`}
+                    className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     <FaUser className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
@@ -163,11 +162,7 @@ const TopNavbar = ({ navItems = [] }) => {
 
                   <Link
                     to="/user/resume"
-                    className={`flex items-center w-full px-4 py-2.5 text-sm hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group ${
-                      location.pathname === '/user/resume'
-                        ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-medium'
-                        : 'text-light-text dark:text-dark-text'
-                    }`}
+                    className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}

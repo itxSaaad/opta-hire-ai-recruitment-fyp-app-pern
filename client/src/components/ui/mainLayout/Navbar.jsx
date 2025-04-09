@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  FaAngleDown,
   FaFileAlt,
   FaHome,
   FaSignInAlt,
@@ -179,18 +180,24 @@ export default function Navbar() {
             Login / Register
           </Link>
         ) : (
-          <div className="relative avatar-dropdown hidden md:flex items-center">
+          <div
+            className="relative avatar-dropdown hidden md:flex items-center cursor-pointer p-2"
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
+          >
             <div className="flex items-center space-x-2">
               <p className="text-sm text-light-text dark:text-dark-text font-semibold">
                 {user.firstName} {user.lastName}
               </p>
-              <button
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="w-10 h-10 rounded-lg bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-dark-text font-semibold hover:ring-2 hover:ring-light-primary dark:hover:ring-dark-primary transition-all"
-                aria-label="User menu"
-              >
-                {getUserInitials()}
-              </button>
+              <div className="flex items-center space-x-1 p-1 rounded-full border border-light-border dark:border-dark-border hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200">
+                <span className="w-6 h-6 rounded-full bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-xs text-dark-text font-semibold">
+                  {getUserInitials()}
+                </span>
+                <FaAngleDown
+                  className={`text-light-text dark:text-dark-text transition-transform duration-200 ${
+                    isDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
             </div>
 
             {isDropdownOpen && (
