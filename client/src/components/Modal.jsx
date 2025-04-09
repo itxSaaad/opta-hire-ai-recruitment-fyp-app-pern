@@ -13,6 +13,16 @@ const Modal = ({ isOpen, onClose, children, title }) => {
   }
 
   useEffect(() => {
+    if (isOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
         onClose();
@@ -30,7 +40,7 @@ const Modal = ({ isOpen, onClose, children, title }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center py-24 px-4">
       <div
         className="absolute inset-0 bg-black opacity-50 transition-opacity backdrop-blur-2xl"
         onClick={onClose}
