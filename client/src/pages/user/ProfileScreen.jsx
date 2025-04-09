@@ -152,15 +152,16 @@ function ProfileScreen() {
 
     try {
       const result = await updateProfile({
-        id: user._id,
         firstName,
         lastName,
         phone,
         email,
       }).unwrap();
 
-      dispatch(setUserInfo(result.user));
-      setEditMode(false);
+      if (result.success) {
+        dispatch(setUserInfo(result.user));
+        setEditMode(false);
+      }
     } catch (err) {
       console.error('Profile update failed:', err);
     }
@@ -238,325 +239,319 @@ function ProfileScreen() {
         />
       </Helmet>
       <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background">
-        <div className="max-w-7xl relative animate-fadeIn">
-          {loading || isLoading || isDeleting ? (
+        {loading || isLoading || isDeleting ? (
+          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
             <Loader />
-          ) : (
-            <>
-              <div className="text-center mb-8">
-                <h2 className="text-3xl sm:text-4xl font-bold text-light-primary dark:text-dark-primary mb-2">
-                  Your Profile
-                </h2>
-                <p className="text-light-text dark:text-dark-text">
-                  Manage your personal information and account security
-                </p>
+          </div>
+        ) : (
+          <div className="w-full max-w-7xl relative animate-fadeIn">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl sm:text-4xl font-bold text-light-primary dark:text-dark-primary mb-2">
+                Your Profile
+              </h2>
+              <p className="text-light-text dark:text-dark-text">
+                Manage your personal information and account security
+              </p>
+            </div>
+
+            {error || passwordError || deleteError ? (
+              <ErrorMsg
+                errorMsg={
+                  error?.data?.message ||
+                  passwordError?.data?.message ||
+                  deleteError?.data?.message
+                }
+              />
+            ) : null}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideInLeft">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
+                    Personal Information
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setEditMode(!editMode)}
+                    className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                  >
+                    {editMode ? (
+                      <>
+                        <FaTimes /> Cancel
+                      </>
+                    ) : (
+                      <>
+                        <FaUserEdit /> Edit Profile
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {!editMode ? (
+                  <div className="space-y-6">
+                    <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="flex items-start">
+                        <FaUser
+                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          size={20}
+                        />
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Name
+                          </p>
+                          <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                            {user?.firstName || 'Not set'}{' '}
+                            {user?.lastName || ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="flex items-start">
+                        <FaPhone
+                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          size={20}
+                        />
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Phone
+                          </p>
+                          <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                            {user?.phone || 'Not set'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="flex items-start">
+                        <FaEnvelope
+                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          size={20}
+                        />
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Email
+                          </p>
+                          <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                            {user?.email || 'Not set'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pb-2">
+                      <div className="flex items-start">
+                        <FaIdCard
+                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          size={20}
+                        />
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Role
+                          </p>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {getRoleString()
+                              .split(', ')
+                              .map((role) => (
+                                <span
+                                  key={role}
+                                  className="text-lg font-medium text-light-text dark:text-dark-text"
+                                >
+                                  {role}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={handleSubmit}
+                    noValidate
+                    className="space-y-6"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <InputField
+                        id="firstName"
+                        type="text"
+                        label="First Name"
+                        value={firstName}
+                        onChange={(e) =>
+                          handleChange('firstName', e.target.value)
+                        }
+                        validationMessage={errors.firstName}
+                        icon={<FaUser className="text-gray-400" />}
+                      />
+                      <InputField
+                        id="lastName"
+                        type="text"
+                        label="Last Name"
+                        value={lastName}
+                        onChange={(e) =>
+                          handleChange('lastName', e.target.value)
+                        }
+                        validationMessage={errors.lastName}
+                        icon={<FaUser className="text-gray-400" />}
+                      />
+                    </div>
+
+                    <InputField
+                      id="phone"
+                      type="tel"
+                      label="Phone Number"
+                      value={phone}
+                      onChange={(e) => handleChange('phone', e.target.value)}
+                      validationMessage={errors.phone}
+                      icon={<FaPhone className="text-gray-400" />}
+                    />
+
+                    <InputField
+                      id="email"
+                      type="email"
+                      label="Email Address"
+                      value={email}
+                      onChange={(e) => handleChange('email', e.target.value)}
+                      validationMessage={errors.email}
+                      disabled
+                      className="cursor-not-allowed opacity-60"
+                      icon={<FaEnvelope className="text-gray-400" />}
+                    />
+
+                    <div className="flex justify-end pt-2">
+                      <button
+                        type="submit"
+                        className={`flex items-center justify-center bg-light-primary dark:bg-dark-primary text-white py-2 px-6 rounded-lg font-semibold text-md hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
+                          isLoading || !isFormChanged
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }`}
+                        disabled={isLoading || !isFormChanged}
+                      >
+                        <FaSave className="mr-2" />
+                        Save Changes
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
 
-              {error || passwordError || deleteError ? (
-                <ErrorMsg
-                  message={
-                    error?.data?.message ||
-                    passwordError?.data?.message ||
-                    deleteError?.data?.message
-                  }
-                />
-              ) : null}
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideInLeft">
+              <div className="space-y-6">
+                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
-                      Personal Information
+                      Password Management
                     </h3>
                     <button
                       type="button"
-                      onClick={() => setEditMode(!editMode)}
+                      onClick={() => setPasswordEditMode(!passwordEditMode)}
                       className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
                     >
-                      {editMode ? (
+                      {passwordEditMode ? (
                         <>
                           <FaTimes /> Cancel
                         </>
                       ) : (
                         <>
-                          <FaUserEdit /> Edit Profile
+                          <FaLock /> Change Password
                         </>
                       )}
                     </button>
                   </div>
 
-                  {!editMode ? (
-                    <div className="space-y-6">
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
-                        <div className="flex items-start">
-                          <FaUser
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
-                            size={20}
-                          />
-                          <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Name
-                            </p>
-                            <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                              {user?.firstName || 'Not set'}{' '}
-                              {user?.lastName || ''}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
-                        <div className="flex items-start">
-                          <FaPhone
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
-                            size={20}
-                          />
-                          <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Phone
-                            </p>
-                            <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                              {user?.phone || 'Not set'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
-                        <div className="flex items-start">
-                          <FaEnvelope
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
-                            size={20}
-                          />
-                          <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Email
-                            </p>
-                            <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                              {user?.email || 'Not set'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="pb-2">
-                        <div className="flex items-start">
-                          <FaIdCard
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
-                            size={20}
-                          />
-                          <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Role
-                            </p>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {getRoleString()
-                                .split(', ')
-                                .map((role) => (
-                                  <span
-                                    key={role}
-                                    className="text-lg font-medium text-light-text dark:text-dark-text"
-                                  >
-                                    {role}
-                                  </span>
-                                ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <form
-                      onSubmit={handleSubmit}
-                      noValidate
-                      className="space-y-6"
-                    >
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <InputField
-                          id="firstName"
-                          type="text"
-                          label="First Name"
-                          value={firstName}
-                          onChange={(e) =>
-                            handleChange('firstName', e.target.value)
-                          }
-                          validationMessage={errors.firstName}
-                          icon={<FaUser className="text-gray-400" />}
-                        />
-                        <InputField
-                          id="lastName"
-                          type="text"
-                          label="Last Name"
-                          value={lastName}
-                          onChange={(e) =>
-                            handleChange('lastName', e.target.value)
-                          }
-                          validationMessage={errors.lastName}
-                          icon={<FaUser className="text-gray-400" />}
-                        />
-                      </div>
-
+                  {passwordEditMode ? (
+                    <form onSubmit={handlePasswordSubmit} className="space-y-6">
                       <InputField
-                        id="phone"
-                        type="tel"
-                        label="Phone Number"
-                        value={phone}
-                        onChange={(e) => handleChange('phone', e.target.value)}
-                        validationMessage={errors.phone}
-                        icon={<FaPhone className="text-gray-400" />}
+                        id="currentPassword"
+                        type="password"
+                        label="Current Password"
+                        value={currentPassword}
+                        onChange={(e) =>
+                          handleChange('currentPassword', e.target.value)
+                        }
+                        validationMessage={errors.currentPassword}
+                        icon={<FaLock className="text-gray-400" />}
                       />
 
                       <InputField
-                        id="email"
-                        type="email"
-                        label="Email Address"
-                        value={email}
-                        onChange={(e) => handleChange('email', e.target.value)}
-                        validationMessage={errors.email}
-                        disabled
-                        className="cursor-not-allowed opacity-60"
-                        icon={<FaEnvelope className="text-gray-400" />}
+                        id="newPassword"
+                        type="password"
+                        label="New Password"
+                        value={newPassword}
+                        onChange={(e) =>
+                          handleChange('newPassword', e.target.value)
+                        }
+                        validationMessage={errors.newPassword}
+                        icon={<FaLock className="text-gray-400" />}
                       />
 
-                      <div className="flex justify-end pt-2">
+                      <InputField
+                        id="confirmPassword"
+                        type="password"
+                        label="Confirm New Password"
+                        value={confirmPassword}
+                        onChange={(e) =>
+                          handleChange('confirmPassword', e.target.value)
+                        }
+                        validationMessage={errors.confirmPassword}
+                        icon={<FaLock className="text-gray-400" />}
+                      />
+
+                      <div className="flex justify-end">
                         <button
                           type="submit"
                           className={`flex items-center justify-center bg-light-primary dark:bg-dark-primary text-white py-2 px-6 rounded-lg font-semibold text-md hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
-                            isLoading || !isFormChanged
+                            isUpdatingPassword || !isPasswordFormValid
                               ? 'opacity-50 cursor-not-allowed'
                               : ''
                           }`}
-                          disabled={isLoading || !isFormChanged}
+                          disabled={isUpdatingPassword || !isPasswordFormValid}
                         >
-                          <FaSave className="mr-2" />
-                          Save Changes
+                          <FaLock className="mr-2" />
+                          Update Password
                         </button>
                       </div>
                     </form>
+                  ) : (
+                    <div className="flex items-center text-gray-500 dark:text-gray-400">
+                      <p>
+                        For security reasons, your password is never displayed.
+                        Click &apos;Change Password&apos; to update it.
+                      </p>
+                    </div>
                   )}
                 </div>
 
-                <div className="space-y-6">
-                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
-                        Password Management
-                      </h3>
-                      <button
-                        type="button"
-                        onClick={() => setPasswordEditMode(!passwordEditMode)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
-                      >
-                        {passwordEditMode ? (
-                          <>
-                            <FaTimes /> Cancel
-                          </>
-                        ) : (
-                          <>
-                            <FaLock /> Change Password
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    {passwordEditMode ? (
-                      <form
-                        onSubmit={handlePasswordSubmit}
-                        className="space-y-6"
-                      >
-                        <InputField
-                          id="currentPassword"
-                          type="password"
-                          label="Current Password"
-                          value={currentPassword}
-                          onChange={(e) =>
-                            handleChange('currentPassword', e.target.value)
-                          }
-                          validationMessage={errors.currentPassword}
-                          icon={<FaLock className="text-gray-400" />}
-                        />
-
-                        <InputField
-                          id="newPassword"
-                          type="password"
-                          label="New Password"
-                          value={newPassword}
-                          onChange={(e) =>
-                            handleChange('newPassword', e.target.value)
-                          }
-                          validationMessage={errors.newPassword}
-                          icon={<FaLock className="text-gray-400" />}
-                        />
-
-                        <InputField
-                          id="confirmPassword"
-                          type="password"
-                          label="Confirm New Password"
-                          value={confirmPassword}
-                          onChange={(e) =>
-                            handleChange('confirmPassword', e.target.value)
-                          }
-                          validationMessage={errors.confirmPassword}
-                          icon={<FaLock className="text-gray-400" />}
-                        />
-
-                        <div className="flex justify-end">
-                          <button
-                            type="submit"
-                            className={`flex items-center justify-center bg-light-primary dark:bg-dark-primary text-white py-2 px-6 rounded-lg font-semibold text-md hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
-                              isUpdatingPassword || !isPasswordFormValid
-                                ? 'opacity-50 cursor-not-allowed'
-                                : ''
-                            }`}
-                            disabled={
-                              isUpdatingPassword || !isPasswordFormValid
-                            }
-                          >
-                            <FaLock className="mr-2" />
-                            Update Password
-                          </button>
-                        </div>
-                      </form>
-                    ) : (
-                      <div className="flex items-center text-gray-500 dark:text-gray-400">
-                        <p>
-                          For security reasons, your password is never
-                          displayed. Click &apos;Change Password&apos; to update
-                          it.
-                        </p>
-                      </div>
-                    )}
+                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
+                  <h3 className="text-xl font-semibold text-red-600 dark:text-red-500 mb-4">
+                    Delete Account
+                  </h3>
+                  <div className="flex items-start mb-6">
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Once you delete your account, there is no going back.
+                      Please be certain.
+                    </p>
                   </div>
-
-                  <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
-                    <h3 className="text-xl font-semibold text-red-600 dark:text-red-500 mb-4">
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      className={`flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg font-semibold text-md active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
+                        isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      onClick={() => setShowModal(true)}
+                      disabled={isDeleting}
+                    >
+                      <FaTrash className="mr-2" />
                       Delete Account
-                    </h3>
-                    <div className="flex items-start mb-6">
-                      <p className="text-gray-600 dark:text-gray-400">
-                        Once you delete your account, there is no going back.
-                        Please be certain.
-                      </p>
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        className={`flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg font-semibold text-md active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
-                          isDeleting ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                        onClick={() => setShowModal(true)}
-                        disabled={isDeleting}
-                      >
-                        <FaTrash className="mr-2" />
-                        Delete Account
-                      </button>
-                    </div>
+                    </button>
                   </div>
                 </div>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
 
         <Modal
           isOpen={showModal}
