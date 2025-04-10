@@ -40,6 +40,8 @@ import RecruiterLayout from './layouts/RecruiterLayout';
 import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
 import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 
+import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
+
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
 import ResetPwdScreen from './pages/auth/ResetPwdScreen.jsx';
@@ -72,6 +74,7 @@ const router = createBrowserRouter(
 
       <Route path="candidate" element={<CandidateLayout />}>
         <Route index element={<ComingSoon />} />
+        <Route path="jobs" element={<CandidateJobsScreen />} />
         <Route path="*" element={<ComingSoon />} />
       </Route>
 

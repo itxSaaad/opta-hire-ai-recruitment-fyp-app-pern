@@ -10,18 +10,19 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../components/ErrorMsg';
-import Loader from '../components/Loader';
+import ErrorMsg from '../../components/ErrorMsg';
+import Loader from '../../components/Loader';
 
-import { useGetAllJobsQuery } from '../features/job/jobApi';
-import { setSelectedJob } from '../features/job/jobSlice';
+import { useGetAllJobsQuery } from '../../features/job/jobApi';
+import { setSelectedJob } from '../../features/job/jobSlice';
 
 export default function JobsScreen() {
-  const [displayJobs, setDisplayJobs] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [location, setLocation] = useState('');
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const user = useSelector((state) => state.auth.userInfo);
   const selectedJob = useSelector((state) => state.job.selectedJob);
 
@@ -35,38 +36,43 @@ export default function JobsScreen() {
     }
   };
 
-  const handleViewMore = () => {
-    if (user) {
-      navigate('/candidate/dashboard');
-    } else {
-      navigate('/auth/login');
+  useEffect(() => {
+    if (jobsData) {
+      const filtered = jobsData.jobs.filter((job) => {
+        const jobTitle = job.title.toLowerCase();
+        const jobLocation = job.location.toLowerCase();
+        const search = searchTerm.toLowerCase();
+        const loc = location.toLowerCase();
+
+        return (
+          (jobTitle.includes(search) || jobLocation.includes(search)) &&
+          (jobLocation.includes(loc) || jobTitle.includes(loc))
+        );
+      });
+      setFilteredJobs(filtered);
     }
-  };
+  }, [jobsData, searchTerm, location]);
 
   useEffect(() => {
-    if (jobsData && jobsData.jobs.length > 0) {
-      const topThreeJobs = jobsData.jobs.slice(0, 3);
-      setDisplayJobs(topThreeJobs);
-
-      dispatch(setSelectedJob(topThreeJobs[0]));
+    if (!user) {
+      dispatch(setSelectedJob(null));
     }
-  }, [jobsData, dispatch]);
+  }, [user, dispatch]);
 
   return (
     <>
       <Helmet>
-        <title>Jobs - OptaHire</title>
+        <title>Job Listings [Candidate]- OptaHire</title>
         <meta
           name="description"
-          content="Explore job opportunities and find your next career move with OptaHire. Search for jobs by title, location, and more."
+          content="Explore job opportunities tailored for you. Search by title, location, and more to find your perfect fit."
         />
         <meta
           name="keywords"
-          content="jobs, career, job search, employment, opportunities, OptaHire"
+          content="job listings, job search, career opportunities, find jobs, job openings, employment, job vacancies"
         />
       </Helmet>
-      <section className="relative min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-light-primary/20 to-light-background dark:from-dark-primary/20 dark:to-dark-background" />
+      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
         <div className="max-w-7xl mx-auto text-center animate-slideUp">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-light-text dark:text-dark-text mb-6">
             Discover Your Next{' '}
@@ -80,7 +86,8 @@ export default function JobsScreen() {
               <input
                 type="text"
                 placeholder="Search jobs..."
-                disabled
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 rounded-lg bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none transition-all duration-300 hover:shadow-md"
               />
             </div>
@@ -89,7 +96,8 @@ export default function JobsScreen() {
               <input
                 type="text"
                 placeholder="Location..."
-                disabled
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 className="w-full pl-12 pr-4 py-4 rounded-lg bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none transition-all duration-300 hover:shadow-md"
               />
             </div>
@@ -102,15 +110,15 @@ export default function JobsScreen() {
           </div>
         ) : error ? (
           <ErrorMsg errorMsg={error} />
-        ) : displayJobs.length > 0 ? (
+        ) : filteredJobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl mx-auto">
             <div className="space-y-4 pr-0 md:pr-8 md:border-r md:border-light-border dark:md:border-dark-border animate-slideInLeft">
               <h2 className="text-xl font-bold text-light-text dark:text-dark-text mb-4 flex items-center">
                 <FaBriefcase className="mr-2 text-light-primary dark:text-dark-primary" />
-                Available Positions ({displayJobs.length})
+                Available Positions ({filteredJobs.length})
               </h2>
 
-              {displayJobs.map((job, index) => (
+              {filteredJobs.map((job, index) => (
                 <div
                   key={job.id}
                   onClick={() => handleJobClick(job)}
@@ -203,6 +211,15 @@ export default function JobsScreen() {
                       </p>
                     </div>
                   </div>
+
+                  {user && (
+                    <button
+                      className="mt-6 w-full py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-1"
+                      onClick={() => navigate(`/apply/${selectedJob.id}`)}
+                    >
+                      Apply Now
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="h-64 flex items-center justify-center text-light-text dark:text-dark-text opacity-50 bg-light-surface dark:bg-dark-surface rounded-lg border border-light-border dark:border-dark-border animate-pulse">
@@ -221,15 +238,6 @@ export default function JobsScreen() {
             </p>
           </div>
         )}
-
-        <div className="w-full flex justify-center">
-          <button
-            onClick={handleViewMore}
-            className="my-8 w-full sm:w-1/2 md:w-1/4 text-lg bg-light-primary dark:bg-dark-primary text-light-background dark:text-dark-background px-12 py-4 rounded-lg shadow-lg hover:opacity-90"
-          >
-            View More
-          </button>
-        </div>
       </section>
     </>
   );
