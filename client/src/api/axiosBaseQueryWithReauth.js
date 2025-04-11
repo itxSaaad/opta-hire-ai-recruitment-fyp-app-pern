@@ -1,4 +1,5 @@
 import { logoutUser, updateAccessToken } from '../features/auth/authSlice';
+
 import axiosBaseQuery from './axiosBaseQuery';
 
 const baseQuery = axiosBaseQuery({
@@ -12,7 +13,7 @@ const axiosBaseQueryWithReauth = async (args, api, extraOptions) => {
 
   if (result.error && result.error.status === 401) {
     const refreshResult = await baseQuery(
-      { url: '/auth/refresh-token', method: 'POST' },
+      { url: '/auth/refresh-token', method: 'POST', withCredentials: true },
       api,
       extraOptions
     );
