@@ -109,107 +109,116 @@ const TopNavbar = ({ navItems = [] }) => {
           })}
         </div>
 
-        <div className="flex flex-row-reverse md:flex-row items-center space-x-0 space-x-reverse">
-          <div
-            className="relative avatar-dropdown flex items-center cursor-pointer p-2"
-            onClick={() => setIsDropdownOpen((prev) => !prev)}
+        {!user ? (
+          <Link
+            to="/auth/login"
+            className="hidden md:flex text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out animate-fadeIn"
           >
-            <div className="flex items-center space-x-2">
-              <p className="hidden md:block text-sm text-light-text dark:text-dark-text font-semibold">
-                {user.firstName} {user.lastName}
-              </p>
-              <div className="flex items-center space-x-1 p-1 rounded-full border border-light-border dark:border-dark-border hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200">
-                <span className="w-6 h-6 rounded-full bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-xs text-dark-text font-semibold">
-                  {getUserInitials()}
-                </span>
-                <FaAngleDown
-                  className={`text-light-text dark:text-dark-text transition-transform duration-200 ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
+            Login / Register
+          </Link>
+        ) : (
+          <div className="flex flex-row-reverse md:flex-row items-center space-x-0 space-x-reverse">
+            <div
+              className="relative avatar-dropdown flex items-center cursor-pointer p-2"
+              onClick={() => setIsDropdownOpen((prev) => !prev)}
+            >
+              <div className="flex items-center space-x-2">
+                <p className="hidden md:block text-sm text-light-text dark:text-dark-text font-semibold">
+                  {user.firstName} {user.lastName}
+                </p>
+                <div className="flex items-center space-x-1 p-1 rounded-full border border-light-border dark:border-dark-border hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200">
+                  <span className="w-6 h-6 rounded-full bg-light-secondary dark:bg-dark-secondary flex items-center justify-center text-xs text-dark-text font-semibold">
+                    {getUserInitials()}
+                  </span>
+                  <FaAngleDown
+                    className={`text-light-text dark:text-dark-text transition-transform duration-200 ${
+                      isDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
               </div>
+
+              {isDropdownOpen && (
+                <div className="absolute right-0 top-full mt-6 w-60 z-50 rounded-lg bg-light-background dark:bg-dark-background shadow-xl ring-1 ring-light-border dark:ring-dark-border animate-slideUp">
+                  <div className="p-4 border-b border-light-border dark:border-dark-border">
+                    <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-1">
+                      Signed in as
+                    </p>
+                    <p className="text-sm font-medium truncate text-light-primary dark:text-dark-primary">
+                      {user?.email || 'User'}
+                    </p>
+                  </div>
+
+                  <div className="py-2">
+                    <Link
+                      to={getExpectedRoute(user)}
+                      className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaHome className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
+                      Dashboard
+                    </Link>
+
+                    <Link
+                      to="/user/profile"
+                      className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaUser className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
+                      Profile
+                    </Link>
+
+                    <Link
+                      to="/user/resume"
+                      className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
+                      Resume
+                    </Link>
+
+                    <div className="border-t border-light-border dark:border-dark-border my-1.5"></div>
+
+                    <button
+                      onClick={() => {
+                        dispatch(logoutUser());
+                        navigate('/auth/login');
+                      }}
+                      className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group"
+                    >
+                      <FaSignOutAlt className="mr-3 group-hover:scale-110 transition-transform duration-200" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-6 w-60 z-50 rounded-lg bg-light-background dark:bg-dark-background shadow-xl ring-1 ring-light-border dark:ring-dark-border animate-slideUp">
-                <div className="p-4 border-b border-light-border dark:border-dark-border">
-                  <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-1">
-                    Signed in as
-                  </p>
-                  <p className="text-sm font-medium truncate text-light-primary dark:text-dark-primary">
-                    {user?.email || 'User'}
-                  </p>
-                </div>
-
-                <div className="py-2">
-                  <Link
-                    to={getExpectedRoute(user)}
-                    className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <FaHome className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
-                    Dashboard
-                  </Link>
-
-                  <Link
-                    to="/user/profile"
-                    className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <FaUser className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
-                    Profile
-                  </Link>
-
-                  <Link
-                    to="/user/resume"
-                    className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
-                    Resume
-                  </Link>
-
-                  <div className="border-t border-light-border dark:border-dark-border my-1.5"></div>
-
-                  <button
-                    onClick={() => {
-                      dispatch(logoutUser());
-                      navigate('/auth/login');
-                    }}
-                    className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group"
-                  >
-                    <FaSignOutAlt className="mr-3 group-hover:scale-110 transition-transform duration-200" />
-                    Logout
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <div className="relative inline-flex items-center">
-              <button
-                onClick={toggleTheme}
-                className={`w-12 h-7 rounded-full transition-colors duration-300 focus:outline-none ${
-                  theme === 'dark' ? 'bg-light-primary' : 'bg-gray-300'
-                }`}
-                aria-label="Toggle theme"
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-white shadow-md transform duration-300 flex items-center justify-center ${
-                    theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+            <div className="flex items-center space-x-3">
+              <div className="relative inline-flex items-center">
+                <button
+                  onClick={toggleTheme}
+                  className={`w-12 h-7 rounded-full transition-colors duration-300 focus:outline-none ${
+                    theme === 'dark' ? 'bg-light-primary' : 'bg-gray-300'
                   }`}
+                  aria-label="Toggle theme"
                 >
-                  {theme === 'dark' ? (
-                    <FaMoon size={12} className="text-gray-600" />
-                  ) : (
-                    <FaSun size={12} className="text-yellow-500" />
-                  )}
-                </div>
-              </button>
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white shadow-md transform duration-300 flex items-center justify-center ${
+                      theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  >
+                    {theme === 'dark' ? (
+                      <FaMoon size={12} className="text-gray-600" />
+                    ) : (
+                      <FaSun size={12} className="text-yellow-500" />
+                    )}
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );

@@ -202,7 +202,12 @@ InputField.propTypes = {
     'url',
   ]).isRequired,
   label: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.bool,
+    PropTypes.array,
+  ]).isRequired,
   onChange: PropTypes.func.isRequired,
   validationMessage: PropTypes.string,
   onKeyDown: PropTypes.func,
