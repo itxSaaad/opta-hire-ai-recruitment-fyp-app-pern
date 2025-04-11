@@ -13,7 +13,6 @@ const notFoundHandler = (req, res) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   const message =
     err.message || 'Something went wrong. Please try again later.';
 
@@ -21,7 +20,7 @@ const errorHandler = (err, req, res, next) => {
 
   if (err.stack) console.error(err.stack);
 
-  res.status(statusCode).json({
+  res.json({
     success: false,
     message,
     timestamp: new Date().toISOString(),
