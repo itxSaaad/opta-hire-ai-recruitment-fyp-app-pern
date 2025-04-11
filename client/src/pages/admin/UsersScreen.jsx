@@ -191,9 +191,9 @@ export default function UsersScreen() {
               Users Management
             </h1>
 
-            {error && <ErrorMsg errorMsg={error} />}
+            {error && <ErrorMsg errorMsg={error.data.message} />}
 
-            <Table columns={columns} data={users.users} actions={actions} />
+            <Table columns={columns} data={users?.users} actions={actions} />
           </div>
         )}
       </section>
@@ -207,7 +207,7 @@ export default function UsersScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <ErrorMsg error={updateError} />}
+            {updateError && <ErrorMsg errorMsg={updateError.data.message} />}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InputField
                 id="firstName"
@@ -300,7 +300,7 @@ export default function UsersScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <ErrorMsg error={deleteError} />}
+            {deleteError && <ErrorMsg errorMsg={deleteError.data.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete user {selectedUser?.firstName}{' '}
               {selectedUser?.lastName}? This action can be undone from the
