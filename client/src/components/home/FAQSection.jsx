@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
+import { trackEvent } from '../../utils/analytics';
+
 const faqs = [
   {
     id: 1,
@@ -74,6 +76,9 @@ export default function FAQSection() {
 
   const handleToggle = (id) => {
     setOpenId(openId === id ? null : id);
+    trackEvent('FAQSection', 'FAQ Item Clicked', {
+      question: faqs.find((faq) => faq.id === id).question,
+    });
   };
 
   return (

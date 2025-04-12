@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaPencilAlt, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
+import { useLocation } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
 import InputField from '../../components/ui/mainLayout/InputField';
+
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import {
   useDeleteJobByIdMutation,
@@ -26,8 +29,9 @@ export default function JobsScreen() {
   const [salaryRange, setSalaryRange] = useState('');
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
-
   const [isClosed, setIsClosed] = useState(false);
+
+  const routeLocation = useLocation();
 
   const { data: jobs, isLoading, error, refetch } = useGetAllJobsQuery();
   const [deleteJob, { isLoading: isDeleting, error: deleteError }] =
@@ -52,11 +56,17 @@ export default function JobsScreen() {
   const handleEdit = (job) => {
     setSelectedJob(job);
     setShowEditModal(true);
+    trackEvent('Edit Job', 'User Action', 'User clicked on edit job button');
   };
 
   const handleDelete = (job) => {
     setSelectedJob(job);
     setShowDeleteModal(true);
+    trackEvent(
+      'Delete Job',
+      'User Action',
+      'User clicked on delete job button'
+    );
   };
 
   const confirmDelete = async () => {
@@ -64,8 +74,18 @@ export default function JobsScreen() {
       await deleteJob(selectedJob.id).unwrap();
       setShowDeleteModal(false);
       refetch();
+      trackEvent(
+        'Delete Job Confirmed',
+        'User Action',
+        `User confirmed deletion of job ${selectedJob.title}`
+      );
     } catch (err) {
       console.error('Deletion failed:', err);
+      trackEvent(
+        'Delete Job Failed',
+        'User Action',
+        `User failed to delete job ${selectedJob.title}`
+      );
     }
   };
 
@@ -88,10 +108,24 @@ export default function JobsScreen() {
 
       setShowEditModal(false);
       refetch();
+      trackEvent(
+        'Update Job',
+        'User Action',
+        `User updated job ${selectedJob.title}`
+      );
     } catch (err) {
       console.error('Update failed:', err);
+      trackEvent(
+        'Update Job Failed',
+        'User Action',
+        `User failed to update job ${selectedJob.title}`
+      );
     }
   };
+
+  useEffect(() => {
+    trackPageView(routeLocation.pathname);
+  }, [routeLocation.pathname]);
 
   const columns = [
     {

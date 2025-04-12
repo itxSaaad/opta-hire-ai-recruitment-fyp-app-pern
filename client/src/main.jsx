@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from 'react-redux';
 import {
@@ -12,6 +13,7 @@ import {
 import './index.css';
 import ThemeProvider from './provider/ThemeProvider.jsx';
 import store from './store.js';
+import { initGA } from './utils/analytics.js';
 // import Loader from './components/Loader.jsx';
 
 // const AdminLayout = lazy(() => import('./layouts/AdminLayout.jsx'));
@@ -38,8 +40,8 @@ import MainLayout from './layouts/MainLayout';
 import RecruiterLayout from './layouts/RecruiterLayout';
 
 import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
-import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
+import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
@@ -67,8 +69,7 @@ const router = createBrowserRouter(
       </Route>
 
       <Route path="auth">
-        <Route index element={<NotFoundScreen />} />
-        <Route path="login" element={<LoginScreen />} />
+        <Route index path="login" element={<LoginScreen />} />
         <Route path="register" element={<RegisterScreen />} />
         <Route path="reset-password" element={<ResetPwdScreen />} />
         <Route path="verify" element={<VerifyProfileScreen />} />
@@ -104,6 +105,12 @@ const router = createBrowserRouter(
     </Route>
   )
 );
+
+const GA_TRACKING_ID = import.meta.env.VITE_GA_TRACKING_ID;
+
+if (GA_TRACKING_ID) {
+  initGA(GA_TRACKING_ID);
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

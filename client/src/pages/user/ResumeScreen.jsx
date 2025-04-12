@@ -18,12 +18,14 @@ import {
   FaUser,
 } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import InputField from '../../components/ui/mainLayout/InputField';
+
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import {
   useDeleteResumeMutation,
@@ -32,17 +34,17 @@ import {
 } from '../../features/resume/resumeApi';
 
 import {
-  validateTitle,
-  validateSummary,
-  validateHeadline,
-  validateExperience,
-  validateEducation,
-  validateIndustry,
+  validateAchievements,
   validateAvailability,
   validateCompany,
-  validateAchievements,
-  validateRating,
+  validateEducation,
+  validateExperience,
+  validateHeadline,
+  validateIndustry,
   validatePortfolio,
+  validateRating,
+  validateSummary,
+  validateTitle,
 } from '../../utils/validations';
 
 import IsAuth from '../../hoc/IsAuth';
@@ -87,6 +89,7 @@ function ResumeScreen() {
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     data: resumeData,
@@ -223,8 +226,14 @@ function ResumeScreen() {
       setEditSkills(false);
       setEditExpEdu(false);
       setEditAdditional(false);
+      trackEvent('Resume', 'User Action', `Resume Updated`);
     } catch (err) {
       console.error('Update resume failed:', err);
+      trackEvent(
+        'Resume',
+        'User Action',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
 
@@ -236,6 +245,7 @@ function ResumeScreen() {
       setSummary(summary || '');
     }
     setEditOverview(false);
+    trackEvent('Resume', 'User Action', `Overview Reset`);
   };
 
   const resetSkills = () => {
@@ -245,6 +255,7 @@ function ResumeScreen() {
     setNewSkill('');
     setLastDeletedSkill(null);
     setEditSkills(false);
+    trackEvent('Resume', 'User Action', `Skills Reset`);
   };
 
   const resetExpEdu = () => {
@@ -254,6 +265,7 @@ function ResumeScreen() {
       setEducation(education || '');
     }
     setEditExpEdu(false);
+    trackEvent('Resume', 'User Action', `Experience & Education Reset`);
   };
 
   const resetAdditional = () => {
@@ -274,6 +286,7 @@ function ResumeScreen() {
       setPortfolio(portfolio || '');
     }
     setEditAdditional(false);
+    trackEvent('Resume', 'User Action', `Additional Details Reset`);
   };
 
   const handleAddNewSkill = () => {
@@ -281,12 +294,14 @@ function ResumeScreen() {
       setSkills([...skills, newSkill.trim()]);
       setNewSkill('');
     }
+    trackEvent('Resume', 'User Action', `Skill Added`);
   };
 
   const handleDeleteSkill = (index) => {
     const deletedSkill = { index, value: skills[index] };
     setLastDeletedSkill(deletedSkill);
     setSkills(skills.filter((_, i) => i !== index));
+    trackEvent('Resume', 'User Action', `Skill Deleted`);
   };
 
   const handleUndoSkill = () => {
@@ -296,14 +311,21 @@ function ResumeScreen() {
       setSkills(newSkillsArray);
       setLastDeletedSkill(null);
     }
+    trackEvent('Resume', 'User Action', `Skill Undone`);
   };
 
   const confirmDeleteResume = async () => {
     try {
       await deleteResume().unwrap();
       navigate('/resume/create');
+      trackEvent('Resume', 'User Action', `Resume Deleted`);
     } catch (err) {
       console.error('Delete resume failed:', err);
+      trackEvent(
+        'Resume',
+        'User Action',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
 
@@ -331,6 +353,10 @@ function ResumeScreen() {
       setPortfolio(profile.portfolio || '');
     }
   }, [resumeData]);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   return (
     <>

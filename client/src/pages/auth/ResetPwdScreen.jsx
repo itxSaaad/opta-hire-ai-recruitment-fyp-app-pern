@@ -1,12 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft, FaEnvelope, FaKey } from 'react-icons/fa';
-import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
+import {
+  Link,
+  ScrollRestoration,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
+import { trackEvent, trackPageView } from '../../utils/analytics';
 import { validateEmail, validatePassword } from '../../utils/validations';
 
 import {
@@ -31,6 +37,7 @@ function ResetPwdScreen() {
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [forgotPassword, { isLoading: isSendingOtp, error: otpError }] =
     useForgotPasswordMutation();
@@ -50,8 +57,14 @@ function ResetPwdScreen() {
     try {
       await forgotPassword({ email }).unwrap();
       setIsOtpSent(true);
+      trackEvent('Authentication', 'Forgot Password', 'OTP Sent');
     } catch (err) {
       console.error('Failed to send reset email:', err);
+      trackEvent(
+        'Authentication',
+        'Forgot Password',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
 
@@ -65,11 +78,17 @@ function ResetPwdScreen() {
 
     try {
       await regenerateOTP({ email }).unwrap();
+      trackEvent('Authentication', 'Resend OTP', 'Success');
     } catch (err) {
       setErrors((prev) => ({
         ...prev,
         email: err.data?.message || 'Failed to resend OTP',
       }));
+      trackEvent(
+        'Authentication',
+        'Resend OTP',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
 
@@ -105,13 +124,23 @@ function ResetPwdScreen() {
     try {
       await resetPassword({ email, otp, password: newPassword }).unwrap();
       navigate('/auth/login');
+      trackEvent('Authentication', 'Reset Password', 'Success');
     } catch (err) {
       setErrors((prev) => ({
         ...prev,
         otp: err.data?.message || 'Failed to change password',
       }));
+      trackEvent(
+        'Authentication',
+        'Reset Password',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   const StepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -279,6 +308,13 @@ function ResetPwdScreen() {
                   <Link
                     to="/auth/login"
                     className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
+                    onClick={() => {
+                      trackEvent(
+                        'Authentication',
+                        'Login',
+                        'Clicked from Reset Password'
+                      );
+                    }}
                   >
                     Login
                   </Link>

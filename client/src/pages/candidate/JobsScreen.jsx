@@ -8,10 +8,12 @@ import {
   FaSearch,
 } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
+
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import { useGetAllJobsQuery } from '../../features/job/jobApi';
 import { setSelectedJob } from '../../features/job/jobSlice';
@@ -24,6 +26,8 @@ export default function JobsScreen() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const routeLocation = useLocation();
+
   const user = useSelector((state) => state.auth.userInfo);
   const selectedJob = useSelector((state) => state.job.selectedJob);
 
@@ -35,6 +39,11 @@ export default function JobsScreen() {
     } else {
       dispatch(setSelectedJob(job));
     }
+    trackEvent(
+      'Job Selection',
+      'User Action',
+      `User selected job: ${job.title}`
+    );
   };
 
   useEffect(() => {
@@ -67,6 +76,10 @@ export default function JobsScreen() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    trackPageView(routeLocation.pathname);
+  }, [routeLocation.pathname]);
 
   const renderBulletPoints = (text) => {
     if (!text) return null;
@@ -152,7 +165,14 @@ export default function JobsScreen() {
       {user && (
         <button
           className="mt-6 w-full py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-1"
-          onClick={() => navigate(`/apply/${job.id}`)}
+          onClick={() => {
+            navigate(`/apply/${job.id}`);
+            trackEvent(
+              'Job Application',
+              'User Action',
+              `User applied for job: ${job.title}`
+            );
+          }}
         >
           Apply Now
         </button>

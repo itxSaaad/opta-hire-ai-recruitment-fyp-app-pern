@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import { FaBriefcase, FaMoneyCheckAlt, FaUserCheck } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
+import { trackEvent } from '../../utils/analytics';
+
 const features = [
   {
     icon: (
@@ -75,6 +77,11 @@ const SectionHeader = () => (
       <Link
         to="/auth/register"
         className="inline-block text-lg bg-light-primary dark:bg-dark-primary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
+        onClick={() =>
+          trackEvent('ForInterviewersSection', 'Get Started Button Clicked', {
+            button: 'Become an Interviewer',
+          })
+        }
       >
         Become an Interviewer
       </Link>

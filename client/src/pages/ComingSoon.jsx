@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 
 import Logo from '../assets/images/logo.png';
 
+import { trackEvent, trackPageView } from '../utils/analytics';
+
 export default function ComingSoon({
   logoSrc = Logo,
   launchDate = '2025-05-15',
@@ -35,6 +37,10 @@ export default function ComingSoon({
   }, [calculateTimeLeft]);
 
   const isLaunched = Object.keys(timeLeft).length === 0;
+
+  useEffect(() => {
+    trackPageView('/coming-soon');
+  }, []);
 
   return (
     <>
@@ -106,6 +112,11 @@ export default function ComingSoon({
           <Link
             to="/"
             className="flex items-center space-x-2 text-base sm:text-lg md:text-xl font-medium text-light-secondary dark:text-dark-primary hover:underline underline-offset-4 transition duration-300 ease-in-out transform hover:scale-105"
+            onClick={() =>
+              trackEvent('ComingSoon', 'Go to Home Clicked', {
+                isLaunched,
+              })
+            }
           >
             <FaHome />
             <span>Go to Home</span>

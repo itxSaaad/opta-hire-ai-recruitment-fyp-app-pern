@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
+import { trackEvent, trackPageView } from '../../utils/analytics';
 import { getExpectedRoute } from '../../utils/helpers';
 
 import { useRegenerateOTPMutation } from '../../features/auth/authApi';
@@ -22,6 +23,7 @@ function VerifyProfileScreen() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { userInfo: user } = useSelector((state) => state.auth);
 
@@ -30,6 +32,52 @@ function VerifyProfileScreen() {
 
   const [regenerateOTP, { isLoading: isResendingOtp, error: resendError }] =
     useRegenerateOTPMutation();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!otp || otp.length !== 6) {
+      setErrorMsg('Please enter a valid 6-digit OTP.');
+      trackEvent(
+        'Authentication',
+        'Email Verification',
+        'Failed - Invalid OTP'
+      );
+      return;
+    }
+
+    try {
+      const result = await verifyEmail({ email: user.email, otp }).unwrap();
+      dispatch(setUserInfo(result.user));
+      trackEvent('Authentication', 'Email Verification', 'Success');
+
+      const expectedRoute = getExpectedRoute(user);
+      navigate(expectedRoute);
+    } catch (err) {
+      setErrorMsg(err.data?.message || 'Verification failed.');
+      trackEvent(
+        'Authentication',
+        'Email Verification',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      if (user?.email) {
+        await regenerateOTP({ email: user.email }).unwrap();
+        trackEvent('Authentication', 'Resend OTP', 'Success');
+      }
+    } catch (err) {
+      setErrorMsg(err.data?.message || 'Failed to resend OTP.');
+      trackEvent(
+        'Authentication',
+        'Resend OTP',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -41,34 +89,9 @@ function VerifyProfileScreen() {
     };
   }, [user, navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!otp || otp.length !== 6) {
-      setErrorMsg('Please enter a valid 6-digit OTP.');
-      return;
-    }
-
-    try {
-      const result = await verifyEmail({ email: user.email, otp }).unwrap();
-      dispatch(setUserInfo(result.user));
-
-      const expectedRoute = getExpectedRoute(user);
-      navigate(expectedRoute);
-    } catch (err) {
-      setErrorMsg(err.data?.message || 'Verification failed.');
-    }
-  };
-
-  const handleResendOtp = async () => {
-    try {
-      if (user?.email) {
-        await regenerateOTP({ email: user.email }).unwrap();
-      }
-    } catch (err) {
-      setErrorMsg(err.data?.message || 'Failed to resend OTP.');
-    }
-  };
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   return (
     <>

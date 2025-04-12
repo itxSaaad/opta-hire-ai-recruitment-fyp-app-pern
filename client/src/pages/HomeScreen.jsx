@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 import AboutSection from '../components/home/AboutSection';
@@ -8,7 +9,12 @@ import ForRecruitersSection from '../components/home/ForRecruitersSection';
 import HeroSection from '../components/home/HeroSection';
 import PricingSection from '../components/home/PricingSection';
 
+import { trackPageView } from '../utils/analytics';
+
 export default function HomeScreen() {
+  useEffect(() => {
+    trackPageView('/');
+  }, []);
   return (
     <>
       <Helmet>

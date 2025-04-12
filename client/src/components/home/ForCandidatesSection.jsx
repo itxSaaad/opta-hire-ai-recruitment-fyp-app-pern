@@ -7,6 +7,8 @@ import useTheme from '../../hooks/useTheme';
 import JobPortalDark from '../../assets/images/jobs_portal_dark.png';
 import JobPortalLight from '../../assets/images/jobs_portal_light.png';
 
+import { trackEvent } from '../../utils/analytics';
+
 const features = [
   {
     icon: (
@@ -78,6 +80,11 @@ const SectionHeader = () => (
       <Link
         to="/auth/register"
         className="inline-block text-lg bg-light-secondary dark:bg-dark-secondary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
+        onClick={() =>
+          trackEvent('ForCandidatesSection', 'Get Started Button Clicked', {
+            button: 'Join as a Candidate',
+          })
+        }
       >
         Join as a Candidate
       </Link>

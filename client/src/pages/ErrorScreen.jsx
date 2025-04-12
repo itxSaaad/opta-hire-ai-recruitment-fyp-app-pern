@@ -1,10 +1,19 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaHome } from 'react-icons/fa';
-import { Link, useRouteError } from 'react-router-dom';
+import { Link, useLocation, useRouteError } from 'react-router-dom';
+
+import { trackEvent, trackPageView } from '../utils/analytics';
 
 export default function ErrorScreen() {
+  const location = useLocation();
   const error = useRouteError();
+
   console.error(error);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   return (
     <>
@@ -43,6 +52,11 @@ export default function ErrorScreen() {
           <Link
             to="/"
             className="flex items-center space-x-2 text-base sm:text-lg md:text-xl font-medium text-light-secondary dark:text-dark-primary hover:underline underline-offset-4 transition duration-300 ease-in-out transform hover:scale-105"
+            onClick={() =>
+              trackEvent('ErrorScreen', 'Go to Home Clicked', {
+                errorStatus: error?.status,
+              })
+            }
           >
             <FaHome />
             <span>Go to Home</span>

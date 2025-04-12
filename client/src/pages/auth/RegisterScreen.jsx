@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
-import { Link, ScrollRestoration, useNavigate } from 'react-router-dom';
+import {
+  Link,
+  ScrollRestoration,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
+import { trackEvent, trackPageView } from '../../utils/analytics';
 import { getExpectedRoute } from '../../utils/helpers';
 import {
   validateConfirmPassword,
@@ -43,6 +49,7 @@ function RegisterScreen() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const [register, { isLoading, error }] = useRegisterMutation();
 
@@ -118,10 +125,20 @@ function RegisterScreen() {
       const expectedRoute = getExpectedRoute(result.user);
 
       navigate(expectedRoute);
+      trackEvent('Authentication', 'Registration', 'Success');
     } catch (err) {
       console.error('Registration failed:', err);
+      trackEvent(
+        'Authentication',
+        'Registration',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   return (
     <>
@@ -246,6 +263,13 @@ function RegisterScreen() {
                   <Link
                     to="/auth/login"
                     className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
+                    onClick={() =>
+                      trackEvent(
+                        'Authentication',
+                        'Login',
+                        'Clicked from Register'
+                      )
+                    }
                   >
                     Login
                   </Link>

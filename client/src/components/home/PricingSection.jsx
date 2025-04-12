@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import { FaDollarSign, FaHandshake } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
+import { trackEvent } from '../../utils/analytics';
+
 const PricingCard = ({ icon: Icon, title, description }) => (
   <div className="bg-light-primary dark:bg-dark-primary bg-opacity-10 dark:bg-opacity-10 text-light-text dark:text-dark-text rounded-xl p-8 shadow-lg flex flex-col items-center transition-all duration-300 hover:bg-opacity-20 dark:hover:bg-opacity-20 hover:shadow-xl focus-within:ring-2 focus-within:ring-light-secondary dark:focus-within:ring-dark-secondary">
     <Icon className="text-5xl mb-4 transition-transform duration-300 hover:scale-110" />
@@ -63,6 +65,11 @@ const PricingSection = () => (
     <Link
       to="/auth/register"
       className="inline-block text-lg bg-light-secondary dark:bg-dark-secondary text-light-background dark:text-dark-text px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
+      onClick={() =>
+        trackEvent('PricingSection', 'Start Today Button Clicked', {
+          button: 'Start Today',
+        })
+      }
     >
       Start Today
     </Link>

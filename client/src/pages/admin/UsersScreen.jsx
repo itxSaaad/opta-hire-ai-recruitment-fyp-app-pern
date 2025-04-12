@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaPencilAlt, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
+import { useLocation } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
 import InputField from '../../components/ui/mainLayout/InputField';
+
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import {
   useDeleteUserByIdMutation,
@@ -25,6 +28,8 @@ export default function UsersScreen() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('');
+
+  const location = useLocation();
 
   const { data: users, isLoading, error, refetch } = useGetAllUsersQuery();
   const [deleteUser, { isLoading: isDeleting, error: deleteError }] =
@@ -52,11 +57,13 @@ export default function UsersScreen() {
   const handleEdit = (user) => {
     setSelectedUser(user);
     setShowEditModal(true);
+    trackEvent('Edit User', 'User Action', 'User clicked on edit button');
   };
 
   const handleDelete = (user) => {
     setSelectedUser(user);
     setShowDeleteModal(true);
+    trackEvent('Delete User', 'User Action', 'User clicked on delete button');
   };
 
   const confirmDelete = async () => {
@@ -64,8 +71,18 @@ export default function UsersScreen() {
       await deleteUser(selectedUser.id).unwrap();
       setShowDeleteModal(false);
       refetch();
+      trackEvent(
+        'Delete User Confirmed',
+        'User Action',
+        `User confirmed deletion of ${selectedUser.firstName} ${selectedUser.lastName}`
+      );
     } catch (err) {
       console.error('Deletion failed:', err);
+      trackEvent(
+        'Delete User Failed',
+        'User Action',
+        `User failed to delete ${selectedUser.firstName} ${selectedUser.lastName}`
+      );
     }
   };
 
@@ -91,10 +108,24 @@ export default function UsersScreen() {
 
       setShowEditModal(false);
       refetch();
+      trackEvent(
+        'User Updated',
+        'User Action',
+        `User updated ${selectedUser.firstName} ${selectedUser.lastName}`
+      );
     } catch (err) {
       console.error('Update failed:', err);
+      trackEvent(
+        'User Update Failed',
+        'User Action',
+        `User failed to update ${selectedUser.firstName} ${selectedUser.lastName}`
+      );
     }
   };
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   const columns = [
     {

@@ -1,5 +1,7 @@
 import Logo from '../../assets/images/logo.png';
 
+import { trackEvent } from '../../utils/analytics';
+
 export default function HeroSection() {
   return (
     <section
@@ -27,6 +29,11 @@ export default function HeroSection() {
         <a
           href="#for-recruiters"
           className="inline-block mt-8 sm:mt-10 text-lg bg-light-primary dark:bg-dark-primary text-light-background dark:text-dark-background px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-110 hover:shadow-2xl duration-300 ease-in-out"
+          onClick={() =>
+            trackEvent('HeroSection', 'Get Started Button Clicked', {
+              button: 'Get Started',
+            })
+          }
         >
           Get Started
         </a>

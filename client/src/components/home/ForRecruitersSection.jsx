@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import { FaClipboardList, FaHandshake, FaRegSmileBeam } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
+import { trackEvent } from '../../utils/analytics';
+
 const Features = [
   {
     icon: <FaHandshake className="text-3xl animate-slideUp" />,
@@ -62,6 +64,11 @@ export default function ForRecruitersSection() {
         <Link
           to="/auth/register"
           className="inline-block text-lg bg-light-secondary dark:bg-dark-secondary text-white px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
+          onClick={() =>
+            trackEvent('ForRecruitersSection', 'Get Started Button Clicked', {
+              button: 'Get Started Now',
+            })
+          }
         >
           Get Started Now
         </Link>

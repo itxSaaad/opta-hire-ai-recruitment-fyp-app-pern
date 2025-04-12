@@ -16,6 +16,8 @@ import Loader from '../components/Loader';
 import { useGetAllJobsQuery } from '../features/job/jobApi';
 import { setSelectedJob } from '../features/job/jobSlice';
 
+import { trackEvent, trackPageView } from '../utils/analytics';
+
 export default function JobsScreen() {
   const [displayJobs, setDisplayJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +38,11 @@ export default function JobsScreen() {
     } else {
       dispatch(setSelectedJob(job));
     }
+    trackEvent('Job Clicked', {
+      jobId: job.id,
+      jobTitle: job.title,
+      userId: user.id,
+    });
   };
 
   const handleViewMore = () => {
@@ -62,6 +69,10 @@ export default function JobsScreen() {
       dispatch(setSelectedJob(topThreeJobs[0]));
     }
   }, [jobsData, dispatch]);
+
+  useEffect(() => {
+    trackPageView('/jobs', 'Jobs Page');
+  }, []);
 
   const renderBulletPoints = (text) => {
     if (!text) return null;

@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import { FaBullhorn, FaLightbulb, FaUsers } from 'react-icons/fa';
 
+import { trackEvent } from '../../utils/analytics';
+
 const InfoCard = ({ icon: Icon, title, children }) => (
   <article className="text-center lg:text-left lg:w-1/3">
     <Icon className="text-light-primary dark:text-dark-primary text-5xl mb-4" />
@@ -65,6 +67,11 @@ const AboutSection = () => (
       <a
         href="/auth/login"
         className="inline-block bg-light-primary dark:bg-dark-primary text-light-background dark:text-dark-background px-8 py-4 rounded-lg shadow-lg transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
+        onClick={() =>
+          trackEvent('AboutSection', 'Get Started Button Clicked', {
+            button: 'Get Started',
+          })
+        }
       >
         Get Started
       </a>

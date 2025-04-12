@@ -1,8 +1,17 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 import Logo from '../../assets/images/logo.png';
 
+import { trackPageView } from '../../utils/analytics';
+
 export default function DashboardScreen() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
   return (
     <>
       <Helmet>

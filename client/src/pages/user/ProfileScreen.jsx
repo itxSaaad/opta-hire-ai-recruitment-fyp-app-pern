@@ -12,13 +12,14 @@ import {
   FaUserEdit,
 } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import InputField from '../../components/ui/mainLayout/InputField';
 
+import { trackEvent, trackPageView } from '../../utils/analytics';
 import {
   validateConfirmPassword,
   validateEmail,
@@ -61,6 +62,7 @@ function ProfileScreen() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const [updateProfile, { isLoading, error }] = useUpdateProfileMutation();
   const [
@@ -162,8 +164,14 @@ function ProfileScreen() {
         dispatch(setUserInfo(result.user));
         setEditMode(false);
       }
+      trackEvent('User Profile', 'User Action', `Profile Updated`);
     } catch (err) {
       console.error('Profile update failed:', err);
+      trackEvent(
+        'User Profile',
+        'User Action',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
 
@@ -190,8 +198,14 @@ function ProfileScreen() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      trackEvent('User Profile', 'User Action', `Password Updated`);
     } catch (err) {
       console.error('Password update failed:', err);
+      trackEvent(
+        'User Profile',
+        'User Action',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
 
@@ -200,10 +214,20 @@ function ProfileScreen() {
       await deleteAccount(user._id).unwrap();
       dispatch(logoutUser());
       navigate('/auth/register');
+      trackEvent('User Profile', 'User Action', `Account Deleted`);
     } catch (err) {
       console.error('Account deletion failed:', err);
+      trackEvent(
+        'User Profile',
+        'User Action',
+        `Failed - ${err.data?.message || 'Server Error'}`
+      );
     }
   };
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   const getRoleString = () => {
     if (!user) return '';

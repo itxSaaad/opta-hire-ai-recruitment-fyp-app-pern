@@ -1,8 +1,22 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FaHome } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+
+import { trackEvent, trackPageView } from '../utils/analytics'; // Adjust path as needed
 
 export default function NotFoundScreen() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
+  const handleHomeClick = () => {
+    trackEvent('Navigation', 'Click', 'Go to Home from 404 page');
+  };
+
   return (
     <>
       <Helmet>
@@ -29,6 +43,7 @@ export default function NotFoundScreen() {
           <Link
             to="/"
             className="flex items-center space-x-2 text-base sm:text-lg md:text-xl font-medium text-light-secondary dark:text-dark-primary hover:underline underline-offset-4 transition duration-300 ease-in-out transform hover:scale-105"
+            onClick={handleHomeClick}
           >
             <FaHome />
             <span>Go to Home</span>
