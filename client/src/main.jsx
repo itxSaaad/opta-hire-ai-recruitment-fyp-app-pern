@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 
 import './index.css';
+import { initGA } from './utils/analytics.js';
 
 import App from './App.jsx';
 import ComingSoon from './screens/ComingSoon.jsx';
@@ -29,6 +30,12 @@ const router = createBrowserRouter(
     </Route>
   )
 );
+
+const GA_TRACKING_ID = import.meta.env.VITE_GA_TRACKING_ID;
+
+if (GA_TRACKING_ID) {
+  initGA(GA_TRACKING_ID);
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
