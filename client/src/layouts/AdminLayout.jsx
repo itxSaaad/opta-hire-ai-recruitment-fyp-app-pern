@@ -29,7 +29,6 @@ const AdminLayout = () => {
     { label: 'Contracts', path: '/admin/contracts', icon: <FaFileContract /> },
     { label: 'Interviews', path: '/admin/interviews', icon: <FaCalendarAlt /> },
     { label: 'Reports', path: '/admin/reports', icon: <FaChartBar /> },
-    { label: 'Settings', path: '/admin/settings', icon: <FaCog /> },
   ];
 
   return (

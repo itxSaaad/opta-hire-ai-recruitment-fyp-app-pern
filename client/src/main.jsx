@@ -42,6 +42,9 @@ import RecruiterLayout from './layouts/RecruiterLayout';
 import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
 import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
 import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
+import AdminApplicationsScreen from './pages/admin/ApplicationsScreen.jsx';
+import AdminContractsScreen from './pages/admin/ContractsScreen.jsx';
+import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
 
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
@@ -65,6 +68,9 @@ const router = createBrowserRouter(
         <Route index path="dashboard" element={<AdminDashboardScreen />} />
         <Route path="users" element={<AdminUsersScreen />} />
         <Route path="jobs" element={<AdminJobsScreen />} />
+        <Route path="applications" element={<AdminApplicationsScreen />} />
+        <Route path="contracts" element={<AdminContractsScreen />} />
+        <Route path="interviews" element={<AdminInterviewsScreen />} />
         <Route path="*" element={<ComingSoon />} />
       </Route>
 
