@@ -22,7 +22,6 @@ export default function ContractsScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedContract, setSelectedContract] = useState(null);
 
-  // State fields used for editing
   const [agreedPrice, setAgreedPrice] = useState('');
   const [status, setStatus] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
@@ -46,7 +45,6 @@ export default function ContractsScreen() {
 
   useEffect(() => {
     if (selectedContract) {
-      // Pre-fill editing fields from the selected contract
       setAgreedPrice(selectedContract.agreedPrice);
       setStatus(selectedContract.status);
       setPaymentStatus(selectedContract.paymentStatus);
@@ -121,7 +119,6 @@ export default function ContractsScreen() {
     }
   };
 
-  // Define columns for the table
   const columns = [
     {
       key: 'jobTitle',
@@ -194,7 +191,6 @@ export default function ContractsScreen() {
     },
   ];
 
-  // Define actions for each table row
   const actions = [
     {
       onClick: handleEdit,

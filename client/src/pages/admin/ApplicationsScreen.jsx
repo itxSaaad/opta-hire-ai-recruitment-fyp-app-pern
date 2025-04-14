@@ -22,7 +22,6 @@ export default function ApplicationsScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
 
-  // We are updating only the application's status per your controller update logic.
   const [status, setStatus] = useState('');
 
   const routeLocation = useLocation();
@@ -44,7 +43,6 @@ export default function ApplicationsScreen() {
 
   useEffect(() => {
     if (selectedApplication) {
-      // Pre-fill the status when editing an application.
       setStatus(selectedApplication.status || '');
     }
   }, [selectedApplication]);
@@ -112,7 +110,6 @@ export default function ApplicationsScreen() {
     }
   };
 
-  // Define columns for the table. Data is retrieved from nested "candidate" and "job" objects.
   const columns = [
     {
       key: 'candidateName',
@@ -164,7 +161,6 @@ export default function ApplicationsScreen() {
     },
   ];
 
-  // Define actions for each table row
   const actions = [
     {
       onClick: handleEdit,

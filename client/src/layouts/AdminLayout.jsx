@@ -2,7 +2,6 @@ import {
   FaBriefcase,
   FaCalendarAlt,
   FaChartBar,
-  FaCog,
   FaEnvelopeOpenText,
   FaFileContract,
   FaTachometerAlt,

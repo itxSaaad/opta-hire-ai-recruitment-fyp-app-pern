@@ -22,7 +22,6 @@ export default function InterviewsScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
 
-  // State fields for editing interview details
   const [scheduledTime, setScheduledTime] = useState('');
   const [summary, setSummary] = useState('');
   const [status, setStatus] = useState('');
@@ -47,7 +46,6 @@ export default function InterviewsScreen() {
 
   useEffect(() => {
     if (selectedInterview) {
-      // Pre-fill fields when editing
       setScheduledTime(selectedInterview.scheduledTime || '');
       setSummary(selectedInterview.summary || '');
       setStatus(selectedInterview.status || '');
@@ -123,7 +121,6 @@ export default function InterviewsScreen() {
     }
   };
 
-  // Define table columns. Data from nested objects (job, interviewer, candidate) is used.
   const columns = [
     {
       key: 'jobTitle',
@@ -175,7 +172,6 @@ export default function InterviewsScreen() {
     },
   ];
 
-  // Actions for editing and deleting each interview row.
   const actions = [
     {
       onClick: handleEdit,
