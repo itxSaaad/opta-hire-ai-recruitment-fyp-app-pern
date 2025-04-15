@@ -166,7 +166,7 @@ export default function JobsScreen() {
         <button
           className="mt-6 w-full py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-1"
           onClick={() => {
-            navigate(`/apply/${job.id}`);
+            navigate(`/candidate/apply/${job.id}`);
             trackEvent(
               'Job Application',
               'User Action',
@@ -344,7 +344,9 @@ export default function JobsScreen() {
                     {user && (
                       <button
                         className="mt-6 w-full py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-1"
-                        onClick={() => navigate(`/apply/${selectedJob.id}`)}
+                        onClick={() =>
+                          navigate(`/candidate/apply/${selectedJob.id}`)
+                        }
                       >
                         Apply Now
                       </button>

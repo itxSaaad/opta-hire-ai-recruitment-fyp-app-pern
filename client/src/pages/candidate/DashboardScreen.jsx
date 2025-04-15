@@ -15,14 +15,14 @@ export default function DashboardScreen() {
   return (
     <>
       <Helmet>
-        <title>Admin Dashboard - OptaHire</title>
+        <title>Candidate Dashboard - OptaHire</title>
         <meta
           name="description"
-          content="OptaHire Admin Dashboard - Manage your recruitment process efficiently with our powerful tools and insights."
+          content="OptaHire Candidate Dashboard - Manage your recruitment process efficiently with our powerful tools and insights."
         />
         <meta
           name="keywords"
-          content="OptaHire, Admin Dashboard, Recruitment, Management"
+          content="OptaHire, Candidate Dashboard, Recruitment, Management"
         />
       </Helmet>
 
@@ -34,7 +34,7 @@ export default function DashboardScreen() {
             className="w-24 h-24 mx-auto mb-6 animate-loader"
           />
           <h1 className="text-4xl font-bold text-light-text dark:text-dark-text mb-6">
-            Welcome to the Admin Dashboard
+            Welcome to the Candidate Dashboard
           </h1>
           <p className="text-xl text-light-text dark:text-dark-text mb-8">
             Manage your recruitment process efficiently with our powerful tools
