@@ -46,7 +46,10 @@ import AdminApplicationsScreen from './pages/admin/ApplicationsScreen.jsx';
 import AdminContractsScreen from './pages/admin/ContractsScreen.jsx';
 import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
 
+import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
+import CandidateApplyScreen from './pages/candidate/ApplyScreen.jsx';
+import CandidateApplicationSuccessScreen from './pages/candidate/ApplicationSuccessScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
@@ -83,7 +86,13 @@ const router = createBrowserRouter(
 
       <Route path="candidate" element={<CandidateLayout />}>
         <Route index element={<ComingSoon />} />
+        <Route index path="dashboard" element={<CandidateDashboardScreen />} />
         <Route path="jobs" element={<CandidateJobsScreen />} />
+        <Route path="apply/:jobId" element={<CandidateApplyScreen />} />
+        <Route
+          path="apply/success"
+          element={<CandidateApplicationSuccessScreen />}
+        />
         <Route path="*" element={<ComingSoon />} />
       </Route>
 
