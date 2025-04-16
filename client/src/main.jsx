@@ -1,6 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from 'react-redux';
 import {
@@ -14,24 +13,6 @@ import './index.css';
 import ThemeProvider from './provider/ThemeProvider.jsx';
 import store from './store.js';
 import { initGA } from './utils/analytics.js';
-// import Loader from './components/Loader.jsx';
-
-// const AdminLayout = lazy(() => import('./layouts/AdminLayout.jsx'));
-// const CandidateLayout = lazy(() => import('./layouts/CandidateLayout'));
-// const InterviewerLayout = lazy(() => import('./layouts/InterviewerLayout'));
-// const RecruiterLayout = lazy(() => import('./layouts/RecruiterLayout'));
-// const MainLayout = lazy(() => import('./layouts/MainLayout'));
-
-// const HomeScreen = lazy(() => import('./pages/HomeScreen.jsx'));
-// const JobsScreen = lazy(() => import('./pages/JobsScreen.jsx'));
-// const LoginScreen = lazy(() => import('./pages/auth/LoginScreen.jsx'));
-// const RegisterScreen = lazy(() => import('./pages/auth/RegisterScreen.jsx'));
-// const ResetPwdScreen = lazy(() => import('./pages/auth/ResetPwdScreen.jsx'));
-// const VerifyProfileScreen = lazy(() =>
-//   import('./pages/auth/VerifyProfileScreen.jsx')
-// );
-// const ComingSoon = lazy(() => import('./pages/ComingSoon.jsx'));
-// const ErrorScreen = lazy(() => import('./pages/ErrorScreen.jsx'));
 
 import AdminLayout from './layouts/AdminLayout.jsx';
 import CandidateLayout from './layouts/CandidateLayout';
@@ -39,18 +20,18 @@ import InterviewerLayout from './layouts/InterviewerLayout';
 import MainLayout from './layouts/MainLayout';
 import RecruiterLayout from './layouts/RecruiterLayout';
 
-import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
-import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
-import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 import AdminApplicationsScreen from './pages/admin/ApplicationsScreen.jsx';
 import AdminContractsScreen from './pages/admin/ContractsScreen.jsx';
+import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
 import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
+import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
+import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 
-import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
-import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
-import CandidateApplyScreen from './pages/candidate/ApplyScreen.jsx';
 import CandidateApplicationSuccessScreen from './pages/candidate/ApplicationSuccessScreen.jsx';
 import CandidateApplicationsScreen from './pages/candidate/ApplicationsScreen.jsx';
+import CandidateApplyScreen from './pages/candidate/ApplyScreen.jsx';
+import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
+import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
@@ -91,7 +72,7 @@ const router = createBrowserRouter(
         <Route path="jobs" element={<CandidateJobsScreen />} />
         <Route path="apply/:jobId" element={<CandidateApplyScreen />} />
         <Route
-          path="apply/success"
+          path="apply/:jobId/success"
           element={<CandidateApplicationSuccessScreen />}
         />
         <Route path="applications" element={<CandidateApplicationsScreen />} />
@@ -134,9 +115,7 @@ createRoot(document.getElementById('root')).render(
     <HelmetProvider>
       <Provider store={store}>
         <ThemeProvider>
-          {/* <Suspense fallback={<Loader />}> */}
           <RouterProvider router={router} />
-          {/* </Suspense> */}
         </ThemeProvider>
       </Provider>
     </HelmetProvider>

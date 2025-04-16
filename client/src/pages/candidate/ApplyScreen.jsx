@@ -27,10 +27,6 @@ import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
 import { trackEvent, trackPageView } from '../../utils/analytics';
-
-import { useGetJobByIdQuery } from '../../features/job/jobApi';
-import { useCreateApplicationMutation } from '../../features/application/applicationApi';
-
 import {
   validateAchievements,
   validateAvailability,
@@ -45,6 +41,8 @@ import {
   validateTitle,
 } from '../../utils/validations';
 
+import { useCreateApplicationMutation } from '../../features/application/applicationApi';
+import { useGetJobByIdQuery } from '../../features/job/jobApi';
 import {
   useGetResumeForUserQuery,
   useUpdateResumeMutation,
@@ -83,7 +81,6 @@ export default function ApplyScreen() {
     createApplication,
     { isLoading: creatingApplication, error: applicationError },
   ] = useCreateApplicationMutation();
-
   const {
     data: resumeData,
     isLoading: resumeLoading,
@@ -91,19 +88,11 @@ export default function ApplyScreen() {
   } = useGetResumeForUserQuery(undefined, { skip: !user });
   const [updateResume, { isLoading: updatingResume, error: updateError }] =
     useUpdateResumeMutation();
-
   const {
     data: jobData,
     isLoading: jobLoading,
     error: jobError,
   } = useGetJobByIdQuery(jobId);
-
-  const overallLoading =
-    resumeLoading || jobLoading || updatingResume || creatingApplication;
-
-  useEffect(() => {
-    trackPageView(location.pathname);
-  }, [location.pathname]);
 
   useEffect(() => {
     if (resumeData && resumeData.profile) {
@@ -349,7 +338,7 @@ export default function ApplyScreen() {
       );
       const result = await createApplication({ jobId }).unwrap();
       if (result) {
-        navigate(`/candidate/apply/success`);
+        navigate(`/candidate/apply/${jobId}/success`);
         trackEvent('Job Applied', 'User Action', `Job application successful`);
       }
     } catch (error) {
@@ -361,6 +350,10 @@ export default function ApplyScreen() {
       );
     }
   };
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   const renderBulletPoints = (text) => {
     if (!text) return null;
@@ -375,10 +368,13 @@ export default function ApplyScreen() {
     );
   };
 
+  const overallLoading =
+    resumeLoading || jobLoading || updatingResume || creatingApplication;
+
   return (
     <>
       <Helmet>
-        <title>Apply for Job - OptaHire</title>
+        <title>Apply for Job [Candidate] - OptaHire</title>
         <meta
           name="description"
           content="Review your resume and the job details, update if needed, and apply to the job."
@@ -401,12 +397,20 @@ export default function ApplyScreen() {
                 }
               />
             ) : null}
-            <h1 className="text-3xl font-bold text-center mb-8 text-light-text dark:text-dark-text">
-              Apply for Job
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-light-text dark:text-dark-text mb-6 text-center">
+              Apply for{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                {jobData?.job?.title || jobId}
+              </span>
             </h1>
+            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
+              Review your resume and the job details, update if needed, and
+              apply to the job.
+            </p>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column: Resume Details */}
-              <div className="space-y-6">
+              <div className="space-y-6 animate-slideInLeft">
                 {/* Overview Section */}
                 <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
                   <div className="flex justify-between items-center mb-6">
@@ -977,7 +981,7 @@ export default function ApplyScreen() {
               </div>
 
               {/* Right Column: Job Details */}
-              <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-lg shadow-lg border border-light-border dark:border-dark-border transition-all duration-500 hover:shadow-xl">
+              <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
                 <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
@@ -1054,7 +1058,8 @@ export default function ApplyScreen() {
                   className="form-checkbox h-5 w-5 text-light-primary dark:text-dark-primary"
                 />
                 <span className="text-light-text dark:text-dark-text">
-                  I agree to the terms and conditions.
+                  I have read the job description and requirements and agree to
+                  the requirements and benefits of this job.
                 </span>
               </label>
               <div className="ml-6">

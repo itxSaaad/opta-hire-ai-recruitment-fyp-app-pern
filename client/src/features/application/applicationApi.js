@@ -14,9 +14,10 @@ export const applicationApi = createApi({
   tagTypes: ['Applications'],
   endpoints: (builder) => ({
     getAllApplications: builder.query({
-      query: () => ({
+      query: (params = {}) => ({
         url: ENDPOINTS.APPLICATIONS,
         method: 'GET',
+        params,
       }),
       providesTags: ['Applications'],
     }),

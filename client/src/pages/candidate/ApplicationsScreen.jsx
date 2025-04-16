@@ -1,26 +1,48 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
 import Table from '../../components/ui/dashboardLayout/Table';
 
-import { useGetAllApplicationsQuery } from '../../features/application/applicationApi';
 import { trackPageView } from '../../utils/analytics';
 
+import { useGetAllApplicationsQuery } from '../../features/application/applicationApi';
+
 export default function CandidateApplicationsScreen() {
-  const { data: applications, isLoading, error } = useGetAllApplicationsQuery();
-  console.log(applications, 'applications data');
+  const location = useLocation();
+
+  const {
+    data: applications,
+    isLoading,
+    error,
+  } = useGetAllApplicationsQuery({
+    role: 'candidate',
+  });
 
   useEffect(() => {
-    trackPageView(window.location.pathname);
-  }, []);
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   const columns = [
     {
       key: 'jobTitle',
       label: 'Job Title',
-      render: (application) => application.job.title,
+      render: (application) => (
+        <span className="font-medium text-light-text dark:text-dark-text">
+          {application.job.title}
+        </span>
+      ),
+    },
+    {
+      key: 'companyName',
+      label: 'Company Name',
+      render: (application) => (
+        <span className="text-light-text/70 dark:text-dark-text/70">
+          {application.job.company}
+        </span>
+      ),
     },
     {
       key: 'category',
@@ -49,38 +71,52 @@ export default function CandidateApplicationsScreen() {
                     : 'bg-gray-100 text-gray-800'
           }`}
         >
-          {application.status}
+          {application.status.charAt(0).toUpperCase() +
+            application.status.slice(1).toLowerCase()}
         </span>
       ),
     },
     {
       key: 'applicationDate',
       label: 'Applied On',
-      render: (application) =>
-        new Date(application.applicationDate).toLocaleDateString(),
+      render: (application) => (
+        <span className="text-light-text/70 dark:text-dark-text/70">
+          {new Date(application.applicationDate).toLocaleDateString()}
+        </span>
+      ),
     },
   ];
 
   return (
     <>
       <Helmet>
-        <title>Your Applications - OptaHire</title>
+        <title>Track Your Applications [Candidate] - OptaHire</title>
         <meta
           name="description"
-          content="Review your job application history"
+          content="Track your job applications and stay updated on your application status."
+        />
+        <meta
+          name="keywords"
+          content="job applications, application tracking, job status, candidate dashboard"
         />
       </Helmet>
 
       <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md mx-auto">
+          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
             <Loader />
           </div>
         ) : (
-          <div className="w-full max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-light-text dark:text-dark-text text-center">
-              Your Applications
+          <div className="max-w-7xl w-full mx-auto animate-slideUp">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
+              Track Your{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Applications
+              </span>
             </h1>
+            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
+              Keep track of your job applications and their status.
+            </p>
 
             {error && <ErrorMsg errorMsg={error.data?.message} />}
 
