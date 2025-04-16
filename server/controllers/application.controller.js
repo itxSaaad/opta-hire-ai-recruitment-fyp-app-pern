@@ -183,7 +183,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
       {
         model: Job,
         as: 'job',
-        attributes: ['title', 'category', 'location'],
+        attributes: ['title', 'company', 'category', 'location'],
       },
       {
         model: User,
@@ -226,7 +226,7 @@ const getApplicationById = asyncHandler(async (req, res) => {
       {
         model: Job,
         as: 'job',
-        attributes: ['title', 'category', 'location'],
+        attributes: ['title', 'company', 'category', 'location'],
       },
       {
         model: User,
@@ -277,7 +277,7 @@ const getApplicationsByJobId = asyncHandler(async (req, res) => {
       {
         model: Job,
         as: 'job',
-        attributes: ['title', 'category', 'location'],
+        attributes: ['title', 'company', 'category', 'location'],
       },
       {
         model: User,
