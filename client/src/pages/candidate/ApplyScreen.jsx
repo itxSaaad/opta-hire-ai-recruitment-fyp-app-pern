@@ -336,11 +336,10 @@ export default function ApplyScreen() {
         'User Action',
         `Candidate applied for job: ${jobData?.job?.title || jobId}`
       );
-      const result = await createApplication({ jobId }).unwrap();
-      if (result) {
-        navigate(`/candidate/apply/${jobId}/success`);
-        trackEvent('Job Applied', 'User Action', `Job application successful`);
-      }
+      await createApplication({ jobId }).unwrap();
+
+      navigate(`/candidate/apply/${jobId}/success`);
+      trackEvent('Job Applied', 'User Action', `Job application successful`);
     } catch (error) {
       console.error('Application submission failed:', error);
       trackEvent(

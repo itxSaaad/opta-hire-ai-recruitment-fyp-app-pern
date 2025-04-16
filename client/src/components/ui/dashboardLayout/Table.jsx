@@ -39,7 +39,7 @@ export default function Table({ columns, data, actions }) {
                 ))}
                 {actions && (
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-start space-x-2">
                       {actions.map((action, index) => (
                         <span key={index} onClick={() => action.onClick(row)}>
                           {action.render ? action.render(row) : null}

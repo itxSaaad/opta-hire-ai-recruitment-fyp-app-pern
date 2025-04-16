@@ -31,6 +31,7 @@ import CandidateApplicationSuccessScreen from './pages/candidate/ApplicationSucc
 import CandidateApplicationsScreen from './pages/candidate/ApplicationsScreen.jsx';
 import CandidateApplyScreen from './pages/candidate/ApplyScreen.jsx';
 import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
+import CandidateInterviewsScreen from './pages/candidate/InterviewsScreen.jsx';
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
@@ -76,6 +77,7 @@ const router = createBrowserRouter(
           element={<CandidateApplicationSuccessScreen />}
         />
         <Route path="applications" element={<CandidateApplicationsScreen />} />
+        <Route path="interviews" element={<CandidateInterviewsScreen />} />
         <Route path="*" element={<ComingSoon />} />
       </Route>
 
