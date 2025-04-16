@@ -159,7 +159,8 @@ export default function ContractsScreen() {
                     : 'bg-gray-100 text-gray-800'
           }`}
         >
-          {contract.status}
+          {contract.status.charAt(0).toUpperCase() +
+            contract.status.slice(1).toLowerCase()}
         </span>
       ),
     },
@@ -180,7 +181,8 @@ export default function ContractsScreen() {
                     : 'bg-gray-100 text-gray-800'
           }`}
         >
-          {contract.paymentStatus}
+          {contract.paymentStatus.charAt(0).toUpperCase() +
+            contract.paymentStatus.slice(1).toLowerCase()}
         </span>
       ),
     },

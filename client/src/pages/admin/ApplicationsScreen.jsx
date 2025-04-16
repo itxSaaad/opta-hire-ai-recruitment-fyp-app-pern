@@ -149,7 +149,8 @@ export default function ApplicationsScreen() {
                     : 'bg-gray-100 text-gray-800'
           }`}
         >
-          {application.status}
+          {application.status.charAt(0).toUpperCase() +
+            application.status.slice(1).toLowerCase()}
         </span>
       ),
     },

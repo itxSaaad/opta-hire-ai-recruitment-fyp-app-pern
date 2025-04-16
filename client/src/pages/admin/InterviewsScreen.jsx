@@ -161,7 +161,8 @@ export default function InterviewsScreen() {
                     : 'bg-gray-100 text-gray-800'
           }`}
         >
-          {interview.status}
+          {interview.status.charAt(0).toUpperCase() +
+            interview.status.slice(1).toLowerCase()}
         </span>
       ),
     },

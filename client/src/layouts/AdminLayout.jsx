@@ -2,8 +2,10 @@ import {
   FaBriefcase,
   FaCalendarAlt,
   FaChartBar,
+  FaDollarSign,
   FaEnvelopeOpenText,
   FaFileContract,
+  FaStar,
   FaTachometerAlt,
   FaUsers,
 } from 'react-icons/fa';
@@ -27,6 +29,16 @@ const AdminLayout = () => {
     },
     { label: 'Contracts', path: '/admin/contracts', icon: <FaFileContract /> },
     { label: 'Interviews', path: '/admin/interviews', icon: <FaCalendarAlt /> },
+    {
+      label: 'Transactions',
+      path: '/admin/transactions',
+      icon: <FaDollarSign />,
+    },
+    {
+      label: 'Interviewer Ratings',
+      path: '/admin/interviewer-ratings',
+      icon: <FaStar />,
+    },
     { label: 'Reports', path: '/admin/reports', icon: <FaChartBar /> },
   ];
 

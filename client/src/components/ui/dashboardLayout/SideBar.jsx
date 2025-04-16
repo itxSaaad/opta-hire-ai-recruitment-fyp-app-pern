@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import { FaBars, FaSignOutAlt, FaTimes } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { logoutUser } from '../../../features/auth/authSlice';
+import { FaBars, FaTimes } from 'react-icons/fa';
+import { Link, useLocation } from 'react-router-dom';
 
 const SideBar = ({ navItems = [] }) => {
   const [collapsed, setCollapsed] = useState(true);
@@ -11,8 +9,6 @@ const SideBar = ({ navItems = [] }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const location = useLocation();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const itemsToDisplay = navItems.length > 0 ? navItems : [];
 
@@ -36,11 +32,6 @@ const SideBar = ({ navItems = [] }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    navigate('/auth/login');
-  };
 
   const toggleCollapse = () => {
     setCollapsed(!collapsed);
@@ -104,16 +95,6 @@ const SideBar = ({ navItems = [] }) => {
             })}
           </ul>
         </nav>
-
-        <div className="p-3 border-t border-light-border dark:border-dark-border">
-          <button
-            onClick={handleLogout}
-            className={`flex items-center p-2 rounded-lg w-full text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 ${collapsed ? 'justify-center' : ''}`}
-          >
-            <FaSignOutAlt className="text-lg" />
-            {!collapsed && <span className="ml-3 text-base">Logout</span>}
-          </button>
-        </div>
 
         {!isMobile && (
           <div className="p-3 border-t border-light-border dark:border-dark-border">

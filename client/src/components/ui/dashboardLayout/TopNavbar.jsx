@@ -168,14 +168,16 @@ const TopNavbar = ({ navItems = [] }) => {
                       Profile
                     </Link>
 
-                    <Link
-                      to="/user/resume"
-                      className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
-                      Resume
-                    </Link>
+                    {!user.isAdmin && (
+                      <Link
+                        to="/user/resume"
+                        className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
+                        Resume
+                      </Link>
+                    )}
 
                     <div className="border-t border-light-border dark:border-dark-border my-1.5"></div>
 
