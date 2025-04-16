@@ -12,7 +12,7 @@ import {
   FaUserEdit,
 } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
 import Loader from '../../components/Loader';
@@ -31,6 +31,7 @@ import {
 import { logoutUser, setUserInfo } from '../../features/auth/authSlice';
 import {
   useDeleteProfileMutation,
+  useGetProfileQuery,
   useUpdatePasswordMutation,
   useUpdateProfileMutation,
 } from '../../features/user/userApi';
@@ -39,11 +40,20 @@ import IsAuth from '../../hoc/IsAuth';
 
 function ProfileScreen() {
   const { userInfo: user, loading } = useSelector((state) => state.auth);
+  const {
+    data: userProfile,
+    isLoading: loadingUser,
+    error: userError,
+  } = useGetProfileQuery(undefined, {
+    skip: !user,
+  });
 
-  const [firstName, setFirstName] = useState(user?.firstName || '');
-  const [lastName, setLastName] = useState(user?.lastName || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const [firstName, setFirstName] = useState(
+    userProfile?.user?.firstName || ''
+  );
+  const [lastName, setLastName] = useState(userProfile?.user?.lastName || '');
+  const [phone, setPhone] = useState(userProfile?.user?.phone || '');
+  const [email, setEmail] = useState(userProfile?.user?.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -64,7 +74,8 @@ function ProfileScreen() {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const [updateProfile, { isLoading, error }] = useUpdateProfileMutation();
+  const [updateProfile, { isLoading: isUpdatingProfile, error: updateError }] =
+    useUpdateProfileMutation();
   const [
     updatePassword,
     { isLoading: isUpdatingPassword, error: passwordError },
@@ -73,11 +84,11 @@ function ProfileScreen() {
     useDeleteProfileMutation();
 
   useEffect(() => {
-    if (user && !editMode) {
-      setFirstName(user.firstName || '');
-      setLastName(user.lastName || '');
-      setPhone(user.phone || '');
-      setEmail(user.email || '');
+    if (userProfile && !editMode) {
+      setFirstName(userProfile.user.firstName || '');
+      setLastName(userProfile.user.lastName || '');
+      setPhone(userProfile.user.phone || '');
+      setEmail(userProfile.user.email || '');
       setErrors({
         firstName: '',
         lastName: '',
@@ -87,8 +98,9 @@ function ProfileScreen() {
         newPassword: '',
         confirmPassword: '',
       });
+      dispatch(setUserInfo(userProfile.user));
     }
-  }, [user, editMode]);
+  }, [editMode, userProfile, dispatch]);
 
   const handleChange = (field, value) => {
     switch (field) {
@@ -230,20 +242,21 @@ function ProfileScreen() {
   }, [location.pathname]);
 
   const getRoleString = () => {
-    if (!user) return '';
+    if (!userProfile?.user) return '';
     const roles = [];
-    if (user.isAdmin) roles.push('Admin');
-    if (user.isRecruiter) roles.push('Recruiter');
-    if (user.isInterviewer) roles.push('Interviewer');
-    if (user.isCandidate) roles.push('Candidate');
-    return roles.length > 0 ? roles.join(', ') : 'User';
+    if (userProfile.user.isAdmin) roles.push('Admin');
+    if (userProfile.user.isRecruiter) roles.push('Recruiter');
+    if (userProfile.user.isInterviewer) roles.push('Interviewer');
+    if (userProfile.user.isCandidate) roles.push('Candidate');
+    return roles.length > 0 ? roles.join(', ') : 'No roles assigned';
   };
 
   const isFormChanged =
-    firstName !== user?.firstName ||
-    lastName !== user?.lastName ||
-    phone !== user?.phone ||
-    email !== user?.email;
+    userProfile?.user &&
+    (firstName !== userProfile.user.firstName ||
+      lastName !== userProfile.user.lastName ||
+      phone !== userProfile.user.phone ||
+      email !== userProfile.user.email);
 
   const isPasswordFormValid =
     currentPassword &&
@@ -252,6 +265,13 @@ function ProfileScreen() {
     !errors.currentPassword &&
     !errors.newPassword &&
     !errors.confirmPassword;
+
+  const overallLoading =
+    loading ||
+    loadingUser ||
+    isUpdatingProfile ||
+    isUpdatingPassword ||
+    isDeleting;
 
   return (
     <>
@@ -263,7 +283,7 @@ function ProfileScreen() {
         />
       </Helmet>
       <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background">
-        {loading || isLoading || isDeleting ? (
+        {overallLoading ? (
           <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
             <Loader />
           </div>
@@ -278,10 +298,11 @@ function ProfileScreen() {
               </p>
             </div>
 
-            {error || passwordError || deleteError ? (
+            {userError || updateError || passwordError || deleteError ? (
               <ErrorMsg
                 errorMsg={
-                  error?.data?.message ||
+                  userError?.data?.message ||
+                  updateError?.data?.message ||
                   passwordError?.data?.message ||
                   deleteError?.data?.message
                 }
@@ -324,8 +345,8 @@ function ProfileScreen() {
                             Name
                           </p>
                           <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                            {user?.firstName || 'Not set'}{' '}
-                            {user?.lastName || ''}
+                            {userProfile.user?.firstName || 'Not set'}{' '}
+                            {userProfile.user?.lastName || ''}
                           </p>
                         </div>
                       </div>
@@ -342,7 +363,7 @@ function ProfileScreen() {
                             Phone
                           </p>
                           <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                            {user?.phone || 'Not set'}
+                            {userProfile.user?.phone || 'Not set'}
                           </p>
                         </div>
                       </div>
@@ -359,7 +380,7 @@ function ProfileScreen() {
                             Email
                           </p>
                           <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                            {user?.email || 'Not set'}
+                            {userProfile.user?.email || 'Not set'}
                           </p>
                         </div>
                       </div>
@@ -448,11 +469,11 @@ function ProfileScreen() {
                       <button
                         type="submit"
                         className={`flex items-center justify-center bg-light-primary dark:bg-dark-primary text-white py-2 px-6 rounded-lg font-semibold text-md hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
-                          isLoading || !isFormChanged
+                          isUpdatingProfile || !isFormChanged
                             ? 'opacity-50 cursor-not-allowed'
                             : ''
                         }`}
-                        disabled={isLoading || !isFormChanged}
+                        disabled={isUpdatingProfile || !isFormChanged}
                       >
                         <FaSave className="mr-2" />
                         Save Changes

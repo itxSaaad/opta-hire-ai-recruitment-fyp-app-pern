@@ -88,23 +88,18 @@ export default function UsersScreen() {
 
   const saveUserChanges = async () => {
     try {
-      const roleFlags = {
-        isAdmin: role.toLowerCase() === 'admin',
-        isInterviewer: role.toLowerCase() === 'interviewer',
-        isRecruiter: role.toLowerCase() === 'recruiter',
-        isCandidate: role.toLowerCase() === 'candidate',
-      };
-
-      await updateUser({
+      const updatedUserData = {
         id: selectedUser.id,
         firstName,
         lastName,
         email,
         phone,
-        ...roleFlags,
+        role: role.toLowerCase(),
         isVerified,
         isTopRated,
-      }).unwrap();
+      };
+
+      await updateUser(updatedUserData).unwrap();
 
       setShowEditModal(false);
       refetch();
