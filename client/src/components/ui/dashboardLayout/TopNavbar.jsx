@@ -89,7 +89,7 @@ const TopNavbar = ({ navItems = [] }) => {
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center space-x-1">
+        <div className="hidden  lg:flex items-center space-x-1">
           {itemsToDisplay.map((item, index) => {
             const isActive = location.pathname === item.path;
             return (
@@ -112,7 +112,7 @@ const TopNavbar = ({ navItems = [] }) => {
         {!user ? (
           <Link
             to="/auth/login"
-            className="hidden md:flex text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out animate-fadeIn"
+            className="hidden lg:flex text-lg bg-light-secondary dark:bg-dark-secondary text-dark-text px-4 py-2 rounded-lg transition-transform transform hover:scale-105 duration-300 ease-in-out animate-fadeIn"
           >
             Login / Register
           </Link>
