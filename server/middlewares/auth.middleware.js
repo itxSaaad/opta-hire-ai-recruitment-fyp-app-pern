@@ -35,11 +35,11 @@ const protectServer = asyncHandler(async (req, res, next) => {
       next();
     } catch (error) {
       res.status(StatusCodes.UNAUTHORIZED);
-      throw new Error('Session expired or invalid. Please log in again.');
+      throw new Error('Session expired. Please sign in again.');
     }
   } else {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Authentication required. Please log in to continue.');
+    throw new Error('Session expired. Please sign in again.');
   }
 });
 
@@ -70,7 +70,7 @@ const protectSocket = async (socket, next) => {
 
     next();
   } catch (error) {
-    return next(new Error('Session expired or invalid. Please log in again.'));
+    return next(new Error('Session expired. Please sign in again.'));
   }
 };
 

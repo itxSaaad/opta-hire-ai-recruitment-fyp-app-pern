@@ -9,6 +9,7 @@ const {
   createResume,
   getAllResumes,
   getResumeForUser,
+  getResumeByUserId,
   updateResume,
   deleteResume,
   updateResumeById,
@@ -32,5 +33,9 @@ router
   .route('/:id')
   .put(protectServer, authorizeServerRoles('isAdmin'), updateResumeById)
   .delete(protectServer, authorizeServerRoles('isAdmin'), deleteResumeById);
+
+router
+  .route('/user/:userId')
+  .get(protectServer, authorizeServerRoles('isAdmin'), getResumeByUserId);
 
 module.exports = router;

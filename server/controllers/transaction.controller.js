@@ -230,6 +230,7 @@ const getAllTransactions = asyncHandler(async (req, res) => {
     include: [
       {
         model: Contract,
+        as: 'contract',
         include: [
           {
             model: User,
@@ -289,6 +290,7 @@ const getTransactionById = asyncHandler(async (req, res) => {
     include: [
       {
         model: Contract,
+        as: 'contract',
         include: [
           {
             model: User,
@@ -366,6 +368,7 @@ const updateTransactionById = asyncHandler(async (req, res) => {
     include: [
       {
         model: Contract,
+        as: 'contract',
         include: [
           {
             model: User,
@@ -532,6 +535,7 @@ const deleteTransactionById = asyncHandler(async (req, res) => {
     include: [
       {
         model: Contract,
+        as: 'contract',
         include: [
           {
             model: User,
@@ -689,6 +693,7 @@ const getTransactionsByContract = asyncHandler(async (req, res) => {
     include: [
       {
         model: Contract,
+        as: 'contract',
         include: [
           {
             model: User,

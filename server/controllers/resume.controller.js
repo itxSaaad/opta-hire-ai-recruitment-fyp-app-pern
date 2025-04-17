@@ -4,6 +4,10 @@ const { Op } = require('sequelize');
 
 const { User, Resume } = require('../models');
 
+const {
+  sendEmail,
+  generateEmailTemplate,
+} = require('../utils/nodemailer.utils');
 const { validateString, validateArray } = require('../utils/validation.utils');
 
 /**
@@ -179,6 +183,45 @@ const getResumeForUser = asyncHandler(async (req, res) => {
     throw new Error(
       'No resume found. Please create your resume to get started.'
     );
+  }
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Resume loaded successfully.',
+    profile,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
+ * @desc Gets the Resume by User ID.
+ * 
+ * @route GET /api/v1/resumes/user/:userId
+ * @access Private (Admin)
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * 
+ * @returns {Promise<void>}
+ * */
+
+const getResumeByUserId = asyncHandler(async (req, res) => {
+  const userId = req.params.userId;
+
+  const profile = await Resume.findOne({
+    where: { userId },
+    include: [
+      {
+        model: User,
+        as: 'user',
+        attributes: ['firstName', 'lastName', 'email', 'phone'],
+      },
+    ],
+  });
+
+  if (!profile) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('No resume found for the specified user ID.');
   }
 
   res.status(StatusCodes.OK).json({
@@ -510,8 +553,7 @@ const deleteResumeById = asyncHandler(async (req, res) => {
             `Title: ${profile.title}`,
             `Industry: ${profile.industry || 'Not specified'}`,
             `Headline: ${profile.headline || 'Not specified'}`,
-            `Skills: ${
-              profile.skills ? profile.skills.join(', ') : 'Not specified'
+            `Skills: ${profile.skills ? profile.skills.join(', ') : 'Not specified'
             }`,
             `Experience: ${profile.experience ? 'Included' : 'Not specified'}`,
             `Education: ${profile.education ? 'Included' : 'Not specified'}`,
@@ -544,6 +586,7 @@ module.exports = {
   createResume,
   getAllResumes,
   getResumeForUser,
+  getResumeByUserId,
   updateResume,
   deleteResume,
   updateResumeById,

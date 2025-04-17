@@ -3,7 +3,7 @@ const emailValidator = require('email-validator');
 const jwt = require('jsonwebtoken');
 const { StatusCodes } = require('http-status-codes');
 
-const { User } = require('../models');
+const { User, Resume } = require('../models');
 
 const { validateString } = require('../utils/validation.utils');
 const {
@@ -250,6 +250,28 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!updatedUser) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error('Unable to update user. Please try again.');
+  }
+
+  const resumeData = {
+    title: null,
+    summary: null,
+    headline: null,
+    skills: null,
+    experience: null,
+    education: null,
+    industry: null,
+    availability: null,
+    company: null,
+    achievements: null,
+    portfolio: null,
+    userId: updatedUser.id,
+  };
+
+  const userResume = await Resume.create();
+
+  if (!userResume) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    throw new Error('Unable to create Resume.');
   }
 
   const isEmailSent = await sendEmail({
