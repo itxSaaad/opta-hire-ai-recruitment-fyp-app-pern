@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
@@ -19,30 +19,18 @@ import InputField from '../../components/ui/mainLayout/InputField';
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import {
+  useGetResumeByUserIdQuery,
+  useUpdateResumeByIdMutation,
+} from '../../features/resume/resumeApi';
+import {
   useDeleteUserByIdMutation,
   useGetAllUsersQuery,
   useUpdateUserByIdMutation,
 } from '../../features/user/userApi';
 
-// New resume API hooks
-import {
-  useGetResumeByUserIdQuery,
-  useUpdateResumeByIdMutation,
-} from '../../features/resume/resumeApi';
-
 export default function UsersScreen() {
-  const location = useLocation();
-
-  // -- User management state --
-  const { data: users, isLoading, error, refetch } = useGetAllUsersQuery();
-  const [deleteUser, { isLoading: isDeleting, error: deleteError }] =
-    useDeleteUserByIdMutation();
-  const [updateUser, { isLoading: isUpdating, error: updateError }] =
-    useUpdateUserByIdMutation();
-
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  // These states are used for general user detail editing
   const [selectedUser, setSelectedUser] = useState(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -51,7 +39,6 @@ export default function UsersScreen() {
   const [role, setRole] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [isTopRated, setIsTopRated] = useState(false);
-
   const [showEditResumeModal, setShowEditResumeModal] = useState(false);
   const [selectedUserForResume, setSelectedUserForResume] = useState(null);
   const [resumeId, setResumeId] = useState('');
@@ -69,6 +56,30 @@ export default function UsersScreen() {
   const [resumeAchievements, setResumeAchievements] = useState('');
   const [resumePortfolio, setResumePortfolio] = useState('');
 
+  const location = useLocation();
+
+  const { data: users, isLoading, error, refetch } = useGetAllUsersQuery();
+
+  const [
+    updateUser,
+    {
+      isLoading: isUpdating,
+      error: updateError,
+      isSuccess: isUpdateSuccess,
+      data: updatedUserData,
+    },
+  ] = useUpdateUserByIdMutation();
+
+  const [
+    deleteUser,
+    {
+      isLoading: isDeleting,
+      error: deleteError,
+      isSuccess: isDeleteSuccess,
+      data: deletedUserData,
+    },
+  ] = useDeleteUserByIdMutation();
+
   const {
     data: resumeData,
     isLoading: resumeLoading,
@@ -83,7 +94,7 @@ export default function UsersScreen() {
     {
       isLoading: updatingResume,
       error: updateResumeError,
-      isSuccess,
+      isSuccess: isResumeUpdateSuccess,
       data: updatedResumeData,
     },
   ] = useUpdateResumeByIdMutation();
@@ -253,7 +264,6 @@ export default function UsersScreen() {
     }
   };
 
-  // Table columns for users – note: these remain unchanged.
   const columns = [
     {
       key: 'name',
@@ -304,7 +314,6 @@ export default function UsersScreen() {
     },
   ];
 
-  // Actions for each row. Added third action "Edit Resume".
   const actions = [
     {
       onClick: handleEdit,
@@ -359,7 +368,30 @@ export default function UsersScreen() {
             <h1 className="text-3xl font-bold mb-6 text-light-text dark:text-dark-text">
               Users Management
             </h1>
-            {error && <ErrorMsg errorMsg={error.data?.message} />}
+
+            {error && <Alert message={error.data?.message} />}
+
+            {isUpdateSuccess && updatedUserData.data?.message && (
+              <Alert
+                message={updatedUserData.data?.message}
+                isSuccess={isUpdateSuccess}
+              />
+            )}
+
+            {isDeleteSuccess && deletedUserData.data?.message && (
+              <Alert
+                message={deletedUserData.data?.message}
+                isSuccess={isDeleteSuccess}
+              />
+            )}
+
+            {isResumeUpdateSuccess && updatedResumeData.data?.message && (
+              <Alert
+                message={updatedResumeData.data?.message}
+                isSuccess={isResumeUpdateSuccess}
+              />
+            )}
+
             <Table
               columns={columns}
               data={users?.users || []}
@@ -369,7 +401,6 @@ export default function UsersScreen() {
         )}
       </section>
 
-      {/* Edit User Modal */}
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -379,11 +410,7 @@ export default function UsersScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <ErrorMsg errorMsg={updateError.data?.message} />}
-
-            {isSuccess && (
-              <ErrorMsg errorMsg={updatedResumeData.data?.message} />
-            )}
+            {updateError && <Alert message={updateError.data?.message} />}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InputField
@@ -477,7 +504,8 @@ export default function UsersScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <ErrorMsg errorMsg={deleteError.data?.message} />}
+            {deleteError && <Alert message={deleteError.data?.message} />}
+
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete user {selectedUser?.firstName}{' '}
               {selectedUser?.lastName}? This action can be undone from the
@@ -513,9 +541,9 @@ export default function UsersScreen() {
           <Loader />
         ) : (
           <div className="space-y-6">
-            {resumeError && <ErrorMsg errorMsg={resumeError.data?.message} />}
+            {resumeError && <Alert message={resumeError.data?.message} />}
             {updateResumeError && (
-              <ErrorMsg errorMsg={updateResumeError.data?.message} />
+              <Alert message={updateResumeError.data?.message} />
             )}
             {/* Overview Section */}
             <div className="space-y-4">

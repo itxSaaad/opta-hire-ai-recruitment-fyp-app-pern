@@ -11,6 +11,7 @@ const IsAuth = (WrappedComponent, allowedRoles = null) => {
   const WithAuthComponent = (props) => {
     const navigate = useNavigate();
     const location = useLocation();
+
     const { pathname } = location;
 
     const { userInfo: user, loading } = useSelector((state) => state.auth);
@@ -21,13 +22,13 @@ const IsAuth = (WrappedComponent, allowedRoles = null) => {
       if (loading) return;
 
       if (!user) {
-        if (pathname !== '/auth/login') {
+        if (pathname !== '/auth/login' && pathname !== '/auth/register') {
           navigate('/auth/login', { replace: true });
         }
         return;
       }
 
-      if (!user.isVerified && pathname !== '/auth/verify') {
+      if (user && !user.isVerified && pathname !== '/auth/verify') {
         navigate('/auth/verify', { replace: true });
         return;
       }
@@ -41,15 +42,16 @@ const IsAuth = (WrappedComponent, allowedRoles = null) => {
         navigate(expectedRoute, { replace: true });
       }
 
-      if (user.isVerified && isAuthRoute) {
+      if (user && user.isVerified && isAuthRoute) {
         const expectedRoute = getExpectedRoute(user);
         navigate(expectedRoute, { replace: true });
       }
-    }, [loading, user, pathname, navigate, allowedRoles, isAuthRoute]);
+    }, [loading, user, pathname, navigate, isAuthRoute]);
 
     if (loading) {
       return <Loader />;
     }
+
     return <WrappedComponent {...props} />;
   };
 

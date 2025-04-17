@@ -11,7 +11,7 @@ import {
 } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
@@ -181,7 +181,7 @@ export default function CandidateInterviewsScreen() {
             </p>
 
             {interviewsError && (
-              <ErrorMsg errorMsg={interviewsError.data.message} />
+              <Alert message={interviewsError.data.message} />
             )}
 
             <Table
@@ -207,7 +207,7 @@ export default function CandidateInterviewsScreen() {
             {selectedInterview && (
               <div className="bg-light-surface dark:bg-dark-surface rounded-lg p-6">
                 {interviewError && (
-                  <ErrorMsg errorMsg={interviewError.data.message} />
+                  <Alert message={interviewError.data.message} />
                 )}
 
                 <div className="space-y-6">

@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { FaPencilAlt, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
@@ -12,9 +12,9 @@ import InputField from '../../components/ui/mainLayout/InputField';
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import {
+  useDeleteInterviewMutation,
   useGetAllInterviewsQuery,
   useUpdateInterviewMutation,
-  useDeleteInterviewMutation,
 } from '../../features/interview/interviewApi';
 
 export default function InterviewsScreen() {
@@ -35,10 +35,26 @@ export default function InterviewsScreen() {
     error,
     refetch,
   } = useGetAllInterviewsQuery();
-  const [updateInterview, { isLoading: isUpdating, error: updateError }] =
-    useUpdateInterviewMutation();
-  const [deleteInterview, { isLoading: isDeleting, error: deleteError }] =
-    useDeleteInterviewMutation();
+
+  const [
+    updateInterview,
+    {
+      isLoading: isUpdating,
+      error: updateError,
+      isSuccess: isUpdateSuccess,
+      data: updateData,
+    },
+  ] = useUpdateInterviewMutation();
+
+  const [
+    deleteInterview,
+    {
+      isLoading: isDeleting,
+      error: deleteError,
+      isSuccess: isDeleteSuccess,
+      data: deleteData,
+    },
+  ] = useDeleteInterviewMutation();
 
   useEffect(() => {
     trackPageView(routeLocation.pathname);
@@ -219,7 +235,21 @@ export default function InterviewsScreen() {
               Interviews Management
             </h1>
 
-            {error && <ErrorMsg errorMsg={error.data.message} />}
+            {error && <Alert message={error.data.message} />}
+
+            {isUpdateSuccess && updateData?.data?.message && (
+              <Alert
+                message={updateData.data.message}
+                isSuccess={isUpdateSuccess}
+              />
+            )}
+
+            {isDeleteSuccess && deleteData?.data?.message && (
+              <Alert
+                message={deleteData.data.message}
+                isSuccess={isDeleteSuccess}
+              />
+            )}
 
             <Table
               columns={columns}
@@ -230,7 +260,6 @@ export default function InterviewsScreen() {
         )}
       </section>
 
-      {/* Edit Modal */}
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -240,7 +269,7 @@ export default function InterviewsScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <ErrorMsg errorMsg={updateError.data.message} />}
+            {updateError && <Alert message={updateError.data.message} />}
             <InputField
               id="scheduledTime"
               type="datetime-local"
@@ -298,7 +327,6 @@ export default function InterviewsScreen() {
         )}
       </Modal>
 
-      {/* Delete Modal */}
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
@@ -308,7 +336,7 @@ export default function InterviewsScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <ErrorMsg errorMsg={deleteError.data.message} />}
+            {deleteError && <Alert message={deleteError.data.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete this interview? This action cannot
               be undone.

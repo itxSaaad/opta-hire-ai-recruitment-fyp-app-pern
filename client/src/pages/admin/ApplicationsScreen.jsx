@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { FaPencilAlt, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
@@ -32,10 +32,24 @@ export default function ApplicationsScreen() {
     error,
     refetch,
   } = useGetAllApplicationsQuery();
-  const [updateApplication, { isLoading: isUpdating, error: updateError }] =
-    useUpdateApplicationMutation();
-  const [deleteApplication, { isLoading: isDeleting, error: deleteError }] =
-    useDeleteApplicationMutation();
+  const [
+    updateApplication,
+    {
+      isLoading: isUpdating,
+      error: updateError,
+      isSuccess: updateSuccess,
+      data: updateApplicationData,
+    },
+  ] = useUpdateApplicationMutation();
+  const [
+    deleteApplication,
+    {
+      isLoading: isDeleting,
+      error: deleteError,
+      isSuccess: deleteSuccess,
+      data: deleteApplicationData,
+    },
+  ] = useDeleteApplicationMutation();
 
   useEffect(() => {
     trackPageView(routeLocation.pathname);
@@ -208,7 +222,19 @@ export default function ApplicationsScreen() {
               Applications Management
             </h1>
 
-            {error && <ErrorMsg errorMsg={error.data.message} />}
+            {error && <Alert message={error.data.message} />}
+            {updateSuccess && updateApplicationData?.data.message && (
+              <Alert
+                isSuccess={updateSuccess}
+                message={updateApplicationData.data.message}
+              />
+            )}
+            {deleteSuccess && deleteApplicationData?.data.message && (
+              <Alert
+                isSuccess={deleteSuccess}
+                message={deleteApplicationData.data.message}
+              />
+            )}
 
             <Table
               columns={columns}
@@ -229,7 +255,7 @@ export default function ApplicationsScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <ErrorMsg errorMsg={updateError.data.message} />}
+            {updateError && <Alert message={updateError.data.message} />}
             <InputField
               id="status"
               type="select"
@@ -275,7 +301,7 @@ export default function ApplicationsScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <ErrorMsg errorMsg={deleteError.data.message} />}
+            {deleteError && <Alert message={deleteError.data.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete this application? This action
               cannot be undone.

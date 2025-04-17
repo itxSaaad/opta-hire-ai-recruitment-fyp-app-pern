@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { FaPencilAlt, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
@@ -239,7 +239,7 @@ export default function ContractsScreen() {
               Contracts Management
             </h1>
 
-            {error && <ErrorMsg errorMsg={error.data.message} />}
+            {error && <Alert message={error.data.message} />}
 
             <Table
               columns={columns}
@@ -260,7 +260,7 @@ export default function ContractsScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <ErrorMsg errorMsg={updateError.data.message} />}
+            {updateError && <Alert message={updateError.data.message} />}
             <InputField
               id="agreedPrice"
               type="text"
@@ -327,7 +327,7 @@ export default function ContractsScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <ErrorMsg errorMsg={deleteError.data.message} />}
+            {deleteError && <Alert message={deleteError.data.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete this contract? This action cannot
               be undone.

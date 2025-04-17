@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 
 import { trackEvent, trackPageView } from '../../utils/analytics';
@@ -34,11 +34,8 @@ export default function JobsScreen() {
   const { data: jobsData, isLoading, error } = useGetAllJobsQuery();
 
   const handleJobClick = (job) => {
-    if (!user) {
-      navigate('/auth/login');
-    } else {
-      dispatch(setSelectedJob(job));
-    }
+    dispatch(setSelectedJob(job));
+
     trackEvent(
       'Job Selection',
       'User Action',
@@ -225,12 +222,12 @@ export default function JobsScreen() {
           </div>
         </div>
 
+        {error && <Alert message={error?.data?.message} />}
+
         {isLoading ? (
           <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
             <Loader />
           </div>
-        ) : error ? (
-          <ErrorMsg errorMsg={error.data.message} />
         ) : filteredJobs.length > 0 ? (
           isMobile ? (
             <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto">

@@ -8,7 +8,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
@@ -39,12 +39,33 @@ function ResetPwdScreen() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [forgotPassword, { isLoading: isSendingOtp, error: otpError }] =
-    useForgotPasswordMutation();
-  const [regenerateOTP, { isLoading: isResendingOtp, error: resendError }] =
-    useRegenerateOTPMutation();
-  const [resetPassword, { isLoading: isChangingPwd, error: pwdError }] =
-    useResetPasswordMutation();
+  const [
+    forgotPassword,
+    {
+      isLoading: isSendingOtp,
+      error: otpError,
+      isSuccess: forgotPasswordSuccess,
+      data: forgotPasswordData,
+    },
+  ] = useForgotPasswordMutation();
+  const [
+    regenerateOTP,
+    {
+      isLoading: isResendingOtp,
+      error: resendError,
+      isSuccess: regenerateOTPSuccess,
+      data: regenerateOTPData,
+    },
+  ] = useRegenerateOTPMutation();
+  const [
+    resetPassword,
+    {
+      isLoading: isChangingPwd,
+      error: pwdError,
+      isSuccess: resetPasswordSucces,
+      data: resetPasswordData,
+    },
+  ] = useResetPasswordMutation();
 
   const handleSendOtp = async () => {
     const emailError = validateEmail(email);
@@ -202,12 +223,33 @@ function ResetPwdScreen() {
               </p>
 
               {(otpError || resendError || pwdError) && (
-                <ErrorMsg
-                  errorMsg={
+                <Alert
+                  message={
                     otpError?.data?.message ||
                     resendError?.data?.message ||
                     pwdError?.data?.message
                   }
+                />
+              )}
+
+              {forgotPasswordSuccess && forgotPasswordData?.data?.message && (
+                <Alert
+                  message={forgotPasswordData?.data?.message}
+                  isSuccess={forgotPasswordSuccess}
+                />
+              )}
+
+              {regenerateOTPSuccess && regenerateOTPData?.data?.message && (
+                <Alert
+                  message={regenerateOTPData?.data?.message}
+                  isSuccess={regenerateOTPSuccess}
+                />
+              )}
+
+              {resetPasswordSucces && resetPasswordData?.data?.message && (
+                <Alert
+                  message={resetPasswordData?.data?.message}
+                  isSuccess={resetPasswordSucces}
                 />
               )}
 

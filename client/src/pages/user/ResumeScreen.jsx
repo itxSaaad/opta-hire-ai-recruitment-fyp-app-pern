@@ -20,7 +20,7 @@ import {
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import InputField from '../../components/ui/mainLayout/InputField';
@@ -358,15 +358,15 @@ function ResumeScreen() {
               <h2 className="text-3xl sm:text-4xl font-bold text-light-primary dark:text-dark-primary mb-2">
                 Your Resume
               </h2>
-              {resumeError || updateError || deleteError ? (
-                <ErrorMsg
-                  errorMsg={
+              {(resumeError || updateError || deleteError) && (
+                <Alert
+                  message={
                     resumeError?.data?.message ||
                     updateError?.data?.message ||
                     deleteError?.data?.message
                   }
                 />
-              ) : null}
+              )}
               <p className="text-light-text dark:text-dark-text">
                 {editOverview || editSkills || editExpEdu || editAdditional
                   ? 'Editing your resume...'

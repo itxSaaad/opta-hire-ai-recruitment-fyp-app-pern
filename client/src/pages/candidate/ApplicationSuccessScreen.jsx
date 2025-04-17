@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 
 import { trackEvent, trackPageView } from '../../utils/analytics';
@@ -49,7 +49,7 @@ export default function ApplicationSuccess() {
           </div>
         ) : (
           <div className="max-w-4xl w-full mx-auto text-center bg-light-surface dark:bg-dark-surface p-8 rounded-lg shadow-lg border border-light-border dark:border-dark-border transition-all duration-500 hover:shadow-xl animate-slideUp">
-            {error ? <ErrorMsg errorMsg={error?.data?.message} /> : null}
+            {error && <Alert message={error?.data?.message} />}
 
             <div className="relative mb-8">
               <div className="absolute inset-0 flex items-center justify-center">

@@ -9,7 +9,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
@@ -108,7 +108,7 @@ function LoginScreen() {
                 Please login to continue to your account.
               </p>
 
-              {error && <ErrorMsg errorMsg={error.data.message} />}
+              {error && <Alert message={error.data.message} />}
 
               <form
                 className="space-y-4 sm:space-y-6"

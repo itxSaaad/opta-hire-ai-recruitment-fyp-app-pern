@@ -4,7 +4,7 @@ import { FaSignOutAlt } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
@@ -27,11 +27,25 @@ function VerifyProfileScreen() {
 
   const { userInfo: user } = useSelector((state) => state.auth);
 
-  const [verifyEmail, { isLoading: isVerifyingEmail, error: verifyError }] =
-    useVerifyEmailMutation();
+  const [
+    verifyEmail,
+    {
+      isLoading: isVerifyingEmail,
+      error: verifyError,
+      isSuccess: verifySuccess,
+      data: VerifyData,
+    },
+  ] = useVerifyEmailMutation();
 
-  const [regenerateOTP, { isLoading: isResendingOtp, error: resendError }] =
-    useRegenerateOTPMutation();
+  const [
+    regenerateOTP,
+    {
+      isLoading: isResendingOtp,
+      error: resendError,
+      isSuccess: regenerateOTPSuccess,
+      data: regenerateOTPData,
+    },
+  ] = useRegenerateOTPMutation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -124,12 +138,26 @@ function VerifyProfileScreen() {
           </p>
 
           {(resendError || verifyError || errorMsg) && (
-            <ErrorMsg
-              errorMsg={
+            <Alert
+              message={
                 resendError?.data?.message ||
                 verifyError?.data?.message ||
                 errorMsg
               }
+            />
+          )}
+
+          {verifySuccess && VerifyData?.data?.message && (
+            <Alert
+              message={VerifyData?.data?.message}
+              isSuccess={verifySuccess}
+            />
+          )}
+
+          {regenerateOTPSuccess && regenerateOTPData?.data?.message && (
+            <Alert
+              message={regenerateOTPData?.data?.message}
+              isSuccess={regenerateOTPSuccess}
             />
           )}
 

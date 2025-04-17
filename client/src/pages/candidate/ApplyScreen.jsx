@@ -22,7 +22,7 @@ import {
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
@@ -79,15 +79,30 @@ export default function ApplyScreen() {
 
   const [
     createApplication,
-    { isLoading: creatingApplication, error: applicationError },
+    {
+      isLoading: creatingApplication,
+      error: applicationError,
+      isSuccess: applicationSuccess,
+      data: applicationData,
+    },
   ] = useCreateApplicationMutation();
+
   const {
     data: resumeData,
     isLoading: resumeLoading,
     error: resumeError,
   } = useGetResumeForUserQuery(undefined, { skip: !user });
-  const [updateResume, { isLoading: updatingResume, error: updateError }] =
-    useUpdateResumeMutation();
+
+  const [
+    updateResume,
+    {
+      isLoading: updatingResume,
+      error: updateError,
+      isSuccess: updateResumeSuccess,
+      data: updateResumeData,
+    },
+  ] = useUpdateResumeMutation();
+
   const {
     data: jobData,
     isLoading: jobLoading,
@@ -198,6 +213,7 @@ export default function ApplyScreen() {
     }
     trackEvent('Resume', 'User Action', 'Skill Undone');
   };
+
   const validateSection = (section) => {
     let sectionErrors = {};
 
@@ -386,16 +402,6 @@ export default function ApplyScreen() {
           </div>
         ) : (
           <div className="max-w-7xl mx-auto">
-            {resumeError || updateError || jobError || applicationError ? (
-              <ErrorMsg
-                errorMsg={
-                  resumeError?.data?.message ||
-                  updateError?.data?.message ||
-                  jobError?.data?.message ||
-                  applicationError?.data?.message
-                }
-              />
-            ) : null}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-light-text dark:text-dark-text mb-6 text-center">
               Apply for{' '}
               <span className="text-light-primary dark:text-dark-primary">
@@ -406,6 +412,31 @@ export default function ApplyScreen() {
               Review your resume and the job details, update if needed, and
               apply to the job.
             </p>
+
+            {(resumeError || updateError || jobError || applicationError) && (
+              <Alert
+                message={
+                  resumeError?.data?.message ||
+                  updateError?.data?.message ||
+                  jobError?.data?.message ||
+                  applicationError?.data?.message
+                }
+              />
+            )}
+
+            {applicationSuccess && applicationData?.data?.message && (
+              <Alert
+                message={applicationData?.data?.message}
+                isSuccess={applicationSuccess}
+              />
+            )}
+
+            {updateResumeSuccess && updateResumeData?.data?.message && (
+              <Alert
+                message={updateResumeData?.data?.message}
+                isSuccess={updateResumeSuccess}
+              />
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column: Resume Details */}

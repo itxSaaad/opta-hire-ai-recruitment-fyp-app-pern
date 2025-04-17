@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Table from '../../components/ui/dashboardLayout/Table';
 
@@ -118,7 +118,7 @@ export default function CandidateApplicationsScreen() {
               Keep track of your job applications and their status.
             </p>
 
-            {error && <ErrorMsg errorMsg={error.data?.message} />}
+            {error && <Alert message={error.data?.message} />}
 
             <Table columns={columns} data={applications?.applications || []} />
           </div>

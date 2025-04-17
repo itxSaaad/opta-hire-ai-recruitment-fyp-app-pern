@@ -32,7 +32,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 
 import { trackPageView } from '../../utils/analytics';
@@ -232,7 +232,7 @@ export default function DashboardScreen() {
           const date = new Date(transaction.transactionDate);
           const month = date.toLocaleString('default', { month: 'short' });
           if (!monthlyRevenue[month]) monthlyRevenue[month] = 0;
-          monthlyRevenue[month] += transaction.amount;
+          monthlyRevenue[month] += Number(transaction.amount);
         }
       });
 
@@ -258,7 +258,7 @@ export default function DashboardScreen() {
       setRevenueByMonth(chartData);
     }
 
-    if (ratings?.ratings) {
+    if (ratings?.interviewerRatings) {
       const ratingGroups = {
         5: 0,
         4: 0,
@@ -267,9 +267,9 @@ export default function DashboardScreen() {
         1: 0,
       };
 
-      ratings.ratings.forEach((rating) => {
-        ratingGroups[Math.floor(rating.rating)] =
-          (ratingGroups[Math.floor(rating.rating)] || 0) + 1;
+      ratings.interviewerRatings.forEach((rating) => {
+        const ratingValue = Math.floor(Number(rating.rating));
+        ratingGroups[ratingValue] = (ratingGroups[ratingValue] || 0) + 1;
       });
 
       const chartData = Object.keys(ratingGroups)
@@ -295,14 +295,16 @@ export default function DashboardScreen() {
   const totalRevenue =
     transactions?.transactions?.reduce((total, transaction) => {
       if (transaction.status === 'completed') {
-        return total + transaction.amount;
+        return total + Number(transaction.amount);
       }
       return total;
     }, 0) || 0;
 
   const averageRating =
-    ratings?.ratings?.reduce((total, rating) => total + rating.rating, 0) /
-    (ratings?.ratings?.length || 1);
+    ratings?.interviewerRatings?.reduce(
+      (total, rating) => total + Number(rating.rating),
+      0
+    ) / (ratings?.interviewerRatings?.length || 1);
 
   const renderSection = () => {
     switch (selectedSection) {
@@ -322,7 +324,7 @@ export default function DashboardScreen() {
                       cy="50%"
                       labelLine={true}
                       label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -357,12 +359,12 @@ export default function DashboardScreen() {
                         value:
                           users?.users?.filter((u) => u.isVerified).length || 0,
                       },
-                      {
-                        name: 'LinkedIn Verified',
-                        value:
-                          users?.users?.filter((u) => u.isLinkedinVerified)
-                            .length || 0,
-                      },
+                      // {
+                      //   name: 'LinkedIn Verified',
+                      //   value:
+                      //     users?.users?.filter((u) => u.isLinkedinVerified)
+                      //       .length || 0,
+                      // },
                       {
                         name: 'Unverified',
                         value:
@@ -437,7 +439,7 @@ export default function DashboardScreen() {
                       cy="50%"
                       labelLine={false}
                       label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -471,7 +473,7 @@ export default function DashboardScreen() {
                       cy="50%"
                       labelLine={true}
                       label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -484,7 +486,9 @@ export default function DashboardScreen() {
                         />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip
+                      formatter={(value) => [`${value} applications`, 'Count']}
+                    />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -504,10 +508,14 @@ export default function DashboardScreen() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip
+                      formatter={(value) => [`${value} applications`, 'Count']}
+                    />
+                    <Legend />
                     <Area
                       type="monotone"
                       dataKey="applications"
+                      name="Applications"
                       stroke="#0EB0E3"
                       fill="#0EB0E3"
                       fillOpacity={0.2}
@@ -585,7 +593,7 @@ export default function DashboardScreen() {
                       cy="50%"
                       labelLine={true}
                       label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -620,7 +628,7 @@ export default function DashboardScreen() {
                       cy="50%"
                       labelLine={true}
                       label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -699,7 +707,7 @@ export default function DashboardScreen() {
 
             <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
               <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Average Rating
+                Average Interviewer Rating
               </h3>
               <div className="h-80 flex flex-col items-center justify-center">
                 <div className="w-48 h-48 relative">
@@ -748,7 +756,7 @@ export default function DashboardScreen() {
                   ))}
                 </div>
                 <p className="mt-2 text-light-text/70 dark:text-dark-text/70">
-                  From {ratings?.ratings?.length || 0} ratings
+                  From {ratings?.interviewerRatings?.length || 0} ratings
                 </p>
               </div>
             </div>
@@ -771,7 +779,7 @@ export default function DashboardScreen() {
                       cy="50%"
                       labelLine={true}
                       label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
+                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -859,8 +867,8 @@ export default function DashboardScreen() {
               errorContracts ||
               errorTransactions ||
               errorRatings) && (
-              <ErrorMsg
-                errorMsg={
+              <Alert
+                message={
                   errorUsers?.data?.message ||
                   errorJobs?.data?.message ||
                   errorApplications?.data?.message ||
@@ -1047,7 +1055,7 @@ export default function DashboardScreen() {
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-light-text/70 dark:text-dark-text/70 text-sm font-medium">
-                      Avg. Rating
+                      Avg. Interviewer Rating
                     </p>
                     <h3 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {averageRating.toFixed(1)}/5.0

@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { FaPencilAlt, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
@@ -34,10 +34,26 @@ export default function JobsScreen() {
   const routeLocation = useLocation();
 
   const { data: jobs, isLoading, error, refetch } = useGetAllJobsQuery();
-  const [deleteJob, { isLoading: isDeleting, error: deleteError }] =
-    useDeleteJobByIdMutation();
-  const [updateJob, { isLoading: isUpdating, error: updateError }] =
-    useUpdateJobByIdMutation();
+
+  const [
+    updateJob,
+    {
+      isLoading: isUpdating,
+      error: updateError,
+      isSuccess: updateSuccess,
+      data: updateData,
+    },
+  ] = useUpdateJobByIdMutation();
+
+  const [
+    deleteJob,
+    {
+      isLoading: isDeleting,
+      error: deleteError,
+      isSuccess: deleteSuccess,
+      data: deleteData,
+    },
+  ] = useDeleteJobByIdMutation();
 
   useEffect(() => {
     if (selectedJob) {
@@ -211,7 +227,21 @@ export default function JobsScreen() {
               Jobs Management
             </h1>
 
-            {error && <ErrorMsg errorMsg={error.data.message} />}
+            {error && <Alert message={error.data.message} />}
+
+            {updateSuccess && updateData?.data?.message && (
+              <Alert
+                message={updateData?.data?.message}
+                isSuccess={updateSuccess}
+              />
+            )}
+
+            {deleteSuccess && deleteData?.data?.message && (
+              <Alert
+                message={deleteData?.data?.message}
+                isSuccess={deleteSuccess}
+              />
+            )}
 
             <Table
               columns={columns}
@@ -231,7 +261,7 @@ export default function JobsScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <ErrorMsg errorMsg={updateError.data.message} />}
+            {updateError && <Alert message={updateError.data.message} />}
             <InputField
               id="title"
               type="text"
@@ -336,7 +366,7 @@ export default function JobsScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <ErrorMsg errorMsg={deleteError.data.message} />}
+            {deleteError && <Alert message={deleteError.data.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete the job &quot;{selectedJob?.title}
               &quot;? This action cannot be undone.

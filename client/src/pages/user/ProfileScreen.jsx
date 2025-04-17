@@ -14,7 +14,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 import InputField from '../../components/ui/mainLayout/InputField';
@@ -298,16 +298,16 @@ function ProfileScreen() {
               </p>
             </div>
 
-            {userError || updateError || passwordError || deleteError ? (
-              <ErrorMsg
-                errorMsg={
+            {(userError || updateError || passwordError || deleteError) && (
+              <Alert
+                message={
                   userError?.data?.message ||
                   updateError?.data?.message ||
                   passwordError?.data?.message ||
                   deleteError?.data?.message
                 }
               />
-            ) : null}
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideInLeft">

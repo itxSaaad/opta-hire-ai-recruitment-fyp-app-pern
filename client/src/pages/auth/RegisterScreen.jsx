@@ -9,7 +9,7 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
-import ErrorMsg from '../../components/ErrorMsg';
+import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import InputField from '../../components/ui/mainLayout/InputField';
 
@@ -51,7 +51,8 @@ function RegisterScreen() {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  const [register, { isLoading, error }] = useRegisterMutation();
+  const [register, { isLoading, error, isSuccess, data }] =
+    useRegisterMutation();
 
   const handleChange = (field, value) => {
     switch (field) {
@@ -169,7 +170,12 @@ function RegisterScreen() {
               <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
                 Please fill in the details to create your account.
               </p>
-              {error && <ErrorMsg errorMsg={error.data.message} />}
+
+              {error && <Alert message={error.data.message} />}
+
+              {isSuccess && data.data?.message && (
+                <Alert message={data.data?.message} isSuccess={true} />
+              )}
 
               <form onSubmit={handleSubmit} noValidate>
                 <div className="grid grid-cols-1 sm:gap-1 sm:grid-cols-2">

@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import ErrorMsg from '../components/ErrorMsg';
+import Alert from '../components/Alert';
 import Loader from '../components/Loader';
 
 import { useGetAllJobsQuery } from '../features/job/jobApi';
@@ -210,7 +210,7 @@ export default function JobsScreen() {
             <Loader />
           </div>
         ) : error ? (
-          <ErrorMsg errorMsg={error.data.message} />
+          <Alert message={error.data.message} />
         ) : displayJobs.length > 0 ? (
           isMobile ? (
             <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto">
