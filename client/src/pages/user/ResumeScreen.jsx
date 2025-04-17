@@ -42,7 +42,6 @@ import {
   validateHeadline,
   validateIndustry,
   validatePortfolio,
-  validateRating,
   validateSummary,
   validateTitle,
 } from '../../utils/validations';
@@ -65,7 +64,6 @@ function ResumeScreen() {
   const [availability, setAvailability] = useState('Immediate');
   const [company, setCompany] = useState('');
   const [achievements, setAchievements] = useState('');
-  const [rating, setRating] = useState('');
   const [portfolio, setPortfolio] = useState('');
   const [lastDeletedSkill, setLastDeletedSkill] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -84,7 +82,6 @@ function ResumeScreen() {
     availability: '',
     company: '',
     achievements: '',
-    rating: '',
     portfolio: '',
   });
 
@@ -141,10 +138,6 @@ function ResumeScreen() {
         setAchievements(value);
         errorMessage = validateAchievements(value);
         break;
-      case 'rating':
-        setRating(value);
-        errorMessage = validateRating(value);
-        break;
       case 'portfolio':
         setPortfolio(value);
         errorMessage = validatePortfolio(value);
@@ -183,7 +176,6 @@ function ResumeScreen() {
       sectionErrors.availability = validateAvailability(availability);
       sectionErrors.company = validateCompany(company);
       sectionErrors.achievements = validateAchievements(achievements);
-      sectionErrors.rating = validateRating(rating);
       sectionErrors.portfolio = validatePortfolio(portfolio);
     }
 
@@ -219,7 +211,6 @@ function ResumeScreen() {
         availability,
         company,
         achievements,
-        rating: parseFloat(rating),
         portfolio,
       }).unwrap();
       setEditOverview(false);
@@ -270,19 +261,12 @@ function ResumeScreen() {
 
   const resetAdditional = () => {
     if (resumeData?.profile) {
-      const {
-        industry,
-        availability,
-        company,
-        achievements,
-        rating,
-        portfolio,
-      } = resumeData.profile;
+      const { industry, availability, company, achievements, portfolio } =
+        resumeData.profile;
       setIndustry(industry || '');
       setAvailability(availability || 'Immediate');
       setCompany(company || '');
       setAchievements(achievements || '');
-      setRating(rating !== null && rating !== undefined ? rating : '');
       setPortfolio(portfolio || '');
     }
     setEditAdditional(false);
@@ -345,11 +329,7 @@ function ResumeScreen() {
       setAvailability(profile.availability || 'Immediate');
       setCompany(profile.company || '');
       setAchievements(profile.achievements || '');
-      setRating(
-        profile.rating !== null && profile.rating !== undefined
-          ? profile.rating
-          : ''
-      );
+
       setPortfolio(profile.portfolio || '');
     }
   }, [resumeData]);
@@ -832,20 +812,6 @@ function ResumeScreen() {
                       />
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <InputField
-                          id="rating"
-                          type="number"
-                          label="Rating (0-5)"
-                          value={rating}
-                          onChange={(e) =>
-                            handleInputChange('rating', e.target.value)
-                          }
-                          validationMessage={errors.rating}
-                          min="0"
-                          max="5"
-                          step="0.1"
-                          icon={<FaCalendarAlt className="text-gray-400" />}
-                        />
-                        <InputField
                           id="portfolio"
                           type="text"
                           label="Portfolio URL"
@@ -933,23 +899,6 @@ function ResumeScreen() {
                             </p>
                             <p className="text-lg font-medium text-light-text dark:text-dark-text">
                               {achievements || 'Not set'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
-                        <div className="flex items-start">
-                          <FaCalendarAlt
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
-                            size={20}
-                          />
-                          <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Rating
-                            </p>
-                            <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                              {rating || 'Not set'}
                             </p>
                           </div>
                         </div>

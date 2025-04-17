@@ -5,6 +5,7 @@ import axiosBaseQueryWithReauth from '../../api/axiosBaseQueryWithReauth';
 const ENDPOINTS = {
   RESUMES: '/resumes',
   RESUME_DETAIL: (id) => `/resumes/${id}`,
+  RESUME_BY_USER_ID: (userId) => `/resumes/user/${userId}`,
   USER_RESUME: '/resumes/user',
 };
 
@@ -23,6 +24,13 @@ export const resumeApi = createApi({
     getResumeForUser: builder.query({
       query: () => ({
         url: ENDPOINTS.USER_RESUME,
+        method: 'GET',
+      }),
+      providesTags: ['Resume'],
+    }),
+    getResumeByUserId: builder.query({
+      query: (userId) => ({
+        url: ENDPOINTS.RESUME_BY_USER_ID(userId),
         method: 'GET',
       }),
       providesTags: ['Resume'],
@@ -72,6 +80,7 @@ export const {
   useCreateResumeMutation,
   useGetAllResumesQuery,
   useGetResumeForUserQuery,
+  useGetResumeByUserIdQuery,
   useUpdateResumeMutation,
   useDeleteResumeMutation,
   useUpdateResumeByIdMutation,

@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { FaPencilAlt, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
+import {
+  FaFileSignature,
+  FaPencilAlt,
+  FaSave,
+  FaTimes,
+  FaTrash,
+  FaUndo,
+} from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
 import ErrorMsg from '../../components/ErrorMsg';
@@ -17,25 +24,69 @@ import {
   useUpdateUserByIdMutation,
 } from '../../features/user/userApi';
 
-export default function UsersScreen() {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [isVerified, setIsVerified] = useState(false);
-  const [isTopRated, setIsTopRated] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [role, setRole] = useState('');
+// New resume API hooks
+import {
+  useGetResumeByUserIdQuery,
+  useUpdateResumeByIdMutation,
+} from '../../features/resume/resumeApi';
 
+export default function UsersScreen() {
   const location = useLocation();
 
+  // -- User management state --
   const { data: users, isLoading, error, refetch } = useGetAllUsersQuery();
   const [deleteUser, { isLoading: isDeleting, error: deleteError }] =
     useDeleteUserByIdMutation();
   const [updateUser, { isLoading: isUpdating, error: updateError }] =
     useUpdateUserByIdMutation();
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // These states are used for general user detail editing
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+  const [isTopRated, setIsTopRated] = useState(false);
+
+  const [showEditResumeModal, setShowEditResumeModal] = useState(false);
+  const [selectedUserForResume, setSelectedUserForResume] = useState(null);
+  const [resumeId, setResumeId] = useState('');
+  const [resumeTitle, setResumeTitle] = useState('');
+  const [resumeHeadline, setResumeHeadline] = useState('');
+  const [resumeSummary, setResumeSummary] = useState('');
+  const [resumeSkills, setResumeSkills] = useState([]);
+  const [resumeNewSkill, setResumeNewSkill] = useState('');
+  const [lastDeletedSkill, setLastDeletedSkill] = useState(null);
+  const [resumeExperience, setResumeExperience] = useState('');
+  const [resumeEducation, setResumeEducation] = useState('');
+  const [resumeIndustry, setResumeIndustry] = useState('');
+  const [resumeAvailability, setResumeAvailability] = useState('Immediate');
+  const [resumeCompany, setResumeCompany] = useState('');
+  const [resumeAchievements, setResumeAchievements] = useState('');
+  const [resumePortfolio, setResumePortfolio] = useState('');
+
+  const {
+    data: resumeData,
+    isLoading: resumeLoading,
+    error: resumeError,
+    refetch: resumeRefetch,
+  } = useGetResumeByUserIdQuery(selectedUserForResume?.id, {
+    skip: !selectedUserForResume,
+  });
+
+  const [
+    updateResume,
+    {
+      isLoading: updatingResume,
+      error: updateResumeError,
+      isSuccess,
+      data: updatedResumeData,
+    },
+  ] = useUpdateResumeByIdMutation();
 
   useEffect(() => {
     if (selectedUser) {
@@ -45,7 +96,6 @@ export default function UsersScreen() {
       setPhone(selectedUser.phone || '');
       setIsVerified(selectedUser.isVerified || false);
       setIsTopRated(selectedUser.isTopRated || false);
-
       if (selectedUser.isAdmin) setRole('Admin');
       else if (selectedUser.isInterviewer) setRole('Interviewer');
       else if (selectedUser.isRecruiter) setRole('Recruiter');
@@ -54,16 +104,49 @@ export default function UsersScreen() {
     }
   }, [selectedUser]);
 
+  useEffect(() => {
+    if (resumeData && resumeData.profile) {
+      const p = resumeData.profile;
+      setResumeId(p.id || '');
+      setResumeTitle(p.title || '');
+      setResumeHeadline(p.headline || '');
+      setResumeSummary(p.summary || '');
+      setResumeSkills(p.skills || []);
+      setResumeExperience(p.experience || '');
+      setResumeEducation(p.education || '');
+      setResumeIndustry(p.industry || '');
+      setResumeAvailability(p.availability || 'Immediate');
+      setResumeCompany(p.company || '');
+      setResumeAchievements(p.achievements || '');
+
+      setResumePortfolio(p.portfolio || '');
+    }
+  }, [resumeData]);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
   const handleEdit = (user) => {
     setSelectedUser(user);
     setShowEditModal(true);
-    trackEvent('Edit User', 'User Action', 'User clicked on edit button');
+    trackEvent('Edit User', 'User Action', 'Admin clicked on edit button');
   };
 
   const handleDelete = (user) => {
     setSelectedUser(user);
     setShowDeleteModal(true);
-    trackEvent('Delete User', 'User Action', 'User clicked on delete button');
+    trackEvent('Delete User', 'User Action', 'Admin clicked on delete button');
+  };
+
+  const handleEditResume = (user) => {
+    setSelectedUserForResume(user);
+    setShowEditResumeModal(true);
+    trackEvent(
+      'Edit Resume',
+      'User Action',
+      `Admin clicked on edit resume for ${user.firstName} ${user.lastName}`
+    );
   };
 
   const confirmDelete = async () => {
@@ -74,15 +157,33 @@ export default function UsersScreen() {
       trackEvent(
         'Delete User Confirmed',
         'User Action',
-        `User confirmed deletion of ${selectedUser.firstName} ${selectedUser.lastName}`
+        `Deleted ${selectedUser.firstName} ${selectedUser.lastName}`
       );
     } catch (err) {
       console.error('Deletion failed:', err);
       trackEvent(
         'Delete User Failed',
         'User Action',
-        `User failed to delete ${selectedUser.firstName} ${selectedUser.lastName}`
+        `Failed to delete ${selectedUser.firstName} ${selectedUser.lastName}`
       );
+    }
+  };
+
+  const handleDeleteSkill = (index) => {
+    const deletedSkill = {
+      index,
+      value: resumeSkills[index],
+    };
+    setLastDeletedSkill(deletedSkill);
+    setResumeSkills(resumeSkills.filter((_, i) => i !== index));
+  };
+
+  const handleUndoDelete = () => {
+    if (lastDeletedSkill) {
+      const updatedSkills = [...resumeSkills];
+      updatedSkills.splice(lastDeletedSkill.index, 0, lastDeletedSkill.value);
+      setResumeSkills(updatedSkills);
+      setLastDeletedSkill(null);
     }
   };
 
@@ -106,22 +207,53 @@ export default function UsersScreen() {
       trackEvent(
         'User Updated',
         'User Action',
-        `User updated ${selectedUser.firstName} ${selectedUser.lastName}`
+        `Updated ${selectedUser.firstName} ${selectedUser.lastName}`
       );
     } catch (err) {
       console.error('Update failed:', err);
       trackEvent(
         'User Update Failed',
         'User Action',
-        `User failed to update ${selectedUser.firstName} ${selectedUser.lastName}`
+        `Failed to update ${selectedUser.firstName} ${selectedUser.lastName}`
       );
     }
   };
 
-  useEffect(() => {
-    trackPageView(location.pathname);
-  }, [location.pathname]);
+  const handleSaveResume = async () => {
+    try {
+      await updateResume({
+        id: resumeId,
+        title: resumeTitle,
+        headline: resumeHeadline,
+        summary: resumeSummary,
+        skills: resumeSkills,
+        experience: resumeExperience,
+        education: resumeEducation,
+        industry: resumeIndustry,
+        availability: resumeAvailability,
+        company: resumeCompany,
+        achievements: resumeAchievements,
+        portfolio: resumePortfolio,
+      }).unwrap();
 
+      setShowEditResumeModal(false);
+      resumeRefetch();
+      trackEvent(
+        'Resume Updated',
+        'User Action',
+        `Admin updated resume for ${selectedUserForResume.firstName} ${selectedUserForResume.lastName}`
+      );
+    } catch (err) {
+      console.error('Failed to update resume:', err);
+      trackEvent(
+        'Resume Update Failed',
+        'User Action',
+        `Admin failed to update resume for ${selectedUserForResume.firstName} ${selectedUserForResume.lastName}: ${err.data?.message || err.error || err.message}`
+      );
+    }
+  };
+
+  // Table columns for users – note: these remain unchanged.
   const columns = [
     {
       key: 'name',
@@ -172,6 +304,7 @@ export default function UsersScreen() {
     },
   ];
 
+  // Actions for each row. Added third action "Edit Resume".
   const actions = [
     {
       onClick: handleEdit,
@@ -183,10 +316,20 @@ export default function UsersScreen() {
       ),
     },
     {
+      onClick: handleEditResume,
+      render: () => (
+        <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded flex items-center gap-1">
+          <FaFileSignature />
+          Resume
+        </button>
+      ),
+    },
+    {
       onClick: handleDelete,
       render: () => (
         <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded flex items-center gap-1">
-          <FaTrash /> Delete
+          <FaTrash />
+          Delete
         </button>
       ),
     },
@@ -198,7 +341,7 @@ export default function UsersScreen() {
         <title>Users Management [Admin] - OptaHire</title>
         <meta
           name="description"
-          content="OptaHire Admin Users Management - Manage users efficiently with our powerful tools and insights."
+          content="Manage users efficiently with our powerful tools and insights."
         />
         <meta
           name="keywords"
@@ -216,14 +359,17 @@ export default function UsersScreen() {
             <h1 className="text-3xl font-bold mb-6 text-light-text dark:text-dark-text">
               Users Management
             </h1>
-
-            {error && <ErrorMsg errorMsg={error.data.message} />}
-
-            <Table columns={columns} data={users?.users} actions={actions} />
+            {error && <ErrorMsg errorMsg={error.data?.message} />}
+            <Table
+              columns={columns}
+              data={users?.users || []}
+              actions={actions}
+            />
           </div>
         )}
       </section>
 
+      {/* Edit User Modal */}
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -233,7 +379,12 @@ export default function UsersScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <ErrorMsg errorMsg={updateError.data.message} />}
+            {updateError && <ErrorMsg errorMsg={updateError.data?.message} />}
+
+            {isSuccess && (
+              <ErrorMsg errorMsg={updatedResumeData.data?.message} />
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <InputField
                 id="firstName"
@@ -242,7 +393,6 @@ export default function UsersScreen() {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
-
               <InputField
                 id="lastName"
                 type="text"
@@ -317,6 +467,7 @@ export default function UsersScreen() {
         )}
       </Modal>
 
+      {/* Delete User Modal */}
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
@@ -326,7 +477,7 @@ export default function UsersScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <ErrorMsg errorMsg={deleteError.data.message} />}
+            {deleteError && <ErrorMsg errorMsg={deleteError.data?.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete user {selectedUser?.firstName}{' '}
               {selectedUser?.lastName}? This action can be undone from the
@@ -346,6 +497,194 @@ export default function UsersScreen() {
                 disabled={isDeleting}
               >
                 <FaTrash /> Delete
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Resume Modal */}
+      <Modal
+        isOpen={showEditResumeModal}
+        onClose={() => setShowEditResumeModal(false)}
+        title="Edit User Resume"
+      >
+        {resumeLoading || updatingResume ? (
+          <Loader />
+        ) : (
+          <div className="space-y-6">
+            {resumeError && <ErrorMsg errorMsg={resumeError.data?.message} />}
+            {updateResumeError && (
+              <ErrorMsg errorMsg={updateResumeError.data?.message} />
+            )}
+            {/* Overview Section */}
+            <div className="space-y-4">
+              <InputField
+                id="resumeTitle"
+                type="text"
+                label="Title"
+                value={resumeTitle}
+                onChange={(e) => setResumeTitle(e.target.value)}
+              />
+              <InputField
+                id="resumeHeadline"
+                type="text"
+                label="Headline"
+                value={resumeHeadline}
+                onChange={(e) => setResumeHeadline(e.target.value)}
+              />
+              <InputField
+                id="resumeSummary"
+                type="textarea"
+                label="Summary"
+                value={resumeSummary}
+                onChange={(e) => setResumeSummary(e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {resumeSkills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm text-light-text dark:text-dark-text"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSkill(index)}
+                      className="ml-2"
+                    >
+                      <FaTimes className="text-red-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex-1 mt-5">
+                  <InputField
+                    id="resumeNewSkill"
+                    type="text"
+                    label="Add Skill"
+                    value={resumeNewSkill}
+                    onChange={(e) => setResumeNewSkill(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (resumeNewSkill.trim() !== '') {
+                          setResumeSkills([
+                            ...resumeSkills,
+                            resumeNewSkill.trim(),
+                          ]);
+                          setResumeNewSkill('');
+                        }
+                      }
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (resumeNewSkill.trim() !== '') {
+                      setResumeSkills([...resumeSkills, resumeNewSkill.trim()]);
+                      setResumeNewSkill('');
+                    }
+                  }}
+                  className="px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                >
+                  <FaSave />
+                  <span className="hidden md:block text-sm "> Add</span>
+                </button>
+                {lastDeletedSkill !== null && (
+                  <button
+                    type="button"
+                    onClick={handleUndoDelete}
+                    className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                  >
+                    <FaUndo />
+                    <span className="hidden md:block text-sm ">Undo</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Experience & Education Section */}
+            <div className="space-y-4">
+              <InputField
+                id="resumeExperience"
+                type="textarea"
+                label="Experience"
+                value={resumeExperience}
+                onChange={(e) => setResumeExperience(e.target.value)}
+                rows={4}
+              />
+              <InputField
+                id="resumeEducation"
+                type="textarea"
+                label="Education"
+                value={resumeEducation}
+                onChange={(e) => setResumeEducation(e.target.value)}
+                rows={4}
+              />
+            </div>
+            {/* Additional Details Section */}
+            <div className="space-y-4">
+              <InputField
+                id="resumeIndustry"
+                type="text"
+                label="Industry"
+                value={resumeIndustry}
+                onChange={(e) => setResumeIndustry(e.target.value)}
+              />
+              <InputField
+                id="resumeAvailability"
+                type="select"
+                label="Availability"
+                value={resumeAvailability}
+                onChange={(e) => setResumeAvailability(e.target.value)}
+                options={[
+                  { value: 'Immediate', label: 'Immediate' },
+                  { value: 'Two weeks', label: 'Two weeks' },
+                  { value: 'One month', label: 'One month' },
+                  { value: 'More than a month', label: 'More than a month' },
+                  { value: 'Full-Time', label: 'Full-Time' },
+                ]}
+              />
+              <InputField
+                id="resumeCompany"
+                type="text"
+                label="Company"
+                value={resumeCompany}
+                onChange={(e) => setResumeCompany(e.target.value)}
+              />
+              <InputField
+                id="resumeAchievements"
+                type="textarea"
+                label="Achievements"
+                value={resumeAchievements}
+                onChange={(e) => setResumeAchievements(e.target.value)}
+                rows={3}
+              />
+              <div className="grid grid-cols-1 gap-4">
+                <InputField
+                  id="resumePortfolio"
+                  type="text"
+                  label="Portfolio URL"
+                  value={resumePortfolio}
+                  onChange={(e) => setResumePortfolio(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end pt-4">
+              <button
+                type="button"
+                onClick={handleSaveResume}
+                className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+              >
+                <FaSave />
+                Save Resume
               </button>
             </div>
           </div>

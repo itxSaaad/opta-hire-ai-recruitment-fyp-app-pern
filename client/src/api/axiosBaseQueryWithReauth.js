@@ -11,7 +11,10 @@ const baseQuery = axiosBaseQuery({
 const axiosBaseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
+  if (result.error && result.error.status === 401 && (
+    result.error.data.message === 'Session expired. Please sign in again.')) {
+
+
     const refreshResult = await baseQuery(
       { url: '/auth/refresh-token', method: 'POST', withCredentials: true },
       api,
