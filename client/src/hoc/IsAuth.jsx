@@ -17,36 +17,51 @@ const IsAuth = (WrappedComponent, allowedRoles = null) => {
     const { userInfo: user, loading } = useSelector((state) => state.auth);
 
     const isAuthRoute = pathname.startsWith('/auth');
+    const isPublicAuthRoute = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/reset-password',
+    ].includes(pathname);
+    const isVerifyRoute = pathname === '/auth/verify';
 
     useEffect(() => {
       if (loading) return;
 
-      if (!user) {
-        if (pathname !== '/auth/login' && pathname !== '/auth/register') {
+      if (user === null || !user) {
+        if (!isPublicAuthRoute) {
           navigate('/auth/login', { replace: true });
         }
         return;
       }
 
-      if (user && !user.isVerified && pathname !== '/auth/verify') {
-        navigate('/auth/verify', { replace: true });
+      if (user && !user.isVerified) {
+        if (!isVerifyRoute) {
+          navigate('/auth/verify', { replace: true });
+        }
         return;
       }
 
-      if (!user && pathname === '/auth/reset-password') {
-        return;
-      }
+      if (user && user.isVerified) {
+        if (isAuthRoute) {
+          const expectedRoute = getExpectedRoute(user);
+          navigate(expectedRoute, { replace: true });
+          return;
+        }
 
-      if (allowedRoles && !allowedRoles.includes(getUserRole(user))) {
-        const expectedRoute = getExpectedRoute(user);
-        navigate(expectedRoute, { replace: true });
+        if (allowedRoles && !allowedRoles.includes(getUserRole(user))) {
+          const expectedRoute = getExpectedRoute(user);
+          navigate(expectedRoute, { replace: true });
+        }
       }
-
-      if (user && user.isVerified && isAuthRoute) {
-        const expectedRoute = getExpectedRoute(user);
-        navigate(expectedRoute, { replace: true });
-      }
-    }, [loading, user, pathname, navigate, isAuthRoute]);
+    }, [
+      loading,
+      user,
+      pathname,
+      navigate,
+      isAuthRoute,
+      isPublicAuthRoute,
+      isVerifyRoute,
+    ]);
 
     if (loading) {
       return <Loader />;

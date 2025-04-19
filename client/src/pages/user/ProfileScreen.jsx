@@ -253,10 +253,10 @@ function ProfileScreen() {
 
   const isFormChanged =
     userProfile?.user &&
-    (firstName !== userProfile.user.firstName ||
-      lastName !== userProfile.user.lastName ||
-      phone !== userProfile.user.phone ||
-      email !== userProfile.user.email);
+    (firstName !== userProfile?.user?.firstName ||
+      lastName !== userProfile?.user?.lastName ||
+      phone !== userProfile?.user?.phone ||
+      email !== userProfile?.user?.email);
 
   const isPasswordFormValid =
     currentPassword &&
@@ -345,8 +345,8 @@ function ProfileScreen() {
                             Name
                           </p>
                           <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                            {userProfile.user?.firstName || 'Not set'}{' '}
-                            {userProfile.user?.lastName || ''}
+                            {userProfile?.user?.firstName || 'Not set'}{' '}
+                            {userProfile?.user?.lastName || ''}
                           </p>
                         </div>
                       </div>
@@ -363,7 +363,7 @@ function ProfileScreen() {
                             Phone
                           </p>
                           <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                            {userProfile.user?.phone || 'Not set'}
+                            {userProfile?.user?.phone || 'Not set'}
                           </p>
                         </div>
                       </div>
@@ -380,7 +380,7 @@ function ProfileScreen() {
                             Email
                           </p>
                           <p className="text-lg font-medium text-light-text dark:text-dark-text">
-                            {userProfile.user?.email || 'Not set'}
+                            {userProfile?.user?.email || 'Not set'}
                           </p>
                         </div>
                       </div>
@@ -397,16 +397,17 @@ function ProfileScreen() {
                             Role
                           </p>
                           <div className="flex flex-wrap gap-2 mt-1">
-                            {getRoleString()
-                              .split(', ')
-                              .map((role) => (
-                                <span
-                                  key={role}
-                                  className="text-lg font-medium text-light-text dark:text-dark-text"
-                                >
-                                  {role}
-                                </span>
-                              ))}
+                            {getRoleString() &&
+                              getRoleString()
+                                .split(', ')
+                                .map((role) => (
+                                  <span
+                                    key={role}
+                                    className="text-lg font-medium text-light-text dark:text-dark-text"
+                                  >
+                                    {role}
+                                  </span>
+                                ))}
                           </div>
                         </div>
                       </div>
