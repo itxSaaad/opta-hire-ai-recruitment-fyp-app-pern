@@ -58,22 +58,23 @@ const loginUser = asyncHandler(async (req, res) => {
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
 
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'None',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
   delete user.dataValues.password;
 
-  res.status(StatusCodes.OK).json({
-    success: true,
-    message: 'Welcome back! You have successfully signed in.',
-    user,
-    accessToken,
-    timestamp: new Date().toISOString(),
-  });
+  res
+    .status(StatusCodes.OK)
+    .cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .json({
+      success: true,
+      message: 'Welcome back! You have successfully signed in.',
+      user,
+      accessToken,
+      timestamp: new Date().toISOString(),
+    });
 });
 
 /**
@@ -125,8 +126,8 @@ const refreshToken = asyncHandler(async (req, res) => {
   const cookies = req.cookies;
 
   if (!cookies.refreshToken) {
-    res.status(StatusCodes.BAD_REQUEST);
-    throw new Error('Session expired. Please sign in again.');
+    res.status(StatusCodes.UNAUTHORIZED);
+    throw new Error('Your session has already expired. Please sign in again.');
   }
 
   jwt.verify(
@@ -267,11 +268,11 @@ const registerUser = asyncHandler(async (req, res) => {
     userId: updatedUser.id,
   };
 
-  const userResume = await Resume.create();
+  const userResume = await Resume.create(resumeData);
 
   if (!userResume) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-    throw new Error('Unable to create Resume.');
+    throw new Error('Unable to create user resume. Please try again.');
   }
 
   const isEmailSent = await sendEmail({

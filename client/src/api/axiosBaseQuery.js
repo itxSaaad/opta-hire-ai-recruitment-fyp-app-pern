@@ -1,12 +1,13 @@
 import axiosInstance from './axiosInstance';
 
-const axiosBaseQuery = ({ baseUrl } = { baseUrl: '' }) =>
-  async ({ url, method, data, params, headers }, { getState }) => {
+export const axiosBaseQuery =
+  () =>
+  async ({ url, method, data, params, headers, ...rest }, { getState }) => {
     try {
       const accessToken = getState().auth.accessToken;
 
       const result = await axiosInstance({
-        url: baseUrl + url,
+        url,
         method,
         data,
         params,
@@ -14,7 +15,9 @@ const axiosBaseQuery = ({ baseUrl } = { baseUrl: '' }) =>
           ...headers,
           Authorization: accessToken ? `Bearer ${accessToken}` : '',
         },
+        ...rest,
       });
+
       return { data: result.data };
     } catch (axiosError) {
       const err = axiosError;
@@ -26,5 +29,3 @@ const axiosBaseQuery = ({ baseUrl } = { baseUrl: '' }) =>
       };
     }
   };
-
-export default axiosBaseQuery;

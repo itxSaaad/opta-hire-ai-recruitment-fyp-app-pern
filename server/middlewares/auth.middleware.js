@@ -39,7 +39,7 @@ const protectServer = asyncHandler(async (req, res, next) => {
     }
   } else {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Session expired. Please sign in again.');
+    throw new Error('Authentication token is missing. Please log in again.');
   }
 });
 
@@ -58,15 +58,19 @@ const protectSocket = async (socket, next) => {
       process.env.JWT_ACCESS_TOKEN_SECRET || 'your-secret-key'
     );
 
-    socket.user = await User.findByPk(decoded.id, {
+    const user = await User.findByPk(decoded.id, {
       attributes: { exclude: ['password'] },
     });
 
-    if (!socket.user) {
+    if (!user) {
       return next(
         new Error('User account not found. Please log in with a valid account.')
       );
     }
+
+    socket.user = user.toJSON();
+
+    console.log('Socket user:', socket.user);
 
     next();
   } catch (error) {
