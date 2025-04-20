@@ -70,8 +70,6 @@ const protectSocket = async (socket, next) => {
 
     socket.user = user.toJSON();
 
-    console.log('Socket user:', socket.user);
-
     next();
   } catch (error) {
     return next(new Error('Session expired. Please sign in again.'));

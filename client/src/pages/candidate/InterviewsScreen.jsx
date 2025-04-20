@@ -120,8 +120,30 @@ export default function CandidateInterviewsScreen() {
       render: (interview) => {
         const now = new Date();
         const scheduledTime = new Date(interview.scheduledTime);
-        const timeDiff = Math.abs(now - scheduledTime) / (1000 * 60);
-        const isJoinable = interview.status === 'scheduled' && timeDiff <= 15;
+        const minutesUntilInterview = (scheduledTime - now) / (1000 * 60);
+
+        const isJoinable =
+          interview.status === 'ongoing' ||
+          (interview.status === 'scheduled' &&
+            minutesUntilInterview <= 5 &&
+            minutesUntilInterview > -120);
+
+        let buttonText = 'Join Interview';
+        if (!isJoinable) {
+          if (
+            interview.status === 'completed' ||
+            interview.status === 'cancelled'
+          ) {
+            buttonText = 'Interview Unavailable';
+          } else if (
+            interview.status === 'scheduled' &&
+            minutesUntilInterview > 5
+          ) {
+            buttonText = 'Not Yet Available';
+          } else {
+            buttonText = 'Cannot Join';
+          }
+        }
 
         return (
           <button
@@ -133,7 +155,7 @@ export default function CandidateInterviewsScreen() {
             }`}
           >
             <FaVideo />
-            {isJoinable ? 'Join Interview' : 'Cannot Join Yet'}
+            {buttonText}
           </button>
         );
       },

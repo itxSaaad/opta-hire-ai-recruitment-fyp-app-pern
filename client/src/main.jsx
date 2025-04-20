@@ -17,6 +17,7 @@ import { initGA } from './utils/analytics.js';
 import AdminLayout from './layouts/AdminLayout.jsx';
 import CandidateLayout from './layouts/CandidateLayout';
 import InterviewerLayout from './layouts/InterviewerLayout';
+import InterviewLayout from './layouts/InterviewLayout';
 import MainLayout from './layouts/MainLayout';
 import RecruiterLayout from './layouts/RecruiterLayout';
 
@@ -27,13 +28,6 @@ import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
 import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
 import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 
-import CandidateApplicationSuccessScreen from './pages/candidate/ApplicationSuccessScreen.jsx';
-import CandidateApplicationsScreen from './pages/candidate/ApplicationsScreen.jsx';
-import CandidateApplyScreen from './pages/candidate/ApplyScreen.jsx';
-import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
-import CandidateInterviewsScreen from './pages/candidate/InterviewsScreen.jsx';
-import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
-
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
 import ResetPwdScreen from './pages/auth/ResetPwdScreen.jsx';
@@ -41,11 +35,21 @@ import VerifyProfileScreen from './pages/auth/VerifyProfileScreen.jsx';
 import ProfileScreen from './pages/user/ProfileScreen.jsx';
 import ResumeScreen from './pages/user/ResumeScreen.jsx';
 
+import CandidateApplicationsScreen from './pages/candidate/ApplicationsScreen.jsx';
+import CandidateApplicationSuccessScreen from './pages/candidate/ApplicationSuccessScreen.jsx';
+import CandidateApplyScreen from './pages/candidate/ApplyScreen.jsx';
+import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
+import CandidateInterviewsScreen from './pages/candidate/InterviewsScreen.jsx';
+import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
+
+import InterviewScreen from './pages/interview/InterviewScreen.jsx';
+
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
 import HomeScreen from './pages/HomeScreen.jsx';
 import JobsScreen from './pages/JobsScreen.jsx';
 import NotFoundScreen from './pages/NotFoundScreen.jsx';
+import VideoCall from './pages/interview/VideoCall.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -78,7 +82,11 @@ const router = createBrowserRouter(
         />
         <Route path="applications" element={<CandidateApplicationsScreen />} />
         <Route path="interviews" element={<CandidateInterviewsScreen />} />
-        <Route path="*" element={<ComingSoon />} />
+      </Route>
+
+      <Route path="interview" element={<InterviewLayout />}>
+        <Route index path=":roomId" element={<VideoCall />} />
+        <Route path=":roomId/feedback" element={<ComingSoon />} />
       </Route>
 
       <Route path="interviewer" element={<InterviewerLayout />}>
