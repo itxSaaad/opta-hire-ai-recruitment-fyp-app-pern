@@ -27,6 +27,8 @@ import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
 import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
 import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
 import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
+import AdminTransactionsScreen from './pages/admin/TransactionsScreen.jsx';
+import AdminInterviewerRatingsScreen from './pages/admin/InterviewerRatingsScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
@@ -42,7 +44,7 @@ import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
 import CandidateInterviewsScreen from './pages/candidate/InterviewsScreen.jsx';
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
-import InterviewScreen from './pages/interview/InterviewScreen.jsx';
+// import InterviewScreen from './pages/interview/InterviewScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
@@ -61,6 +63,12 @@ const router = createBrowserRouter(
         <Route path="applications" element={<AdminApplicationsScreen />} />
         <Route path="contracts" element={<AdminContractsScreen />} />
         <Route path="interviews" element={<AdminInterviewsScreen />} />
+        <Route path="transactions" element={<AdminTransactionsScreen />} />
+        <Route
+          path="interviewer-ratings"
+          element={<AdminInterviewerRatingsScreen />}
+        />
+
         <Route path="*" element={<ComingSoon />} />
       </Route>
 
