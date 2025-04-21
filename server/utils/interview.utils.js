@@ -27,4 +27,17 @@ const generateRemarks = (status, interviewer, candidate, jobTitle) => {
   }
 };
 
-module.exports = { generateRoomId, generateRemarks };
+const formatResponse = (success, message, data = {}) => {
+  return {
+    success,
+    message,
+    timestamp: new Date().toISOString(),
+    ...data,
+  };
+};
+
+module.exports = {
+  generateRoomId,
+  generateRemarks,
+  formatResponse,
+};

@@ -35,7 +35,7 @@ const paymentRoutes = require('./routes/payment.routes');
 // const aiRoutes = require('./routes/ai.routes.js');
 
 const setupChatSocket = require('./sockets/chat.socket');
-const setupVideoCallSocket = require('./sockets/new.socket');
+const setupVideoCallSocket = require('./sockets/webrtc.socket');
 
 const swaggerOptions = require('./docs/swaggerOptions');
 

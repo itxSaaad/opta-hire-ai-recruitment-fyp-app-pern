@@ -24,11 +24,11 @@ import RecruiterLayout from './layouts/RecruiterLayout';
 import AdminApplicationsScreen from './pages/admin/ApplicationsScreen.jsx';
 import AdminContractsScreen from './pages/admin/ContractsScreen.jsx';
 import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
+import AdminInterviewerRatingsScreen from './pages/admin/InterviewerRatingsScreen.jsx';
 import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
 import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
-import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 import AdminTransactionsScreen from './pages/admin/TransactionsScreen.jsx';
-import AdminInterviewerRatingsScreen from './pages/admin/InterviewerRatingsScreen.jsx';
+import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
@@ -44,14 +44,13 @@ import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
 import CandidateInterviewsScreen from './pages/candidate/InterviewsScreen.jsx';
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
-// import InterviewScreen from './pages/interview/InterviewScreen.jsx';
+import InterviewScreen from './pages/interview/InterviewScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
 import HomeScreen from './pages/HomeScreen.jsx';
 import JobsScreen from './pages/JobsScreen.jsx';
 import NotFoundScreen from './pages/NotFoundScreen.jsx';
-import VideoCall from './pages/interview/VideoCall.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -93,7 +92,7 @@ const router = createBrowserRouter(
       </Route>
 
       <Route path="interview" element={<InterviewLayout />}>
-        <Route index path=":roomId" element={<VideoCall />} />
+        <Route index path=":roomId" element={<InterviewScreen />} />
         <Route path=":roomId/feedback" element={<ComingSoon />} />
       </Route>
 
