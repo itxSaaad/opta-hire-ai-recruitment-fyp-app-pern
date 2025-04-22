@@ -14,9 +14,10 @@ export const contractApi = createApi({
   tagTypes: ['Contracts'],
   endpoints: (builder) => ({
     getAllContracts: builder.query({
-      query: () => ({
+      query: (data) => ({
         url: ENDPOINTS.CONTRACTS,
         method: 'GET',
+        params: data,
       }),
       providesTags: ['Contracts'],
     }),

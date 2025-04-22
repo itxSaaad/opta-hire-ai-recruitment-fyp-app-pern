@@ -15,9 +15,10 @@ export const transactionApi = createApi({
   tagTypes: ['Transactions'],
   endpoints: (builder) => ({
     getAllTransactions: builder.query({
-      query: () => ({
+      query: (data) => ({
         url: ENDPOINTS.TRANSACTIONS,
         method: 'GET',
+        params: data,
       }),
       providesTags: ['Transactions'],
     }),

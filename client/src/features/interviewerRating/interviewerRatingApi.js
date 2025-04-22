@@ -16,9 +16,10 @@ export const interviewerRatingApi = createApi({
   tagTypes: ['InterviewerRatings'],
   endpoints: (builder) => ({
     getAllRatings: builder.query({
-      query: () => ({
+      query: (data) => ({
         url: ENDPOINTS.RATINGS,
         method: 'GET',
+        params: data,
       }),
       providesTags: ['InterviewerRatings'],
     }),

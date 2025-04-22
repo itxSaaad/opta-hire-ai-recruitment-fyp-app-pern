@@ -13,9 +13,10 @@ export const jobApi = createApi({
   tagTypes: ['Jobs'],
   endpoints: (builder) => ({
     getAllJobs: builder.query({
-      query: () => ({
+      query: (data) => ({
         url: ENDPOINTS.JOBS,
         method: 'GET',
+        params: data,
       }),
       providesTags: ['Jobs'],
     }),

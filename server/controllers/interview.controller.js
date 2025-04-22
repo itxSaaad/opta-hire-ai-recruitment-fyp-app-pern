@@ -222,8 +222,15 @@ const createInterview = asyncHandler(async (req, res) => {
  */
 
 const getAllInterviews = asyncHandler(async (req, res) => {
-  const { role, status, scheduledTime, jobId, interviewerId, candidateId } =
-    req.query;
+  const {
+    role,
+    status,
+    scheduledTime,
+    jobId,
+    interviewerId,
+    candidateId,
+    roomId,
+  } = req.query;
   let whereClause = {};
 
   if (role) {
@@ -265,6 +272,10 @@ const getAllInterviews = asyncHandler(async (req, res) => {
 
   if (candidateId) {
     whereClause.candidateId = candidateId;
+  }
+
+  if (roomId) {
+    whereClause.roomId = roomId;
   }
 
   const interviews = await Interview.findAll({
@@ -451,7 +462,25 @@ const getInterviewsByJobId = asyncHandler(async (req, res) => {
  */
 
 const updateInterview = asyncHandler(async (req, res) => {
-  const interview = await Interview.findByPk(req.params.id);
+  const interview = await Interview.findByPk(req.params.id, {
+    include: [
+      {
+        model: User,
+        as: 'interviewer',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+      {
+        model: User,
+        as: 'candidate',
+        attributes: ['firstName', 'lastName', 'email'],
+      },
+      {
+        model: Job,
+        as: 'job',
+        attributes: ['id', 'title'],
+      },
+    ],
+  });
 
   if (!interview) {
     res.status(StatusCodes.NOT_FOUND);

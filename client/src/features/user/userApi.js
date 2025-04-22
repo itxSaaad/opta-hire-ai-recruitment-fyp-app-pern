@@ -21,9 +21,10 @@ export const userApi = createApi({
   tagTypes: ['User'],
   endpoints: (builder) => ({
     getProfile: builder.query({
-      query: () => ({
+      query: (data) => ({
         url: ENDPOINTS.GET_PROFILE,
         method: 'GET',
+        params: data,
       }),
       providesTags: ['User'],
     }),

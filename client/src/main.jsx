@@ -45,6 +45,7 @@ import CandidateInterviewsScreen from './pages/candidate/InterviewsScreen.jsx';
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
 import InterviewScreen from './pages/interview/InterviewScreen.jsx';
+import FeedbackScreen from './pages/interview/FeedbackScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
@@ -93,7 +94,7 @@ const router = createBrowserRouter(
 
       <Route path="interview" element={<InterviewLayout />}>
         <Route index path=":roomId" element={<InterviewScreen />} />
-        <Route path=":roomId/feedback" element={<ComingSoon />} />
+        <Route path=":roomId/feedback" element={<FeedbackScreen />} />
       </Route>
 
       <Route path="interviewer" element={<InterviewerLayout />}>

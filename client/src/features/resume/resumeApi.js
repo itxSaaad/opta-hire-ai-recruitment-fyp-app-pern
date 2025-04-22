@@ -15,9 +15,10 @@ export const resumeApi = createApi({
   tagTypes: ['Resume'],
   endpoints: (builder) => ({
     getAllResumes: builder.query({
-      query: () => ({
+      query: (data) => ({
         url: ENDPOINTS.RESUMES,
         method: 'GET',
+        params: data,
       }),
       providesTags: ['Resume'],
     }),
