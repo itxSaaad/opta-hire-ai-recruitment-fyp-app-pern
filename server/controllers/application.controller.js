@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 const { Op, where } = require('sequelize');
 
-const { User, Job, Application } = require('../models');
+const { Application, Contract, Job, User } = require('../models');
 
 const {
   sendEmail,
@@ -142,7 +142,8 @@ const createApplication = asyncHandler(async (req, res) => {
  */
 
 const getAllApplications = asyncHandler(async (req, res) => {
-  const { role, status, applicationDate, jobId, candidateId } = req.query;
+  const { role, status, applicationDate, jobId, candidateId, interviewerId } =
+    req.query;
   let whereClause = {};
 
   if (role) {
@@ -175,6 +176,25 @@ const getAllApplications = asyncHandler(async (req, res) => {
 
   if (candidateId) {
     whereClause.candidateId = candidateId;
+  }
+
+  if (interviewerId) {
+    const contracts = await Contract.findAll({
+      where: {
+        interviewerId: req.user.id,
+      },
+      attributes: ['jobId'],
+    });
+
+    const jobIds = contracts.map((contract) => contract.jobId);
+
+    if (jobIds.length > 0) {
+      whereClause.jobId = {
+        [Op.in]: jobIds,
+      };
+    } else {
+      whereClause.id = -1;
+    }
   }
 
   const applications = await Application.findAll({
