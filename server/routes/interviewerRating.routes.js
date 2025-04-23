@@ -26,7 +26,7 @@ router
   )
   .get(
     protectServer,
-    authorizeServerRoles('isRecruiter', 'isAdmin'),
+    authorizeServerRoles('isRecruiter', 'isInterviewer', 'isAdmin'),
     getAllInterviewerRatings
   );
 

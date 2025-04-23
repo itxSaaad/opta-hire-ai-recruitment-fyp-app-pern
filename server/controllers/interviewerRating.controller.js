@@ -177,7 +177,7 @@ const createInterviewerRating = asyncHandler(async (req, res) => {
  * @desc    Get all interviewer ratings
  *
  * @route   GET /api/interviewer-ratings
- * @access  Private (Recruiter, Admin)
+ * @access  Private (Recruiter, Interviewer, Admin)
  *
  * @param   req - Request object
  * @param   res - Response object
