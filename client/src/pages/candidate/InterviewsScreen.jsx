@@ -9,7 +9,7 @@ import {
   FaUser,
   FaVideo,
 } from 'react-icons/fa';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
@@ -28,6 +28,7 @@ export default function CandidateInterviewsScreen() {
   const [selectedInterview, setSelectedInterview] = useState(null);
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const {
     data: interviewsData,
@@ -58,7 +59,7 @@ export default function CandidateInterviewsScreen() {
   };
 
   const handleJoinInterview = (interview) => {
-    window.location.href = `/interview/${interview.roomId}`;
+    navigate(`/interview/${interview.roomId}`);
     trackEvent('Join Interview', 'User Action', 'User joined interview');
   };
 

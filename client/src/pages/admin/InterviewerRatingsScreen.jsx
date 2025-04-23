@@ -176,7 +176,7 @@ export default function InterviewerRatingsScreen() {
         <title>Interviewer Ratings [Admin] - OptaHire</title>
         <meta
           name="description"
-          content="Manage interviewer ratings in your OptaHire dashboard."
+          content="OptaHire Admin - Manage interviewer ratings."
         />
         <meta name="keywords" content="OptaHire, Ratings, Admin" />
       </Helmet>

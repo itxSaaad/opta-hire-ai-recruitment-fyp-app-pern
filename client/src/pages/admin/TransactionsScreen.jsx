@@ -197,7 +197,7 @@ export default function TransactionsScreen() {
         <title>Transactions Management [Admin] - OptaHire</title>
         <meta
           name="description"
-          content="Manage all transactions efficiently with OptaHire Admin."
+          content="OptaHire Admin - Manage transactions between recruiters and interviewers."
         />
         <meta
           name="keywords"

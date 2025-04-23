@@ -350,7 +350,7 @@ export default function UsersScreen() {
         <title>Users Management [Admin] - OptaHire</title>
         <meta
           name="description"
-          content="Manage users efficiently with our powerful tools and insights."
+          content="OptaHire Admin - Manage users and their resumes effectively."
         />
         <meta
           name="keywords"

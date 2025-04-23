@@ -2,6 +2,7 @@ import {
   FaBriefcase,
   FaCalendarAlt,
   FaComments,
+  FaEnvelopeOpenText,
   FaFileContract,
   FaStar,
   FaTachometerAlt,
@@ -27,19 +28,24 @@ function InterviewerLayout() {
       icon: <FaBriefcase />,
     },
     {
+      label: 'Chats',
+      path: '/interviewer/chats',
+      icon: <FaComments />,
+    },
+    {
       label: 'Contracts',
       path: '/interviewer/contracts',
       icon: <FaFileContract />,
     },
     {
+      label: 'Applications',
+      path: '/interviewer/applications',
+      icon: <FaEnvelopeOpenText />,
+    },
+    {
       label: 'Interviews',
       path: '/interviewer/interviews',
       icon: <FaCalendarAlt />,
-    },
-    {
-      label: 'Chats',
-      path: '/interviewer/chats',
-      icon: <FaComments />,
     },
     {
       label: 'Ratings',
