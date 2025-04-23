@@ -47,8 +47,12 @@ import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 import FeedbackScreen from './pages/interview/FeedbackScreen.jsx';
 import InterviewScreen from './pages/interview/InterviewScreen.jsx';
 
+import InterviewerApplicationsScreen from './pages/interviewer/ApplicationsScreen.jsx';
+import InterviewerContractsScreen from './pages/interviewer/ContractsScreen.jsx';
 import InterviewerDashboardScreen from './pages/interviewer/DashboardScreen.jsx';
 import InterviewerInterviewsScreen from './pages/interviewer/InterviewsScreen.jsx';
+import InterviewerJobsScreen from './pages/interviewer/JobsScreen.jsx';
+import InterviewerRatingsScreen from './pages/interviewer/RatingsScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
@@ -106,11 +110,16 @@ const router = createBrowserRouter(
           path="dashboard"
           element={<InterviewerDashboardScreen />}
         />
-        <Route path="jobs" element={<ComingSoon />} />
-        <Route path="contracts" element={<ComingSoon />} />
+        <Route path="jobs" element={<InterviewerJobsScreen />} />
+        <Route path="contracts" element={<InterviewerContractsScreen />} />
+        <Route
+          path="applications"
+          element={<InterviewerApplicationsScreen />}
+        />
         <Route path="interviews" element={<InterviewerInterviewsScreen />} />
         <Route path="chats" element={<ComingSoon />} />
         <Route path="chats/:id" element={<ComingSoon />} />
+        <Route path="ratings" element={<InterviewerRatingsScreen />} />
         <Route path="*" element={<ComingSoon />} />
       </Route>
 
