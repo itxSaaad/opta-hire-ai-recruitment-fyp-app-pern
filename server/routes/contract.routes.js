@@ -23,7 +23,11 @@ router
     authorizeServerRoles('isRecruiter', 'isAdmin'),
     createContract
   )
-  .get(protectServer, authorizeServerRoles('isAdmin'), getAllContracts);
+  .get(
+    protectServer,
+    authorizeServerRoles('isAdmin', 'isRecruiter', 'isInterviewer'),
+    getAllContracts
+  );
 
 router
   .route('/:id')
