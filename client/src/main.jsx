@@ -44,8 +44,11 @@ import CandidateDashboardScreen from './pages/candidate/DashboardScreen.jsx';
 import CandidateInterviewsScreen from './pages/candidate/InterviewsScreen.jsx';
 import CandidateJobsScreen from './pages/candidate/JobsScreen.jsx';
 
-import InterviewScreen from './pages/interview/InterviewScreen.jsx';
 import FeedbackScreen from './pages/interview/FeedbackScreen.jsx';
+import InterviewScreen from './pages/interview/InterviewScreen.jsx';
+
+import InterviewerDashboardScreen from './pages/interviewer/DashboardScreen.jsx';
+import InterviewerInterviewsScreen from './pages/interviewer/InterviewsScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
@@ -98,7 +101,16 @@ const router = createBrowserRouter(
       </Route>
 
       <Route path="interviewer" element={<InterviewerLayout />}>
-        <Route index element={<ComingSoon />} />
+        <Route
+          index
+          path="dashboard"
+          element={<InterviewerDashboardScreen />}
+        />
+        <Route path="jobs" element={<ComingSoon />} />
+        <Route path="contracts" element={<ComingSoon />} />
+        <Route path="interviews" element={<InterviewerInterviewsScreen />} />
+        <Route path="chats" element={<ComingSoon />} />
+        <Route path="chats/:id" element={<ComingSoon />} />
         <Route path="*" element={<ComingSoon />} />
       </Route>
 

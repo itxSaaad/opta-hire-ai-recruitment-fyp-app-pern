@@ -1,8 +1,9 @@
 import {
+  FaBriefcase,
   FaCalendarAlt,
-  FaClipboardList,
   FaComments,
   FaFileContract,
+  FaStar,
   FaTachometerAlt,
 } from 'react-icons/fa';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
@@ -21,9 +22,9 @@ function InterviewerLayout() {
       icon: <FaTachometerAlt />,
     },
     {
-      label: 'Chats',
-      path: '/interviewer/chats',
-      icon: <FaComments />,
+      label: 'Jobs',
+      path: '/interviewer/jobs',
+      icon: <FaBriefcase />,
     },
     {
       label: 'Contracts',
@@ -36,9 +37,14 @@ function InterviewerLayout() {
       icon: <FaCalendarAlt />,
     },
     {
-      label: 'Feedback',
-      path: '/interviewer/feedback',
-      icon: <FaClipboardList />,
+      label: 'Chats',
+      path: '/interviewer/chats',
+      icon: <FaComments />,
+    },
+    {
+      label: 'Ratings',
+      path: '/interviewer/ratings',
+      icon: <FaStar />,
     },
   ];
 
