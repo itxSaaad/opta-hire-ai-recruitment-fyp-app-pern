@@ -153,7 +153,7 @@ const TopNavbar = ({ navItems = [] }) => {
                     <Link
                       to={getExpectedRoute(user)}
                       className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                      onClick={() => setIsDropdownOpen(false)}
+                      onClick={() => setIsDropdownOpen((prev) => !prev)}
                     >
                       <FaHome className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
                       Dashboard
@@ -162,7 +162,7 @@ const TopNavbar = ({ navItems = [] }) => {
                     <Link
                       to="/user/profile"
                       className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                      onClick={() => setIsDropdownOpen(false)}
+                      onClick={() => setIsDropdownOpen((prev) => !prev)}
                     >
                       <FaUser className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
                       Profile
@@ -172,7 +172,7 @@ const TopNavbar = ({ navItems = [] }) => {
                       <Link
                         to="/user/resume"
                         className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={() => setIsDropdownOpen((prev) => !prev)}
                       >
                         <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
                         Resume
@@ -184,6 +184,7 @@ const TopNavbar = ({ navItems = [] }) => {
                     <button
                       onClick={() => {
                         dispatch(logoutUser());
+                        setIsDropdownOpen((prev) => !prev);
                         navigate('/auth/login');
                       }}
                       className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group"

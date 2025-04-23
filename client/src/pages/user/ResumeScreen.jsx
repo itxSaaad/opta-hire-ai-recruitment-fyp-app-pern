@@ -944,7 +944,6 @@ function ResumeScreen() {
                 </button>
               </div>
             </div>
-            \{' '}
           </div>
         )}
 

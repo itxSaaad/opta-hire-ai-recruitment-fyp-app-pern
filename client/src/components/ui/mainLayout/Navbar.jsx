@@ -46,7 +46,10 @@ export default function Navbar() {
 
   const { userInfo: user } = useSelector((state) => state.auth);
 
-  const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
+    setIsDropdownOpen(false);
+  }, []);
 
   const isLinkActive = useCallback(
     (link) => {
@@ -133,7 +136,7 @@ export default function Navbar() {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (isDropdownOpen && !event.target.closest('.avatar-dropdown')) {
-        setIsDropdownOpen(false);
+        setIsDropdownOpen((prev) => !prev);
       }
     };
 
@@ -215,7 +218,7 @@ export default function Navbar() {
                   <Link
                     to={getExpectedRoute(user)}
                     className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                    onClick={() => setIsDropdownOpen(false)}
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
                   >
                     <FaHome className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
                     Dashboard
@@ -224,7 +227,7 @@ export default function Navbar() {
                   <Link
                     to="/user/profile"
                     className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                    onClick={() => setIsDropdownOpen(false)}
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
                   >
                     <FaUser className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
                     Profile
@@ -234,7 +237,7 @@ export default function Navbar() {
                     <Link
                       to="/user/resume"
                       className="flex items-center w-full px-4 py-2.5 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-200 group"
-                      onClick={() => setIsDropdownOpen(false)}
+                      onClick={() => setIsDropdownOpen((prev) => !prev)}
                     >
                       <FaFileAlt className="mr-3 text-light-text/70 dark:text-dark-text/70 group-hover:text-light-primary dark:group-hover:text-dark-primary transform group-hover:scale-110 transition-all duration-200" />{' '}
                       Resume
@@ -246,6 +249,7 @@ export default function Navbar() {
                   <button
                     onClick={() => {
                       dispatch(logoutUser());
+                      setIsDropdownOpen((prev) => !prev);
                       navigate('/auth/login');
                     }}
                     className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group"
@@ -303,14 +307,14 @@ export default function Navbar() {
                     <Link
                       to={getExpectedRoute(user)}
                       className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
-                      onClick={() => setIsDropdownOpen(false)}
+                      onClick={toggleMenu}
                     >
                       <FaHome className="mr-2" /> Dashboard
                     </Link>
                     <Link
                       to="/user/profile"
                       className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
-                      onClick={() => setIsDropdownOpen(false)}
+                      onClick={toggleMenu}
                     >
                       <FaUser className="mr-2" /> Profile
                     </Link>
@@ -318,7 +322,7 @@ export default function Navbar() {
                     <Link
                       to="/user/resume"
                       className="flex items-center w-full px-4 py-2 text-sm text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface transition-colors duration-150"
-                      onClick={() => setIsDropdownOpen(false)}
+                      onClick={toggleMenu}
                     >
                       <FaFileAlt className="mr-2" /> Resume
                     </Link>
@@ -328,6 +332,7 @@ export default function Navbar() {
                     <button
                       onClick={() => {
                         dispatch(logoutUser());
+                        toggleMenu();
                         navigate('/auth/login');
                       }}
                       className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150"

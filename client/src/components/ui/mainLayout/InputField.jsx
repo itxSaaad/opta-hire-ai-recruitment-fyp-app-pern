@@ -13,10 +13,21 @@ const InputField = ({
   rows,
   options,
   checked,
+  min,
+  max,
+  step,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const sharedClasses = `w-full p-4 bg-light-background dark:bg-dark-background border rounded-lg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none transition-all duration-300 peer ${
+    validationMessage
+      ? 'border-red-500'
+      : 'border-light-border dark:border-dark-border'
+  }`;
+
+  const colorInputClasses = `h-12 cursor-pointer ${sharedClasses}`;
+
+  const rangeInputClasses = `h-2 bg-light-background dark:bg-dark-background appearance-none rounded-lg outline-none opacity-70 transition-opacity duration-200 hover:opacity-100 focus:opacity-100 ${
     validationMessage
       ? 'border-red-500'
       : 'border-light-border dark:border-dark-border'
@@ -141,6 +152,35 @@ const InputField = ({
             </label>
           </div>
         );
+      case 'color':
+        return (
+          <input
+            type={type}
+            id={id}
+            value={value}
+            onChange={onChange}
+            className={colorInputClasses}
+            required
+            aria-invalid={validationMessage ? 'true' : 'false'}
+            aria-describedby={validationMessage ? `${id}-error` : undefined}
+          />
+        );
+      case 'range':
+        return (
+          <input
+            type={type}
+            id={id}
+            value={value}
+            min={min}
+            max={max}
+            step={step}
+            onChange={onChange}
+            className={rangeInputClasses}
+            required
+            aria-invalid={validationMessage ? 'true' : 'false'}
+            aria-describedby={validationMessage ? `${id}-error` : undefined}
+          />
+        );
       default:
         return (
           <input
@@ -149,6 +189,9 @@ const InputField = ({
             value={value}
             onChange={onChange}
             onKeyDown={onKeyDown}
+            min={min}
+            max={max}
+            step={step}
             placeholder=""
             className={sharedClasses}
             required
@@ -187,19 +230,26 @@ const InputField = ({
 InputField.propTypes = {
   id: PropTypes.string.isRequired,
   type: PropTypes.oneOf([
-    'number',
-    'email',
     'text',
-    'textarea',
-    'select',
     'password',
-    'checkbox',
-    'radio',
-    'file',
-    'hidden',
-    'search',
+    'email',
+    'number',
     'tel',
     'url',
+    'search',
+    'date',
+    'time',
+    'datetime-local',
+    'month',
+    'week',
+    'color',
+    'range',
+    'file',
+    'hidden',
+    'checkbox',
+    'radio',
+    'textarea',
+    'select',
   ]).isRequired,
   label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([
@@ -219,6 +269,9 @@ InputField.propTypes = {
     })
   ),
   checked: PropTypes.bool,
+  min: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  max: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  step: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default InputField;
