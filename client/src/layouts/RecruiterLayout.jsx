@@ -4,8 +4,8 @@ import {
   FaComments,
   FaEnvelopeOpenText,
   FaFileContract,
+  FaStar,
   FaTachometerAlt,
-  FaUserTie,
 } from 'react-icons/fa';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 
@@ -27,11 +27,7 @@ function RecruiterLayout() {
       path: '/recruiter/jobs',
       icon: <FaBriefcase />,
     },
-    {
-      label: 'Interviewers',
-      path: '/recruiter/interviewers',
-      icon: <FaUserTie />,
-    },
+
     {
       label: 'Chats',
       path: '/recruiter/chats',
@@ -51,6 +47,11 @@ function RecruiterLayout() {
       label: 'Interviews',
       path: '/recruiter/interviews',
       icon: <FaCalendarAlt />,
+    },
+    {
+      label: 'Ratings',
+      path: '/recruiter/interviewer-ratings',
+      icon: <FaStar />,
     },
   ];
 
