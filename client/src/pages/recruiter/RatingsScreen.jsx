@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { FaStar, FaPlus } from 'react-icons/fa';
+import { FaPlus, FaStar } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
@@ -10,14 +10,13 @@ import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
 import InputField from '../../components/ui/mainLayout/InputField';
 
-import { trackPageView, trackEvent } from '../../utils/analytics';
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
-import {
-  useGetAllRatingsQuery,
-  useCreateRatingMutation,
-} from '../../features/interviewerRating/interviewerRatingApi';
-import { useGetAllJobsQuery } from '../../features/job/jobApi';
 import { useGetAllContractsQuery } from '../../features/contract/contractApi';
+import {
+  useCreateRatingMutation,
+  useGetAllRatingsQuery,
+} from '../../features/interviewerRating/interviewerRatingApi';
 
 export default function RatingsScreen() {
   const [showDetails, setShowDetails] = useState(false);
