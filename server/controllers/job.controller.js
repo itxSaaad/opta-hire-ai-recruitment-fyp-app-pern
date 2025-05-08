@@ -190,7 +190,7 @@ const createJob = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc Gets all Job applications.
+ * @desc Gets all Job.
  *
  * @route GET /api/v1/jobs
  * @access Public
@@ -202,8 +202,16 @@ const createJob = asyncHandler(async (req, res) => {
  */
 
 const getAllJobs = asyncHandler(async (req, res) => {
-  const { search, category, location, company, salaryRange, isClosed, limit } =
-    req.query;
+  const {
+    search,
+    category,
+    location,
+    company,
+    salaryRange,
+    isClosed,
+    limit,
+    recruiterId,
+  } = req.query;
   let whereClause = {};
 
   if (search) {
@@ -221,6 +229,7 @@ const getAllJobs = asyncHandler(async (req, res) => {
   if (company) whereClause.company = { [Op.iLike]: `%${company}%` };
   if (salaryRange) whereClause.salaryRange = { [Op.iLike]: `%${salaryRange}%` };
   if (isClosed) whereClause.isClosed = isClosed;
+  if (recruiterId) whereClause.recruiterId = recruiterId;
 
   const jobs = await Job.findAll({
     where: whereClause,
@@ -423,6 +432,25 @@ const updateJobById = asyncHandler(async (req, res) => {
   if (!updatedJob) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Unable to update job posting. Please try again.');
+  }
+
+  if (isClosed && updateJobById.isClosed) {
+    const shortlist = axios
+      .post(
+        `${process.env.SERVER_URL || 'http://localhost:5000'}/api/v1/ai/shortlist/${jobId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${req.headers.authorization.split(' ')[1]}`,
+          },
+        }
+      )
+      .catch((error) => {
+        console.error(
+          'Failed to trigger automatic candidate shortlisting:',
+          error.message
+        );
+      });
   }
 
   const requirementsArrayParsed =
