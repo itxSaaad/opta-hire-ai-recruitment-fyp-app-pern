@@ -54,6 +54,13 @@ import InterviewerInterviewsScreen from './pages/interviewer/InterviewsScreen.js
 import InterviewerJobsScreen from './pages/interviewer/JobsScreen.jsx';
 import InterviewerRatingsScreen from './pages/interviewer/RatingsScreen.jsx';
 
+import RecruiterApplicationsScreen from './pages/recruiter/ApplicationsScreen.jsx';
+import RecruiterContractsScreen from './pages/recruiter/ContractsScreen.jsx';
+import RecruiterDashboardScreen from './pages/recruiter/DashboardScreen.jsx';
+import RecruiterInterviewsScreen from './pages/recruiter/InterviewsScreen.jsx';
+import RecruiterJobsScreen from './pages/recruiter/JobsScreen.jsx';
+import RecruiterRatingsScreen from './pages/recruiter/RatingsScreen.jsx';
+
 import ComingSoon from './pages/ComingSoon.jsx';
 import ErrorScreen from './pages/ErrorScreen.jsx';
 import HomeScreen from './pages/HomeScreen.jsx';
@@ -75,8 +82,6 @@ const router = createBrowserRouter(
           path="interviewer-ratings"
           element={<AdminInterviewerRatingsScreen />}
         />
-
-        <Route path="*" element={<ComingSoon />} />
       </Route>
 
       <Route path="auth">
@@ -120,7 +125,6 @@ const router = createBrowserRouter(
         <Route path="chats" element={<ComingSoon />} />
         <Route path="chats/:id" element={<ComingSoon />} />
         <Route path="ratings" element={<InterviewerRatingsScreen />} />
-        <Route path="*" element={<ComingSoon />} />
       </Route>
 
       <Route element={<MainLayout />}>
@@ -133,8 +137,15 @@ const router = createBrowserRouter(
       </Route>
 
       <Route path="recruiter" element={<RecruiterLayout />}>
-        <Route index element={<ComingSoon />} />
-        <Route path="*" element={<ComingSoon />} />
+        <Route index path="dashboard" element={<RecruiterDashboardScreen />} />
+        <Route path="jobs" element={<RecruiterJobsScreen />} />
+        <Route path="contracts" element={<RecruiterContractsScreen />} />
+        <Route path="applications" element={<RecruiterApplicationsScreen />} />
+        <Route path="interviews" element={<RecruiterInterviewsScreen />} />
+        <Route
+          path="interviewer-ratings"
+          element={<RecruiterRatingsScreen />}
+        />
       </Route>
 
       <Route path="*" element={<NotFoundScreen />} />
