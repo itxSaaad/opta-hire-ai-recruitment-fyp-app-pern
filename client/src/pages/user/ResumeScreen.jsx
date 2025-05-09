@@ -46,8 +46,6 @@ import {
   validateTitle,
 } from '../../utils/validations';
 
-import IsAuth from '../../hoc/IsAuth';
-
 function ResumeScreen() {
   const { userInfo: user, loading: authLoading } = useSelector(
     (state) => state.auth
@@ -981,6 +979,4 @@ function ResumeScreen() {
   );
 }
 
-const ProtectedResumeScreen = IsAuth(ResumeScreen);
-
-export default ProtectedResumeScreen;
+export default ResumeScreen;

@@ -26,8 +26,6 @@ import {
 import { useRegisterMutation } from '../../features/auth/authApi';
 import { setUserInfo, updateAccessToken } from '../../features/auth/authSlice';
 
-import IsAuth from '../../hoc/IsAuth';
-
 function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -290,6 +288,4 @@ function RegisterScreen() {
   );
 }
 
-const ProtectedRegisterScreen = IsAuth(RegisterScreen);
-
-export default ProtectedRegisterScreen;
+export default RegisterScreen;

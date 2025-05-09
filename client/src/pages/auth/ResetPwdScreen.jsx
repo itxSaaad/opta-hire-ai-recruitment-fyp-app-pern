@@ -21,8 +21,6 @@ import {
   useResetPasswordMutation,
 } from '../../features/auth/authApi';
 
-import IsAuth from '../../hoc/IsAuth';
-
 function ResetPwdScreen() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -371,6 +369,4 @@ function ResetPwdScreen() {
   );
 }
 
-const ProtectedResetPwdScreen = IsAuth(ResetPwdScreen);
-
-export default ProtectedResetPwdScreen;
+export default ResetPwdScreen;

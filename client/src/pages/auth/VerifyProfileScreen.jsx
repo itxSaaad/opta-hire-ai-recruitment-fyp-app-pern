@@ -15,8 +15,6 @@ import { useRegenerateOTPMutation } from '../../features/auth/authApi';
 import { logoutUser, setUserInfo } from '../../features/auth/authSlice';
 import { useVerifyEmailMutation } from '../../features/user/userApi';
 
-import IsAuth from '../../hoc/IsAuth';
-
 function VerifyProfileScreen() {
   const [otp, setOtp] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -201,6 +199,4 @@ function VerifyProfileScreen() {
   );
 }
 
-const VerifyProfileScreenWithAuth = IsAuth(VerifyProfileScreen);
-
-export default VerifyProfileScreenWithAuth;
+export default VerifyProfileScreen;

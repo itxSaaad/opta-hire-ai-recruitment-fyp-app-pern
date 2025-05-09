@@ -15,8 +15,6 @@ import MainContent from '../components/ui/dashboardLayout/MainContent';
 import SideBar from '../components/ui/dashboardLayout/SideBar';
 import TopNavbar from '../components/ui/dashboardLayout/TopNavbar';
 
-import IsAuth from '../hoc/IsAuth';
-
 const AdminLayout = () => {
   const navItems = [
     { label: 'Dashboard', path: '/admin/dashboard', icon: <FaTachometerAlt /> },
@@ -54,6 +52,4 @@ const AdminLayout = () => {
   );
 };
 
-const ProtectedAdminLayout = IsAuth(AdminLayout, ['admin']);
-
-export default ProtectedAdminLayout;
+export default AdminLayout;

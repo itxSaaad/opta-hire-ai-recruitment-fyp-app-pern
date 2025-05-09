@@ -10,8 +10,6 @@ import BottomNavbar from '../components/ui/dashboardLayout/BottomNavbar';
 import MainContent from '../components/ui/dashboardLayout/MainContent';
 import TopNavbar from '../components/ui/dashboardLayout/TopNavbar';
 
-import IsAuth from '../hoc/IsAuth';
-
 function CandidateLayout() {
   const navItems = [
     {
@@ -44,6 +42,4 @@ function CandidateLayout() {
   );
 }
 
-const ProtectedCandidateLayout = IsAuth(CandidateLayout, ['candidate']);
-
-export default ProtectedCandidateLayout;
+export default CandidateLayout;

@@ -13,8 +13,6 @@ import BottomNavbar from '../components/ui/dashboardLayout/BottomNavbar';
 import MainContent from '../components/ui/dashboardLayout/MainContent';
 import TopNavbar from '../components/ui/dashboardLayout/TopNavbar';
 
-import IsAuth from '../hoc/IsAuth';
-
 function RecruiterLayout() {
   const navItems = [
     {
@@ -67,6 +65,4 @@ function RecruiterLayout() {
   );
 }
 
-const ProtectedRecruiterLayout = IsAuth(RecruiterLayout, ['recruiter']);
-
-export default ProtectedRecruiterLayout;
+export default RecruiterLayout;

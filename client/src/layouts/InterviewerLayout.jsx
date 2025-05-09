@@ -13,8 +13,6 @@ import BottomNavbar from '../components/ui/dashboardLayout/BottomNavbar';
 import MainContent from '../components/ui/dashboardLayout/MainContent';
 import TopNavbar from '../components/ui/dashboardLayout/TopNavbar';
 
-import IsAuth from '../hoc/IsAuth';
-
 function InterviewerLayout() {
   const navItems = [
     {
@@ -66,6 +64,4 @@ function InterviewerLayout() {
   );
 }
 
-const ProtectedInterviewerLayout = IsAuth(InterviewerLayout, ['interviewer']);
-
-export default ProtectedInterviewerLayout;
+export default InterviewerLayout;

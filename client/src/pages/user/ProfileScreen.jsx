@@ -36,8 +36,6 @@ import {
   useUpdateProfileMutation,
 } from '../../features/user/userApi';
 
-import IsAuth from '../../hoc/IsAuth';
-
 function ProfileScreen() {
   const { userInfo: user, loading } = useSelector((state) => state.auth);
   const {
@@ -633,6 +631,4 @@ function ProfileScreen() {
   );
 }
 
-const ProtectedProfileScreen = IsAuth(ProfileScreen);
-
-export default ProtectedProfileScreen;
+export default ProfileScreen;
