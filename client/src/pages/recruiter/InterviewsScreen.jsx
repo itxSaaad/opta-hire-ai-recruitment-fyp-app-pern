@@ -177,8 +177,6 @@ export default function InterviewsScreen() {
       >
         {selectedInterview && (
           <div className="space-y-4 text-left">
-            {/* Reusable item structure */}
-            {/* Job Title */}
             <div className="border-b border-light-border dark:border-dark-border pb-4 break-words">
               <div className="flex items-start">
                 <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
@@ -198,7 +196,6 @@ export default function InterviewsScreen() {
               </div>
             </div>
 
-            {/* Job Description */}
             <div className="border-b border-light-border dark:border-dark-border pb-4 break-words">
               <div className="flex items-start">
                 <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
@@ -218,7 +215,6 @@ export default function InterviewsScreen() {
               </div>
             </div>
 
-            {/* Candidate Name */}
             <div className="border-b border-light-border dark:border-dark-border pb-4">
               <div className="flex items-start">
                 <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
@@ -239,7 +235,6 @@ export default function InterviewsScreen() {
               </div>
             </div>
 
-            {/* Candidate Email */}
             <div className="border-b border-light-border dark:border-dark-border pb-4 break-words">
               <div className="flex items-start">
                 <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
@@ -259,7 +254,6 @@ export default function InterviewsScreen() {
               </div>
             </div>
 
-            {/* Scheduled Time */}
             <div className="border-b border-light-border dark:border-dark-border pb-4">
               <div className="flex items-start">
                 <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
@@ -279,7 +273,6 @@ export default function InterviewsScreen() {
               </div>
             </div>
 
-            {/* Status */}
             <div className="border-b border-light-border dark:border-dark-border pb-4">
               <div className="flex items-start">
                 <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
@@ -310,7 +303,6 @@ export default function InterviewsScreen() {
               </div>
             </div>
 
-            {/* Rating */}
             <div className="border-b border-light-border dark:border-dark-border pb-4">
               <div className="flex items-start">
                 <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
@@ -336,7 +328,6 @@ export default function InterviewsScreen() {
               </div>
             </div>
 
-            {/* Summary */}
             {selectedInterview.summary && (
               <div className="border-b border-light-border dark:border-dark-border pb-4">
                 <div className="flex items-start">
@@ -358,7 +349,6 @@ export default function InterviewsScreen() {
               </div>
             )}
 
-            {/* Remarks */}
             {selectedInterview.remarks && (
               <div className="border-b border-light-border dark:border-dark-border pb-4">
                 <div className="flex items-start">
@@ -380,7 +370,6 @@ export default function InterviewsScreen() {
               </div>
             )}
 
-            {/* Close Button */}
             <div className="flex justify-end pt-2">
               <button
                 className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"

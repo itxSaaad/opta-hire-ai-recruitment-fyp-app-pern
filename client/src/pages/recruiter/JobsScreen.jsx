@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
+  FaAlignLeft,
   FaBriefcase,
+  FaClipboardList,
   FaClock,
   FaDollarSign,
   FaMapMarkerAlt,
@@ -351,71 +353,163 @@ export default function JobsScreen() {
         title="Job Details"
       >
         {selectedJob && (
-          <div
-            key={selectedJob.id}
-            className="bg-light-surface dark:bg-dark-surface p-6 rounded-lg shadow-lg border border-light-border dark:border-dark-border transition-all duration-500 hover:shadow-xl"
-          >
-            <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
-                  {selectedJob.title}
-                </h2>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="font-medium text-light-secondary dark:text-dark-secondary">
-                    {selectedJob.company}
-                  </span>
-                  <span className="text-light-text dark:text-dark-text opacity-60">
-                    •
-                  </span>
-                  <span className="text-sm flex items-center gap-1 text-light-text dark:text-dark-text opacity-60">
-                    <FaMapMarkerAlt /> {selectedJob.location}
-                  </span>
+          <div className="space-y-4 text-left">
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaBriefcase
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <span className="bg-light-primary bg-opacity-10 text-light-primary dark:text-dark-primary text-xs font-medium px-3 py-1 rounded-full flex items-center">
-                  <FaDollarSign className="mr-1" /> {selectedJob.salaryRange}
-                </span>
-                <span className="bg-light-secondary bg-opacity-10 text-light-secondary dark:text-dark-secondary text-xs font-medium px-3 py-1 rounded-full flex items-center">
-                  <FaClock className="mr-1" /> {selectedJob.category}
-                </span>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Title
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text break-words">
+                    {selectedJob.title}
+                  </p>
+                  <p className="text-sm text-light-secondary dark:text-dark-secondary mt-1">
+                    {selectedJob.company}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text flex items-center gap-2 mb-3">
-                  <FaBriefcase className="text-light-primary dark:text-dark-primary" />{' '}
-                  Description
-                </h3>
-                <p className="text-light-text dark:text-dark-text">
-                  {selectedJob.description}
-                </p>
-              </div>
-
-              <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
-                  <FaMapMarkerAlt className="mr-2 text-light-primary dark:text-dark-primary" />{' '}
-                  Requirements
-                </h3>
-                <div className="text-light-text dark:text-dark-text">
-                  {selectedJob.requirements
-                    ? renderBulletPoints(selectedJob.requirements)
-                    : 'No requirements listed'}
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaMapMarkerAlt
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Location
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text break-words">
+                    {selectedJob.location}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
-                  <FaDollarSign className="mr-2 text-light-primary dark:text-dark-primary" />{' '}
-                  Benefits
-                </h3>
-                <div className="text-light-text dark:text-dark-text">
-                  {selectedJob.benefits
-                    ? renderBulletPoints(selectedJob.benefits)
-                    : 'No benefits listed'}
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaDollarSign
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Salary
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                    {selectedJob.salaryRange}
+                  </p>
                 </div>
               </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaClock
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Category
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                    {selectedJob.category}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaAlignLeft
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Description
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text whitespace-pre-wrap break-words">
+                    {selectedJob.description || 'No description provided.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaClipboardList
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Requirements
+                  </p>
+                  {selectedJob.requirements ? (
+                    <div className="text-light-text dark:text-dark-text mt-1">
+                      {renderBulletPoints(selectedJob.requirements)}
+                    </div>
+                  ) : (
+                    <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                      No requirements listed.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaDollarSign
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Benefits
+                  </p>
+                  {selectedJob.benefits ? (
+                    <div className="text-light-text dark:text-dark-text mt-1">
+                      {renderBulletPoints(selectedJob.benefits)}
+                    </div>
+                  ) : (
+                    <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                      No benefits listed.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
+                onClick={() => setShowDetailsModal(false)}
+              >
+                <FaTimes />
+                Close
+              </button>
             </div>
           </div>
         )}
