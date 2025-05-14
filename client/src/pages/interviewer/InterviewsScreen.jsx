@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
+  FaBriefcase,
   FaCalendarAlt,
+  FaClipboard,
+  FaClock,
+  FaCommentDots,
+  FaEnvelope,
+  FaFileAlt,
+  FaInfoCircle,
   FaPencilAlt,
   FaSave,
+  FaStar,
   FaTimes,
+  FaUser,
   FaVideo,
 } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
@@ -300,96 +309,203 @@ export default function InterviewsScreen() {
         title="Interview Details"
       >
         {selectedInterview && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-semibold text-lg mb-2">Job Information</h3>
-                <p>
-                  <span className="font-medium">Title:</span>{' '}
-                  {selectedInterview.job.title}
-                </p>
-                <p>
-                  <span className="font-medium">Description:</span>{' '}
-                  {selectedInterview.job.description}
-                </p>
-              </div>
-
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-semibold text-lg mb-2">
-                  Candidate Information
-                </h3>
-                <p>
-                  <span className="font-medium">Name:</span>{' '}
-                  {selectedInterview.candidate.firstName}{' '}
-                  {selectedInterview.candidate.lastName}
-                </p>
-                <p>
-                  <span className="font-medium">Email:</span>{' '}
-                  {selectedInterview.candidate.email}
-                </p>
+          <div className="space-y-4 text-left">
+            <div className="border-b border-light-border dark:border-dark-border pb-4 break-words">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaBriefcase
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Job Title
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                    {selectedInterview.job.title || 'Not set'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">Interview Details</h3>
-              <p>
-                <span className="font-medium">Scheduled Time:</span>{' '}
-                {new Date(selectedInterview.scheduledTime).toLocaleString()}
-              </p>
-              <p>
-                <span className="font-medium">Status:</span>
-                <span
-                  className={`ml-2 text-xs font-medium px-2.5 py-0.5 rounded ${
-                    selectedInterview.status === 'scheduled'
-                      ? 'bg-blue-100 text-blue-800'
-                      : selectedInterview.status === 'ongoing'
-                        ? 'bg-green-100 text-green-800'
-                        : selectedInterview.status === 'completed'
-                          ? 'bg-teal-100 text-teal-800'
-                          : selectedInterview.status === 'cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                  }`}
-                >
-                  {selectedInterview.status.charAt(0).toUpperCase() +
-                    selectedInterview.status.slice(1).toLowerCase()}
-                </span>
-              </p>
-              <p>
-                <span className="font-medium">Rating:</span>
-                {selectedInterview.rating ? (
-                  <span className="ml-2 text-xs font-medium px-2.5 py-0.5 rounded bg-blue-100 text-blue-800">
-                    {selectedInterview.rating}/5
+            <div className="border-b border-light-border dark:border-dark-border pb-4 break-words">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaFileAlt
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Job Description
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text whitespace-pre-wrap">
+                    {selectedInterview.job.description || 'Not set'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaUser
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Candidate Name
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text break-words">
+                    {selectedInterview.candidate.firstName}{' '}
+                    {selectedInterview.candidate.lastName}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4 break-words">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaEnvelope
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Email
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                    {selectedInterview.candidate.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaClock
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Scheduled Time
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                    {new Date(selectedInterview.scheduledTime).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaInfoCircle
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Status
+                  </p>
+                  <span
+                    className={`text-sm font-semibold px-3 py-1 inline-block rounded-full mt-1 ${
+                      selectedInterview.status === 'scheduled'
+                        ? 'bg-blue-100 text-blue-800'
+                        : selectedInterview.status === 'ongoing'
+                          ? 'bg-green-100 text-green-800'
+                          : selectedInterview.status === 'completed'
+                            ? 'bg-teal-100 text-teal-800'
+                            : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {selectedInterview.status.charAt(0).toUpperCase() +
+                      selectedInterview.status.slice(1)}
                   </span>
-                ) : (
-                  <span className="ml-2 text-xs font-medium px-2.5 py-0.5 rounded bg-gray-100 text-gray-800">
-                    Not Rated
-                  </span>
-                )}
-              </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-light-border dark:border-dark-border pb-4">
+              <div className="flex items-start">
+                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                  <FaStar
+                    className="text-light-primary dark:text-dark-primary"
+                    size={20}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Rating
+                  </p>
+                  <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                    {selectedInterview.rating ? (
+                      <span className="text-yellow-600 dark:text-yellow-400">
+                        {selectedInterview.rating}/5
+                      </span>
+                    ) : (
+                      'Not Rated'
+                    )}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {selectedInterview.summary && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-semibold text-lg mb-2">Summary</h3>
-                <p className="whitespace-pre-line">
-                  {selectedInterview.summary}
-                </p>
+              <div className="border-b border-light-border dark:border-dark-border pb-4">
+                <div className="flex items-start">
+                  <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                    <FaClipboard
+                      className="text-light-primary dark:text-dark-primary"
+                      size={20}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Summary
+                    </p>
+                    <p className="text-lg font-medium text-light-text dark:text-dark-text whitespace-pre-wrap break-words">
+                      {selectedInterview.summary}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
 
             {selectedInterview.remarks && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-semibold text-lg mb-2">Remarks</h3>
-                <p className="whitespace-pre-line">
-                  {selectedInterview.remarks}
-                </p>
+              <div className="border-b border-light-border dark:border-dark-border pb-4">
+                <div className="flex items-start">
+                  <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                    <FaCommentDots
+                      className="text-light-primary dark:text-dark-primary"
+                      size={20}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Remarks
+                    </p>
+                    <p className="text-lg font-medium text-light-text dark:text-dark-text whitespace-pre-wrap break-words">
+                      {selectedInterview.remarks}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-2">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
                 onClick={() => setShowDetails(false)}
               >
                 <FaTimes />
