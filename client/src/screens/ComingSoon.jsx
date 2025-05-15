@@ -4,10 +4,7 @@ import { Helmet } from 'react-helmet-async';
 
 import Logo from '../assets/images/logo.png';
 
-export default function ComingSoon({
-  logoSrc = Logo,
-  launchDate = '2025-05-15',
-}) {
+export default function ComingSoon({ logoSrc = Logo, launchDate = '2025-07-01' }) {
   const calculateTimeLeft = () => {
     const difference = +new Date(launchDate) - +new Date();
     let timeLeft = {};
@@ -64,33 +61,25 @@ export default function ComingSoon({
               <p className="text-4xl sm:text-5xl font-extrabold text-primary">
                 {timeLeft.days || 0}
               </p>
-              <p className="text-xs sm:text-sm uppercase text-white opacity-80">
-                Days
-              </p>
+              <p className="text-xs sm:text-sm uppercase text-white opacity-80">Days</p>
             </div>
             <div className="flex flex-col items-center mb-4 sm:mb-0">
               <p className="text-4xl sm:text-5xl font-extrabold text-primary">
                 {timeLeft.hours || 0}
               </p>
-              <p className="text-xs sm:text-sm uppercase text-white opacity-80">
-                Hours
-              </p>
+              <p className="text-xs sm:text-sm uppercase text-white opacity-80">Hours</p>
             </div>
             <div className="flex flex-col items-center mb-4 sm:mb-0">
               <p className="text-4xl sm:text-5xl font-extrabold text-primary">
                 {timeLeft.minutes || 0}
               </p>
-              <p className="text-xs sm:text-sm uppercase text-white opacity-80">
-                Minutes
-              </p>
+              <p className="text-xs sm:text-sm uppercase text-white opacity-80">Minutes</p>
             </div>
             <div className="flex flex-col items-center mb-4 sm:mb-0">
               <p className="text-4xl sm:text-5xl font-extrabold text-primary">
                 {timeLeft.seconds || 0}
               </p>
-              <p className="text-xs sm:text-sm uppercase text-white opacity-80">
-                Seconds
-              </p>
+              <p className="text-xs sm:text-sm uppercase text-white opacity-80">Seconds</p>
             </div>
           </div>
         </div>
