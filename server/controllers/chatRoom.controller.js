@@ -110,17 +110,12 @@ const getAllChatRooms = asyncHandler(async (req, res) => {
       {
         model: User,
         as: 'interviewer',
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'firstName', 'lastName', 'email'],
       },
       {
         model: User,
         as: 'recruiter',
-        attributes: ['id', 'name', 'email'],
-      },
-      {
-        model: Message,
-        as: 'messages',
-        attributes: ['id'],
+        attributes: ['id', 'firstName', 'lastName', 'email'],
       },
     ],
     order: [['createdAt', 'DESC']],
@@ -131,16 +126,11 @@ const getAllChatRooms = asyncHandler(async (req, res) => {
     throw new Error('No chat rooms available matching the criteria');
   }
 
-  const chatRoomsWithMessageCount = chatRooms.map((room) => ({
-    ...room.toJSON(),
-    messageCount: room.messages.length,
-  }));
-
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Chat rooms fetched successfully',
     count: chatRooms.length,
-    chatRooms: chatRoomsWithMessageCount,
+    chatRooms,
     timestamp: new Date().toISOString(),
   });
 });
@@ -170,17 +160,18 @@ const getChatRoomById = asyncHandler(async (req, res) => {
     include: [
       {
         model: Job,
+        as: 'job',
         attributes: ['title'],
       },
       {
         model: User,
         as: 'interviewer',
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'firstName', 'lastName', 'email'],
       },
       {
         model: User,
         as: 'recruiter',
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'firstName', 'lastName', 'email'],
       },
     ],
   });
@@ -333,12 +324,12 @@ const getAllMessagesFromChatRoom = asyncHandler(async (req, res) => {
       {
         model: User,
         as: 'recruiter',
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'firstName', 'lastName', 'email'],
       },
       {
         model: User,
         as: 'interviewer',
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'firstName', 'lastName', 'email'],
       },
       {
         model: ChatRoom,
