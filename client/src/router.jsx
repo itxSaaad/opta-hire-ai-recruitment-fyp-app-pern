@@ -50,6 +50,7 @@ import RecruiterContractsScreen from './pages/recruiter/ContractsScreen.jsx';
 import RecruiterDashboardScreen from './pages/recruiter/DashboardScreen.jsx';
 import RecruiterInterviewsScreen from './pages/recruiter/InterviewsScreen.jsx';
 import RecruiterJobsScreen from './pages/recruiter/JobsScreen.jsx';
+import RecruiterChatsScreen from './pages/recruiter/ChatsScreen.jsx';
 import RecruiterRatingsScreen from './pages/recruiter/RatingsScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
@@ -172,7 +173,6 @@ const router = createBrowserRouter(
         />
         <Route path="interviews" element={<InterviewerInterviewsScreen />} />
         <Route path="chats" element={<ComingSoon />} />
-        <Route path="chats/:id" element={<ComingSoon />} />
         <Route path="ratings" element={<InterviewerRatingsScreen />} />
       </Route>
 
@@ -213,8 +213,7 @@ const router = createBrowserRouter(
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<RecruiterDashboardScreen />} />
         <Route path="jobs" element={<RecruiterJobsScreen />} />
-        <Route path="chats" element={<ComingSoon />} />
-        <Route path="chats/:id" element={<ComingSoon />} />
+        <Route path="chats" element={<RecruiterChatsScreen />} />
         <Route path="contracts" element={<RecruiterContractsScreen />} />
         <Route path="applications" element={<RecruiterApplicationsScreen />} />
         <Route path="interviews" element={<RecruiterInterviewsScreen />} />

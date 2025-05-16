@@ -10,7 +10,7 @@ import { trackEvent, trackPageView } from '../utils/analytics';
 
 export default function ComingSoon({
   logoSrc = Logo,
-  launchDate = '2025-05-15',
+  launchDate = '2025-07-01',
 }) {
   const calculateTimeLeft = useCallback(() => {
     const difference = +new Date(launchDate) - +new Date();

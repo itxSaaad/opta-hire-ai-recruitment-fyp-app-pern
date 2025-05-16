@@ -14,9 +14,10 @@ export const chatApi = createApi({
   tagTypes: ['ChatRooms', 'Messages'],
   endpoints: (builder) => ({
     getAllChatRooms: builder.query({
-      query: () => ({
+      query: (params) => ({
         url: ENDPOINTS.CHAT_ROOMS,
         method: 'GET',
+        params,
       }),
       providesTags: ['ChatRooms'],
     }),
