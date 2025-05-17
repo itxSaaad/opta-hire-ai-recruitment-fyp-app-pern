@@ -28,6 +28,14 @@ export const chatApi = createApi({
       }),
       providesTags: ['ChatRooms'],
     }),
+    createMessage: builder.mutation({
+      query: ({ id, message }) => ({
+        url: ENDPOINTS.CHAT_ROOM_MESSAGES(id),
+        method: 'POST',
+        data: message,
+      }),
+      invalidatesTags: ['Messages'],
+    }),
     getAllMessagesFromChatRoom: builder.query({
       query: (id) => ({
         url: ENDPOINTS.CHAT_ROOM_MESSAGES(id),
@@ -56,6 +64,7 @@ export const chatApi = createApi({
 export const {
   useGetAllChatRoomsQuery,
   useGetChatRoomByIdQuery,
+  useCreateMessageMutation,
   useGetAllMessagesFromChatRoomQuery,
   useCreateChatRoomMutation,
   useDeleteChatRoomMutation,
