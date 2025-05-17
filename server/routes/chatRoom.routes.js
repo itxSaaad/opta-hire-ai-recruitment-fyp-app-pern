@@ -10,6 +10,7 @@ const {
   getAllChatRooms,
   getChatRoomById,
   deleteChatRoom,
+  createMessage,
   getAllMessagesFromChatRoom,
 } = require('../controllers/chatRoom.controller');
 
@@ -43,6 +44,11 @@ router
     protectServer,
     authorizeServerRoles('isRecruiter', 'isInterviewer'),
     getAllMessagesFromChatRoom
+  )
+  .post(
+    protectServer,
+    authorizeServerRoles('isRecruiter', 'isInterviewer'),
+    createMessage
   );
 
 module.exports = router;
