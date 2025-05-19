@@ -39,6 +39,7 @@ import FeedbackScreen from './pages/interview/FeedbackScreen.jsx';
 import InterviewScreen from './pages/interview/InterviewScreen.jsx';
 
 import InterviewerApplicationsScreen from './pages/interviewer/ApplicationsScreen.jsx';
+import InterviewerChatScreen from './pages/interviewer/ChatScreen.jsx';
 import InterviewerContractsScreen from './pages/interviewer/ContractsScreen.jsx';
 import InterviewerDashboardScreen from './pages/interviewer/DashboardScreen.jsx';
 import InterviewerInterviewsScreen from './pages/interviewer/InterviewsScreen.jsx';
@@ -46,11 +47,11 @@ import InterviewerJobsScreen from './pages/interviewer/JobsScreen.jsx';
 import InterviewerRatingsScreen from './pages/interviewer/RatingsScreen.jsx';
 
 import RecruiterApplicationsScreen from './pages/recruiter/ApplicationsScreen.jsx';
+import RecruiterChatsScreen from './pages/recruiter/ChatsScreen.jsx';
 import RecruiterContractsScreen from './pages/recruiter/ContractsScreen.jsx';
 import RecruiterDashboardScreen from './pages/recruiter/DashboardScreen.jsx';
 import RecruiterInterviewsScreen from './pages/recruiter/InterviewsScreen.jsx';
 import RecruiterJobsScreen from './pages/recruiter/JobsScreen.jsx';
-import RecruiterChatsScreen from './pages/recruiter/ChatsScreen.jsx';
 import RecruiterRatingsScreen from './pages/recruiter/RatingsScreen.jsx';
 
 import ComingSoon from './pages/ComingSoon.jsx';
@@ -172,7 +173,7 @@ const router = createBrowserRouter(
           element={<InterviewerApplicationsScreen />}
         />
         <Route path="interviews" element={<InterviewerInterviewsScreen />} />
-        <Route path="chats" element={<ComingSoon />} />
+        <Route path="chats" element={<InterviewerChatScreen />} />
         <Route path="ratings" element={<InterviewerRatingsScreen />} />
       </Route>
 
