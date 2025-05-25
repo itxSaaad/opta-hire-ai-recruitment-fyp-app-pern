@@ -285,9 +285,11 @@ def cleanup():
 # Initialize colorama for Windows compatibility
 init(autoreset=True)
 
+# Create the app instance for Gunicorn
+app = create_app()
+
 
 def start_server():
-    app = create_app()
     config = AppConfig()
 
     # Setup graceful shutdown
