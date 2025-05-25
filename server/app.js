@@ -20,6 +20,7 @@ const {
   errorHandler,
   notFoundHandler,
 } = require('./middlewares/error.middleware');
+// const rawBodyMiddleware = require('./middlewares/webhook.middleware');
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
@@ -32,7 +33,7 @@ const transactionRoutes = require('./routes/transaction.routes');
 const interviewRoutes = require('./routes/interview.routes');
 const interviewerRating = require('./routes/interviewerRating.routes');
 const paymentRoutes = require('./routes/payment.routes');
-// const aiRoutes = require('./routes/ai.routes.js');
+const aiRoutes = require('./routes/ai.routes.js');
 
 const setupChatSocket = require('./sockets/chat.socket');
 const setupVideoCallSocket = require('./sockets/webrtc.socket');
@@ -133,7 +134,8 @@ app.use('/api/v1/transactions', transactionRoutes);
 app.use('/api/v1/interviews', interviewRoutes);
 app.use('/api/v1/interviewer-ratings', interviewerRating);
 app.use('/api/v1/payments', paymentRoutes);
-// app.use('/api/v1/ai', aiRoutes);
+// app.use(rawBodyMiddleware);
+app.use('/api/v1/ai', aiRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
