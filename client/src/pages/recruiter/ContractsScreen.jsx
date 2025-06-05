@@ -1,15 +1,19 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { FaCheckCircle, FaCreditCard } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Table from '../../components/ui/dashboardLayout/Table';
 
-import { trackPageView } from '../../utils/analytics';
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
-import { useGetAllContractsQuery } from '../../features/contract/contractApi';
-import { useSelector } from 'react-redux';
+import {
+  useGetAllContractsQuery,
+  useUpdateContractByIdMutation,
+} from '../../features/contract/contractApi';
 
 export default function ContractsScreen() {
   const location = useLocation();
@@ -19,13 +23,50 @@ export default function ContractsScreen() {
     data: contractsData,
     isLoading,
     error,
+    refetch,
   } = useGetAllContractsQuery({
     recruiterId: user.id,
   });
 
+  const [
+    updateContract,
+    {
+      isLoading: isUpdating,
+      isSuccess,
+      data: updatedContract,
+      error: updateError,
+    },
+  ] = useUpdateContractByIdMutation();
+
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
+
+  // Handle contract completion
+  const handleCompleteContract = async (contract) => {
+    await updateContract({
+      id: contract.id,
+      contractData: { status: 'completed' },
+    }).unwrap();
+
+    trackEvent(
+      'Contract Completed',
+      'Contract Action',
+      `Completed contract for ${contract.job.title}`
+    );
+
+    // Refetch data to show updated status
+    refetch();
+  };
+
+  // Handle payment (placeholder for now)
+  const handlePayContract = (contract) => {
+    trackEvent(
+      'Payment Processed',
+      'Contract Action',
+      `Processed payment for contract ${contract.job.title}`
+    );
+  };
 
   const columns = [
     {
@@ -60,7 +101,7 @@ export default function ContractsScreen() {
       label: 'Status',
       render: (contract) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             contract.status === 'pending'
               ? 'bg-blue-100 text-blue-800'
               : contract.status === 'active'
@@ -82,7 +123,7 @@ export default function ContractsScreen() {
       label: 'Payment Status',
       render: (contract) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             contract.paymentStatus === 'paid'
               ? 'bg-green-100 text-green-800'
               : contract.paymentStatus === 'pending'
@@ -116,6 +157,47 @@ export default function ContractsScreen() {
     },
   ];
 
+  const actions = [
+    {
+      onClick: handleCompleteContract,
+      render: (contract) => (
+        <button
+          className={`flex items-center gap-1 rounded px-3 py-1 ${
+            contract.status !== 'active'
+              ? 'cursor-not-allowed bg-gray-400 text-white'
+              : 'bg-green-500 text-white hover:bg-green-600'
+          }`}
+          disabled={contract.status !== 'active'}
+        >
+          <FaCheckCircle />
+          Mark as Completed
+        </button>
+      ),
+    },
+    {
+      onClick: handlePayContract,
+      render: (contract) => (
+        <button
+          className={`flex items-center gap-1 rounded px-3 py-1 ${
+            contract.paymentStatus === 'paid' ||
+            contract.status === 'pending' ||
+            contract.status === 'cancelled'
+              ? 'cursor-not-allowed bg-gray-400 text-white'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+          disabled={
+            contract.paymentStatus === 'paid' ||
+            contract.status === 'pending' ||
+            contract.status === 'cancelled'
+          }
+        >
+          <FaCreditCard />
+          Pay for Contract
+        </button>
+      ),
+    },
+  ];
+
   return (
     <>
       <Helmet>
@@ -130,27 +212,46 @@ export default function ContractsScreen() {
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
-        {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
+        {isLoading || isUpdating ? (
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-7xl w-full mx-auto animate-slideUp">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Manage Your{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Contracts
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
               View and track all your recruitment contracts, payment statuses,
               and transaction history in one place.
             </p>
 
-            {error && <Alert message={error.data?.message} />}
+            {error ||
+              (updateError && (
+                <Alert
+                  message={error.data?.message || updateError.data?.message}
+                />
+              ))}
 
-            <Table columns={columns} data={contractsData?.contracts || []} />
+            {isSuccess && updatedContract && (
+              <Alert
+                isSuccess={isSuccess}
+                message={
+                  updateContract.data?.message ||
+                  'Contract updated successfully!'
+                }
+              />
+            )}
+
+            <Table
+              columns={columns}
+              data={contractsData?.contracts || []}
+              actions={actions}
+            />
           </div>
         )}
       </section>

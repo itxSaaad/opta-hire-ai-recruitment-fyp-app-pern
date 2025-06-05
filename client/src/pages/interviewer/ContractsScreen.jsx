@@ -1,23 +1,87 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { FaCheckCircle, FaMoneyBillWave, FaTimes } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 import Table from '../../components/ui/dashboardLayout/Table';
 
-import { trackPageView } from '../../utils/analytics';
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
-import { useGetAllContractsQuery } from '../../features/contract/contractApi';
+import {
+  useGetAllContractsQuery,
+  useUpdateContractByIdMutation,
+} from '../../features/contract/contractApi';
 
 export default function ContractsScreen() {
   const location = useLocation();
+  const user = useSelector((state) => state.auth.userInfo);
 
-  const { data: contractsData, isLoading, error } = useGetAllContractsQuery();
+  const {
+    data: contractsData,
+    isLoading,
+    error,
+    refetch,
+  } = useGetAllContractsQuery({
+    interviewerId: user.id,
+  });
+
+  const [
+    updateContract,
+    {
+      isLoading: isUpdating,
+      isSuccess,
+      data: updatedContract,
+      error: updateError,
+    },
+  ] = useUpdateContractByIdMutation();
 
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
+
+  // Handle contract acceptance
+  const handleAcceptContract = async (contract) => {
+    await updateContract({
+      id: contract.id,
+      contractData: { status: 'active' },
+    }).unwrap();
+
+    trackEvent(
+      'Contract Accepted',
+      'Contract Action',
+      `Accepted contract for ${contract.job.title}`
+    );
+
+    refetch();
+  };
+
+  // Handle contract rejection
+  const handleRejectContract = async (contract) => {
+    await updateContract({
+      id: contract.id,
+      contractData: { status: 'cancelled' },
+    }).unwrap();
+
+    trackEvent(
+      'Contract Rejected',
+      'Contract Action',
+      `Rejected contract for ${contract.job.title}`
+    );
+
+    refetch();
+  };
+
+  // Handle payment withdrawal (placeholder for now)
+  const handleWithdrawPayment = (contract) => {
+    trackEvent(
+      'Payment Withdrawal Initiated',
+      'Contract Action',
+      `Initiated payment withdrawal for contract ${contract.job.title}`
+    );
+  };
 
   const columns = [
     {
@@ -52,7 +116,7 @@ export default function ContractsScreen() {
       label: 'Status',
       render: (contract) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             contract.status === 'pending'
               ? 'bg-blue-100 text-blue-800'
               : contract.status === 'active'
@@ -74,7 +138,7 @@ export default function ContractsScreen() {
       label: 'Payment Status',
       render: (contract) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             contract.paymentStatus === 'paid'
               ? 'bg-green-100 text-green-800'
               : contract.paymentStatus === 'pending'
@@ -108,41 +172,109 @@ export default function ContractsScreen() {
     },
   ];
 
+  const actions = [
+    {
+      onClick: handleAcceptContract,
+      render: (contract) => (
+        <button
+          className={`flex items-center gap-1 rounded px-3 py-1 ${
+            contract.status !== 'pending'
+              ? 'cursor-not-allowed bg-gray-400 text-white'
+              : 'bg-green-500 text-white hover:bg-green-600'
+          }`}
+          disabled={contract.status !== 'pending'}
+        >
+          <FaCheckCircle />
+          Accept
+        </button>
+      ),
+    },
+    {
+      onClick: handleRejectContract,
+      render: (contract) => (
+        <button
+          className={`flex items-center gap-1 rounded px-3 py-1 ${
+            contract.status !== 'pending'
+              ? 'cursor-not-allowed bg-gray-400 text-white'
+              : 'bg-red-500 text-white hover:bg-red-600'
+          }`}
+          disabled={contract.status !== 'pending'}
+        >
+          <FaTimes />
+          Reject
+        </button>
+      ),
+    },
+    {
+      onClick: handleWithdrawPayment,
+      render: (contract) => (
+        <button
+          className={`flex items-center gap-1 rounded px-3 py-1 ${
+            contract.paymentStatus !== 'paid' || contract.status !== 'completed'
+              ? 'cursor-not-allowed bg-gray-400 text-white'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+          disabled={
+            contract.paymentStatus !== 'paid' || contract.status !== 'completed'
+          }
+        >
+          <FaMoneyBillWave />
+          Withdraw Payment
+        </button>
+      ),
+    },
+  ];
+
   return (
     <>
       <Helmet>
         <title>Manage Contracts [Interviewer] - OptaHire</title>
         <meta
           name="description"
-          content="OptaHire Interviewer Contracts - View and track all your recruitment contracts, payment statuses, and transaction history in one place."
+          content="OptaHire Interviewer Contracts - View and manage all your recruitment contracts, accept/reject offers, and withdraw payments."
         />
         <meta
           name="keywords"
-          content="contracts, payment status, transaction history, manage contracts, interviewer dashboard"
+          content="contracts, payment withdrawal, accept contracts, reject contracts, interviewer dashboard"
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
-        {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
+        {isLoading || isUpdating ? (
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-7xl w-full mx-auto animate-slideUp">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Manage Your{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Contracts
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
-              View and track all your recruitment contracts, payment statuses,
-              and transaction history in one place.
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              View and manage all your recruitment contracts, accept or reject
+              offers, and withdraw your payments.
             </p>
 
-            {error && <Alert message={error.data?.message} />}
+            {error ||
+              (updateError && (
+                <Alert
+                  message={error.data?.message || updateError.data?.message}
+                />
+              ))}
+            {isSuccess && (
+              <Alert
+                message={updatedContract.data?.message}
+                isSuccess={isSuccess}
+              />
+            )}
 
-            <Table columns={columns} data={contractsData?.contracts || []} />
+            <Table
+              columns={columns}
+              data={contractsData?.contracts || []}
+              actions={actions}
+            />
           </div>
         )}
       </section>
