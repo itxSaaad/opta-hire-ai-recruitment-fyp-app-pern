@@ -25,6 +25,10 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: true,
       },
+      transactionType: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       contractId: {
         type: Sequelize.UUID,
         allowNull: false,

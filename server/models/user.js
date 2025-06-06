@@ -127,9 +127,47 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      // Stripe Connect Fields (for Interviewers)
       stripeAccountId: {
         type: DataTypes.STRING,
         allowNull: true,
+        validate: {
+          len: {
+            args: [0, 255],
+            msg: 'Stripe account ID must not exceed 255 characters',
+          },
+        },
+      }, // Stripe Customer ID (for Recruiters)
+      stripeCustomerId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          len: {
+            args: [0, 255],
+            msg: 'Stripe customer ID must not exceed 255 characters',
+          },
+        },
+      },
+      stripeAccountStatus: {
+        type: DataTypes.ENUM('pending', 'verified', 'restricted', 'rejected'),
+        allowNull: true,
+        validate: {
+          isIn: {
+            args: [['pending', 'verified', 'restricted', 'rejected']],
+            msg: 'Invalid Stripe account status',
+          },
+        },
+      },
+      payoutEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        validate: {
+          isBoolean(value) {
+            if (typeof value !== 'boolean') {
+              throw new Error('Payout enabled must be a boolean value');
+            }
+          },
+        },
       },
     },
     {
@@ -205,6 +243,29 @@ module.exports = (sequelize, DataTypes) => {
         return otp;
       }
     } while (true);
+  };
+
+  /**
+   * Check if user has completed Stripe Connect setup
+   *
+   * @returns {boolean} Whether the user can receive payouts
+   */
+  User.prototype.canReceivePayouts = function () {
+    return (
+      this.isInterviewer &&
+      this.stripeAccountId &&
+      this.stripeAccountStatus === 'verified' &&
+      this.payoutEnabled
+    );
+  };
+
+  /**
+   * Check if user can make payments
+   *
+   * @returns {boolean} Whether the user can make payments
+   */
+  User.prototype.canMakePayments = function () {
+    return this.isRecruiter;
   };
 
   return User;

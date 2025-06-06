@@ -94,17 +94,17 @@ module.exports = (sequelize, DataTypes) => {
             }
           },
         },
-        messageType: {
-          type: DataTypes.ENUM('text', 'contract', 'system'),
-          allowNull: true,
-          validate: {
-            isIn: {
-              args: [['text', 'contract', 'system']],
-              msg: 'Message type must be one of the following: text, contract, system',
-            },
-          },
-          defaultValue: 'text',
-        },
+        // messageType: {
+        //   type: DataTypes.ENUM('text', 'contract', 'system'),
+        //   allowNull: true,
+        //   validate: {
+        //     isIn: {
+        //       args: [['text', 'contract', 'system']],
+        //       msg: 'Message type must be one of the following: text, contract, system',
+        //     },
+        //   },
+        //   defaultValue: 'text',
+        // },
       },
     },
     {
