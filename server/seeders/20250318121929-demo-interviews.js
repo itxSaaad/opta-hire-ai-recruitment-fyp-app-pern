@@ -14,8 +14,9 @@ const generateRoomId = (length = 12) => {
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Get candidates
     const candidates = await queryInterface.sequelize.query(
-      `SELECT id, email FROM "Users" WHERE email IN ('candidate@optahire.com', 'candidate2@optahire.com');`,
+      `SELECT id, email FROM "Users" WHERE "isCandidate" = true AND email IN ('candidate@optahire.com', 'candidate2@optahire.com');`,
       { type: Sequelize.QueryTypes.SELECT }
     );
 
@@ -30,8 +31,9 @@ module.exports = {
       return acc;
     }, {});
 
+    // Get interviewers
     const interviewers = await queryInterface.sequelize.query(
-      `SELECT id, email FROM "Users" WHERE email IN ('interviewer@optahire.com', 'interviewer2@optahire.com');`,
+      `SELECT id, email FROM "Users" WHERE "isInterviewer" = true AND email IN ('interviewer@optahire.com', 'interviewer2@optahire.com');`,
       { type: Sequelize.QueryTypes.SELECT }
     );
 
@@ -46,56 +48,55 @@ module.exports = {
       return acc;
     }, {});
 
-    const application1 = await queryInterface.sequelize.query(
-      `SELECT id, "jobId" FROM "Applications" WHERE "candidateId" = '${candidateMap['candidate@optahire.com']}' LIMIT 1;`,
+    // Get applications for the candidates
+    const applications = await queryInterface.sequelize.query(
+      `SELECT id, "jobId", "candidateId" FROM "Applications" 
+       WHERE "candidateId" IN ('${candidateMap['candidate@optahire.com']}', '${candidateMap['candidate2@optahire.com']}')
+       ORDER BY "applicationDate" DESC;`,
       { type: Sequelize.QueryTypes.SELECT }
     );
 
-    if (!application1 || application1.length === 0) {
-      throw new Error('Application for candidate@optahire.com not found.');
+    if (!applications || applications.length === 0) {
+      throw new Error(
+        'No applications found. Ensure Applications seeder has been run.'
+      );
     }
 
-    const application2 = await queryInterface.sequelize.query(
-      `SELECT id, "jobId" FROM "Applications" WHERE "candidateId" = '${candidateMap['candidate2@optahire.com']}' LIMIT 1;`,
-      { type: Sequelize.QueryTypes.SELECT }
-    );
+    // Create interviews
+    const interviews = [];
 
-    if (!application2 || application2.length === 0) {
-      throw new Error('Application for candidate2@optahire.com not found.');
-    }
-
-    const scheduledTime1 = new Date(Date.now() + 3600 * 1000);
-
-    const interview1 = {
+    // Scheduled interview for first candidate
+    const scheduledTime1 = new Date(Date.now() + 3600 * 1000); // 1 hour in future
+    interviews.push({
       roomId: generateRoomId(),
       scheduledTime: scheduledTime1,
       callStartedAt: null,
       callEndedAt: null,
       interviewerId: interviewerMap['interviewer@optahire.com'],
       candidateId: candidateMap['candidate@optahire.com'],
-      jobId: application1[0].jobId,
-      applicationId: application1[0].id,
+      jobId: applications[0].jobId,
+      applicationId: applications[0].id,
       status: 'scheduled',
       remarks: 'Interview scheduled and pending.',
       summary: null,
       rating: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    });
 
-    const scheduledTime2 = new Date(Date.now() - 2 * 3600 * 1000);
+    // Completed interview for second candidate
+    const scheduledTime2 = new Date(Date.now() - 2 * 3600 * 1000); // 2 hours in past
     const callStartedAt2 = new Date(scheduledTime2.getTime() + 5 * 60 * 1000);
     const callEndedAt2 = new Date(callStartedAt2.getTime() + 30 * 60 * 1000);
-
-    const interview2 = {
+    interviews.push({
       roomId: generateRoomId(),
       scheduledTime: scheduledTime2,
       callStartedAt: callStartedAt2,
       callEndedAt: callEndedAt2,
       interviewerId: interviewerMap['interviewer2@optahire.com'],
       candidateId: candidateMap['candidate2@optahire.com'],
-      jobId: application2[0].jobId,
-      applicationId: application2[0].id,
+      jobId: applications[1].jobId,
+      applicationId: applications[1].id,
       status: 'completed',
       remarks:
         'Interview completed successfully. Candidate showed strong skills.',
@@ -104,9 +105,26 @@ module.exports = {
       rating: 4.5,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    });
 
-    const interviews = [interview1, interview2];
+    // Canceled interview
+    const scheduledTime3 = new Date(Date.now() - 48 * 3600 * 1000); // 2 days ago
+    interviews.push({
+      roomId: generateRoomId(),
+      scheduledTime: scheduledTime3,
+      callStartedAt: null,
+      callEndedAt: null,
+      interviewerId: interviewerMap['interviewer@optahire.com'],
+      candidateId: candidateMap['candidate2@optahire.com'],
+      jobId: applications[1].jobId,
+      applicationId: applications[1].id,
+      status: 'canceled',
+      remarks: 'Interview canceled due to scheduling conflict.',
+      summary: null,
+      rating: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
     await queryInterface.bulkInsert('Interviews', interviews, {});
   },
