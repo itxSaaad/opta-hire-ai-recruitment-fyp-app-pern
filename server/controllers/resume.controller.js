@@ -195,13 +195,13 @@ const getResumeForUser = asyncHandler(async (req, res) => {
 
 /**
  * @desc Gets the Resume by User ID.
- * 
+ *
  * @route GET /api/v1/resumes/user/:userId
  * @access Private (Admin)
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
- * 
+ *
  * @returns {Promise<void>}
  * */
 
@@ -553,7 +553,8 @@ const deleteResumeById = asyncHandler(async (req, res) => {
             `Title: ${profile.title}`,
             `Industry: ${profile.industry || 'Not specified'}`,
             `Headline: ${profile.headline || 'Not specified'}`,
-            `Skills: ${profile.skills ? profile.skills.join(', ') : 'Not specified'
+            `Skills: ${
+              profile.skills ? profile.skills.join(', ') : 'Not specified'
             }`,
             `Experience: ${profile.experience ? 'Included' : 'Not specified'}`,
             `Education: ${profile.education ? 'Included' : 'Not specified'}`,
