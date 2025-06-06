@@ -12,15 +12,6 @@ const {
 
 const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:5001';
 
-// Timeout configurations for different operations
-const TIMEOUTS = {
-  HEALTH_CHECK: 5000, // 5 seconds
-  MODEL_STATUS: 10000, // 10 seconds
-  SHORTLISTING: 60000, // 1 minute
-  PREVIEW: 30000, // 30 seconds
-  TRAINING: 300000, // 5 minutes
-};
-
 /**
  * @desc Check AI server system health
  * @route GET /api/v1/ml/health/system
@@ -33,9 +24,7 @@ const TIMEOUTS = {
  */
 const checkSystemHealth = asyncHandler(async (req, res) => {
   try {
-    const response = await axios.get(`${AI_SERVER_URL}/api/v1/health/`, {
-      timeout: TIMEOUTS.HEALTH_CHECK,
-    });
+    const response = await axios.get(`${AI_SERVER_URL}/api/v1/health/`);
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -71,10 +60,7 @@ const checkSystemHealth = asyncHandler(async (req, res) => {
 const checkAiServiceStatus = asyncHandler(async (req, res) => {
   try {
     const response = await axios.get(
-      `${AI_SERVER_URL}/api/v1/health/ai-service`,
-      {
-        timeout: TIMEOUTS.MODEL_STATUS,
-      }
+      `${AI_SERVER_URL}/api/v1/health/ai-service`
     );
 
     res.status(StatusCodes.OK).json({
@@ -110,9 +96,7 @@ const checkAiServiceStatus = asyncHandler(async (req, res) => {
  */
 const getModelStatus = asyncHandler(async (req, res) => {
   try {
-    const response = await axios.get(`${AI_SERVER_URL}/api/v1/model/status`, {
-      timeout: TIMEOUTS.MODEL_STATUS,
-    });
+    const response = await axios.get(`${AI_SERVER_URL}/api/v1/model/status`);
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -143,9 +127,7 @@ const getModelStatus = asyncHandler(async (req, res) => {
  */
 const getModelMetrics = asyncHandler(async (req, res) => {
   try {
-    const response = await axios.get(`${AI_SERVER_URL}/api/v1/model/metrics`, {
-      timeout: TIMEOUTS.MODEL_STATUS,
-    });
+    const response = await axios.get(`${AI_SERVER_URL}/api/v1/model/metrics`);
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -266,7 +248,6 @@ const trainModel = asyncHandler(async (req, res) => {
       `${AI_SERVER_URL}/api/v1/model/train`,
       requestBody,
       {
-        timeout: TIMEOUTS.TRAINING,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -406,7 +387,6 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
       `${AI_SERVER_URL}/api/v1/shortlist/candidates`,
       aiRequestData,
       {
-        timeout: TIMEOUTS.SHORTLISTING,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -648,7 +628,6 @@ const previewCandidateShortlist = asyncHandler(async (req, res) => {
       `${AI_SERVER_URL}/api/v1/shortlist/preview`,
       previewData,
       {
-        timeout: TIMEOUTS.PREVIEW,
         headers: { 'Content-Type': 'application/json' },
       }
     );
