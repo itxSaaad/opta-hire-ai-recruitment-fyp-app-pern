@@ -9,6 +9,7 @@ import {
   FaSort,
   FaSortDown,
   FaSortUp,
+  FaTimes,
 } from 'react-icons/fa';
 
 export default function Table({ columns, data, actions }) {
@@ -157,23 +158,25 @@ export default function Table({ columns, data, actions }) {
   // Generate smart page numbers for pagination
   const getPageNumbers = () => {
     const pages = [];
-    const showPages = 5;
+    // Show fewer pages on small screens
+    const showPages = window.innerWidth < 640 ? 3 : 5;
 
     if (totalPages <= showPages) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      if (currentPage <= 3) {
+      if (currentPage <= Math.ceil(showPages / 2)) {
         for (let i = 1; i <= showPages; i++) {
           pages.push(i);
         }
-      } else if (currentPage > totalPages - 3) {
+      } else if (currentPage > totalPages - Math.floor(showPages / 2)) {
         for (let i = totalPages - showPages + 1; i <= totalPages; i++) {
           pages.push(i);
         }
       } else {
-        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
+        const offset = Math.floor(showPages / 2);
+        for (let i = currentPage - offset; i <= currentPage + offset; i++) {
           pages.push(i);
         }
       }
@@ -182,11 +185,39 @@ export default function Table({ columns, data, actions }) {
     return pages;
   };
 
+  // Render mobile card view for each row
+  const renderMobileCard = (row, rowIndex) => (
+    <div
+      key={row.id || `row-${startIndex + rowIndex}`}
+      className="mb-4 animate-slideUp rounded-lg border border-light-border bg-light-background p-4 shadow-sm dark:border-dark-border dark:bg-dark-background"
+      style={{ animationDelay: `${rowIndex * 0.05}s` }}
+    >
+      {enhancedColumns.map((col) => (
+        <div key={col.key} className="mb-2 flex flex-col py-1">
+          <span className="text-xs font-semibold uppercase text-light-text/70 dark:text-dark-text/70">
+            {col.label}
+          </span>
+          <span className="text-sm text-light-text dark:text-dark-text">
+            {col.render ? col.render(row) : row[col.key]}
+          </span>
+        </div>
+      ))}
+      {actions && (
+        <div className="mt-3 flex items-center justify-end space-x-2 border-t border-light-border pt-3 dark:border-dark-border">
+          {actions.map((action, index) => (
+            <span key={index} onClick={() => action.onClick(row)}>
+              {action.render ? action.render(row) : null}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="animate-fadeIn rounded-xl border border-light-border bg-light-background shadow-lg dark:border-dark-border dark:bg-dark-background">
-      {/* Search Bar - Always Enabled */}
       <div className="rounded-t-xl border-b border-light-border bg-light-surface/30 p-4 dark:border-dark-border dark:bg-dark-surface/30">
-        <div className="relative max-w-md">
+        <div className="relative w-full max-w-md">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <FaSearch className="h-4 w-4 text-light-text/50 dark:text-dark-text/50" />
           </div>
@@ -203,7 +234,7 @@ export default function Table({ columns, data, actions }) {
                 onClick={() => setSearchTerm('')}
                 className="text-light-text/50 hover:text-light-text dark:text-dark-text/50 dark:hover:text-dark-text"
               >
-                ✕
+                <FaTimes className="h-3.5 w-3.5" />
               </button>
             </div>
           )}
@@ -216,127 +247,156 @@ export default function Table({ columns, data, actions }) {
         )}
       </div>
 
-      {/* Table Container with Sticky Headers */}
-      <div className="max-h-[600px] overflow-auto">
-        <table className="min-w-full divide-y divide-light-border dark:divide-dark-border">
-          <thead className="sticky top-0 z-10 bg-light-surface dark:bg-dark-surface">
-            <tr>
-              {enhancedColumns.map((col) => (
-                <th
-                  key={col.key}
-                  className={`group px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-light-text transition-all duration-200 dark:text-dark-text ${col.sortable ? 'cursor-pointer select-none hover:bg-light-border/20 dark:hover:bg-dark-border/20' : ''}`}
-                  onClick={() => handleSort(col.key)}
-                  title={col.sortable ? 'Click to sort' : ''}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="transition-colors group-hover:text-light-primary dark:group-hover:text-dark-primary">
-                      {col.label}
-                    </span>
-                    <div className="ml-2">{getSortIcon(col.key)}</div>
-                  </div>
-                </th>
-              ))}
-              {actions && (
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-light-text dark:text-dark-text">
-                  Actions
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-light-border bg-light-background dark:divide-dark-border dark:bg-dark-background">
-            {paginatedData && paginatedData.length > 0 ? (
-              paginatedData.map((row, rowIndex) => (
-                <tr
-                  key={row.id || `row-${startIndex + rowIndex}`}
-                  className="animate-slideUp transition-colors duration-200 hover:bg-light-surface/50 hover:dark:bg-dark-surface/50"
-                  style={{ animationDelay: `${rowIndex * 0.05}s` }}
-                >
-                  {enhancedColumns.map((col) => (
-                    <td
-                      key={col.key}
-                      className="px-6 py-4 text-sm text-light-text dark:text-dark-text"
-                    >
-                      {col.render ? col.render(row) : row[col.key]}
-                    </td>
-                  ))}
-                  {actions && (
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <div className="flex justify-start space-x-2">
-                        {actions.map((action, index) => (
-                          <span key={index} onClick={() => action.onClick(row)}>
-                            {action.render ? action.render(row) : null}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))
-            ) : (
+      {/* Desktop Table View - Hidden on mobile */}
+      <div className="hidden md:block">
+        <div className="max-h-[600px] overflow-auto">
+          <table className="min-w-full divide-y divide-light-border dark:divide-dark-border">
+            <thead className="sticky top-0 z-10 bg-light-surface dark:bg-dark-surface">
               <tr>
-                <td
-                  className="px-6 py-16 text-center text-light-text dark:text-dark-text"
-                  colSpan={enhancedColumns.length + (actions ? 1 : 0)}
-                >
-                  <div className="flex flex-col items-center justify-center space-y-3">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface">
-                      <FaSearch className="h-6 w-6 text-light-text/30 dark:text-dark-text/30" />
+                {enhancedColumns.map((col) => (
+                  <th
+                    key={col.key}
+                    className={`group px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-light-text transition-all duration-200 dark:text-dark-text ${col.sortable ? 'cursor-pointer select-none hover:bg-light-border/20 dark:hover:bg-dark-border/20' : ''}`}
+                    onClick={() => handleSort(col.key)}
+                    title={col.sortable ? 'Click to sort' : ''}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="transition-colors group-hover:text-light-primary dark:group-hover:text-dark-primary">
+                        {col.label}
+                      </span>
+                      <div className="ml-2">{getSortIcon(col.key)}</div>
                     </div>
-                    <div>
-                      <p className="text-lg font-medium">
-                        {searchTerm
-                          ? 'No matching results'
-                          : 'No records found'}
-                      </p>
-                      <p className="mt-1 text-sm text-light-text/60 dark:text-dark-text/60">
-                        {searchTerm
-                          ? `Try adjusting your search for "${searchTerm}"`
-                          : 'No data available to display'}
-                      </p>
-                    </div>
-                  </div>
-                </td>
+                  </th>
+                ))}
+                {actions && (
+                  <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-light-text dark:text-dark-text">
+                    Actions
+                  </th>
+                )}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-light-border bg-light-background dark:divide-dark-border dark:bg-dark-background">
+              {paginatedData && paginatedData.length > 0 ? (
+                paginatedData.map((row, rowIndex) => (
+                  <tr
+                    key={row.id || `row-${startIndex + rowIndex}`}
+                    className="animate-slideUp transition-colors duration-200 hover:bg-light-surface/50 hover:dark:bg-dark-surface/50"
+                    style={{ animationDelay: `${rowIndex * 0.05}s` }}
+                  >
+                    {enhancedColumns.map((col) => (
+                      <td
+                        key={col.key}
+                        className="px-6 py-4 text-sm text-light-text dark:text-dark-text"
+                      >
+                        {col.render ? col.render(row) : row[col.key]}
+                      </td>
+                    ))}
+                    {actions && (
+                      <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                        <div className="flex justify-start space-x-2">
+                          {actions.map((action, index) => (
+                            <span
+                              key={index}
+                              onClick={() => action.onClick(row)}
+                            >
+                              {action.render ? action.render(row) : null}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    className="px-6 py-16 text-center text-light-text dark:text-dark-text"
+                    colSpan={enhancedColumns.length + (actions ? 1 : 0)}
+                  >
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface">
+                        <FaSearch className="h-6 w-6 text-light-text/30 dark:text-dark-text/30" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-medium">
+                          {searchTerm
+                            ? 'No matching results'
+                            : 'No records found'}
+                        </p>
+                        <p className="mt-1 text-sm text-light-text/60 dark:text-dark-text/60">
+                          {searchTerm
+                            ? `Try adjusting your search for "${searchTerm}"`
+                            : 'No data available to display'}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Mobile Card View - Shown only on mobile */}
+      <div className="md:hidden">
+        <div className="p-4">
+          {paginatedData && paginatedData.length > 0 ? (
+            paginatedData.map((row, rowIndex) =>
+              renderMobileCard(row, rowIndex)
+            )
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface">
+                <FaSearch className="h-6 w-6 text-light-text/30 dark:text-dark-text/30" />
+              </div>
+              <p className="mt-4 text-lg font-medium text-light-text dark:text-dark-text">
+                {searchTerm ? 'No matching results' : 'No records found'}
+              </p>
+              <p className="mt-1 text-sm text-light-text/60 dark:text-dark-text/60">
+                {searchTerm
+                  ? `Try adjusting your search for "${searchTerm}"`
+                  : 'No data available to display'}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Pagination - Always Enabled for datasets > PAGE_SIZE */}
       {totalPages > 1 && (
         <div className="rounded-b-xl border-t border-light-border bg-light-surface/30 px-4 py-3 dark:border-dark-border dark:bg-dark-surface/30">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             {/* Page Info */}
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-light-text/70 dark:text-dark-text/70">
-                Showing{' '}
-                <span className="font-medium text-light-text dark:text-dark-text">
-                  {startIndex + 1}
-                </span>{' '}
-                to{' '}
-                <span className="font-medium text-light-text dark:text-dark-text">
-                  {Math.min(endIndex, sortedData.length)}
-                </span>{' '}
-                of{' '}
-                <span className="font-medium text-light-text dark:text-dark-text">
-                  {sortedData.length}
-                </span>{' '}
-                results
-              </div>
+            <div className="text-sm text-light-text/70 dark:text-dark-text/70">
+              <span className="hidden sm:inline">Showing </span>
+              <span className="font-medium text-light-text dark:text-dark-text">
+                {startIndex + 1}
+              </span>
+              <span className="hidden sm:inline"> to </span>
+              <span className="sm:hidden">-</span>
+              <span className="font-medium text-light-text dark:text-dark-text">
+                {Math.min(endIndex, sortedData.length)}
+              </span>
+              <span className="hidden sm:inline"> of </span>
+              <span className="sm:hidden">/</span>
+              <span className="font-medium text-light-text dark:text-dark-text">
+                {sortedData.length}
+              </span>
               {searchTerm && (
-                <div className="text-xs font-medium text-light-primary dark:text-dark-primary">
-                  Filtered from {data.length} total
-                </div>
+                <span className="ml-2 text-xs font-medium text-light-primary dark:text-dark-primary">
+                  (Filtered from {data.length})
+                </span>
               )}
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center space-x-1">
-              {/* First Page */}
+            <div className="flex items-center justify-center space-x-1">
+              {/* First Page - Hidden on small screens */}
               <button
                 onClick={goToFirstPage}
                 disabled={currentPage === 1}
-                className="rounded-lg border border-light-border p-2 text-light-text transition-all duration-200 hover:border-light-primary hover:bg-light-surface disabled:cursor-not-allowed disabled:opacity-30 dark:border-dark-border dark:text-dark-text dark:hover:border-dark-primary dark:hover:bg-dark-surface"
+                className="hidden rounded-lg border border-light-border p-2 text-light-text transition-all duration-200 hover:border-light-primary hover:bg-light-surface disabled:cursor-not-allowed disabled:opacity-30 dark:border-dark-border dark:text-dark-text dark:hover:border-dark-primary dark:hover:bg-dark-surface sm:block"
                 title="First page"
               >
                 <FaAngleDoubleLeft className="h-3 w-3" />
@@ -353,19 +413,21 @@ export default function Table({ columns, data, actions }) {
               </button>
 
               {/* Page Numbers */}
-              {getPageNumbers().map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => goToPage(pageNum)}
-                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
-                    currentPage === pageNum
-                      ? 'border-light-primary bg-light-primary text-white shadow-sm dark:border-dark-primary dark:bg-dark-primary'
-                      : 'border-light-border text-light-text hover:border-light-primary hover:bg-light-surface dark:border-dark-border dark:text-dark-text dark:hover:border-dark-primary dark:hover:bg-dark-surface'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              ))}
+              <div className="flex items-center space-x-1">
+                {getPageNumbers().map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    onClick={() => goToPage(pageNum)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+                      currentPage === pageNum
+                        ? 'border-light-primary bg-light-primary text-white shadow-sm dark:border-dark-primary dark:bg-dark-primary'
+                        : 'border-light-border text-light-text hover:border-light-primary hover:bg-light-surface dark:border-dark-border dark:text-dark-text dark:hover:border-dark-primary dark:hover:bg-dark-surface'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
 
               {/* Next Page */}
               <button
@@ -377,11 +439,11 @@ export default function Table({ columns, data, actions }) {
                 <FaChevronRight className="h-3 w-3" />
               </button>
 
-              {/* Last Page */}
+              {/* Last Page - Hidden on small screens */}
               <button
                 onClick={goToLastPage}
                 disabled={currentPage === totalPages}
-                className="rounded-lg border border-light-border p-2 text-light-text transition-all duration-200 hover:border-light-primary hover:bg-light-surface disabled:cursor-not-allowed disabled:opacity-30 dark:border-dark-border dark:text-dark-text dark:hover:border-dark-primary dark:hover:bg-dark-surface"
+                className="hidden rounded-lg border border-light-border p-2 text-light-text transition-all duration-200 hover:border-light-primary hover:bg-light-surface disabled:cursor-not-allowed disabled:opacity-30 dark:border-dark-border dark:text-dark-text dark:hover:border-dark-primary dark:hover:bg-dark-surface sm:block"
                 title="Last page"
               >
                 <FaAngleDoubleRight className="h-3 w-3" />
