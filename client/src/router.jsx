@@ -20,6 +20,7 @@ import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
 import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
 import AdminTransactionsScreen from './pages/admin/TransactionsScreen.jsx';
 import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
+import AdminReportsScreen from './pages/admin/ReportsScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
@@ -88,6 +89,7 @@ const router = createBrowserRouter(
           path="interviewer-ratings"
           element={<AdminInterviewerRatingsScreen />}
         />
+        <Route path="reports" element={<AdminReportsScreen />} />
       </Route>
 
       <Route path="auth">
