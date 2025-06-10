@@ -12,7 +12,7 @@ import { resumeApi } from './features/resume/resumeApi';
 import { transactionApi } from './features/transaction/transactionApi';
 import { userApi } from './features/user/userApi';
 
-import authReducer from './features/auth/authSlice';
+import authReducer, { logoutUser } from './features/auth/authSlice';
 
 const store = configureStore({
   reducer: {
@@ -41,21 +41,28 @@ const store = configureStore({
       reportApi.middleware,
       resumeApi.middleware,
       transactionApi.middleware,
-      userApi.middleware
+      userApi.middleware,
+      (store) => (next) => (action) => {
+        const result = next(action);
+
+        if (action.type === logoutUser.type) {
+          store.dispatch(applicationApi.util.resetApiState());
+          store.dispatch(authApi.util.resetApiState());
+          store.dispatch(chatApi.util.resetApiState());
+          store.dispatch(contractApi.util.resetApiState());
+          store.dispatch(interviewApi.util.resetApiState());
+          store.dispatch(interviewerRatingApi.util.resetApiState());
+          store.dispatch(jobApi.util.resetApiState());
+          store.dispatch(reportApi.util.resetApiState());
+          store.dispatch(resumeApi.util.resetApiState());
+          store.dispatch(transactionApi.util.resetApiState());
+          store.dispatch(userApi.util.resetApiState());
+        }
+
+        return result;
+      }
     ),
   devTools: import.meta.env.NODE_ENV !== 'production',
-  // preloadedState: {
-  //   auth: {
-  //     userInfo: localStorage.getItem('userInfo')
-  //       ? JSON.parse(localStorage.getItem('userInfo'))
-  //       : null,
-  //     accessToken: localStorage.getItem('accessToken')
-  //       ? JSON.parse(localStorage.getItem('accessToken'))
-  //       : null,
-  //     users: [],
-  //   },
-  // },
-  // enhancers: [],
 });
 
 export default store;
