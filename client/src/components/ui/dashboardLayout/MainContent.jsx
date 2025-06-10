@@ -3,13 +3,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 const MainContent = ({ children, withSidebar = true }) => {
   const [mounted, setMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
   const handleResize = useCallback(() => {
-    const mobile = window.innerWidth < 786;
-    setIsMobile(mobile);
+    const mobile = window.innerWidth < 768;
     setSidebarVisible(!mobile);
   }, []);
 
@@ -41,7 +39,17 @@ const MainContent = ({ children, withSidebar = true }) => {
 
   return (
     <main
-      className={`flex-1 w-full bg-light-background dark:bg-dark-background border-light-border dark:border-dark-border transition-all duration-300 ease-in-out  mx-auto rounded-lg shadow-sm dark:shadow-md ${mounted ? 'animate-slideUp' : 'opacity-0'} ${withSidebar && !isMobile ? (sidebarVisible ? (collapsed ? 'md:ml-24 max-w-[90vw]' : 'md:ml-80 max-w-[70vw]') : 'md:ml-0') : ''}`}
+      className={`mx-auto w-full flex-1 rounded-lg border-light-border bg-light-background shadow-sm transition-all duration-300 ease-in-out dark:border-dark-border dark:bg-dark-background dark:shadow-md ${
+        mounted ? 'animate-slideUp' : 'opacity-0'
+      } ${
+        withSidebar
+          ? sidebarVisible
+            ? collapsed
+              ? 'md:ml-16 md:w-[calc(100%-4rem)]'
+              : 'md:ml-64 md:w-[calc(100%-16rem)]'
+            : 'md:w-full'
+          : 'w-full'
+      }`}
     >
       {children}
     </main>
