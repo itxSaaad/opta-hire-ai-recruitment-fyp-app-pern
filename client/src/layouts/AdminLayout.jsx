@@ -14,6 +14,7 @@ import { Outlet, ScrollRestoration } from 'react-router-dom';
 import MainContent from '../components/ui/dashboardLayout/MainContent';
 import SideBar from '../components/ui/dashboardLayout/SideBar';
 import TopNavbar from '../components/ui/dashboardLayout/TopNavbar';
+import Footer from '../components/ui/mainLayout/Footer';
 
 const AdminLayout = () => {
   const navItems = [
@@ -46,6 +47,7 @@ const AdminLayout = () => {
       <SideBar navItems={navItems} />
       <MainContent withSidebar={true}>
         <Outlet />
+        <Footer />
       </MainContent>
       <ScrollRestoration />
     </>
