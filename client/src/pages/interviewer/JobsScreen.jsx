@@ -7,7 +7,7 @@ import {
   FaMapMarkerAlt,
   FaSearch,
 } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
@@ -16,25 +16,23 @@ import Loader from '../../components/Loader';
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import { useGetAllJobsQuery } from '../../features/job/jobApi';
-import { setSelectedJob } from '../../features/job/jobSlice';
 
 export default function JobsScreen() {
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [selectedJob, setSelectedJob] = useState(null);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const routeLocation = useLocation();
 
   const user = useSelector((state) => state.auth.userInfo);
-  const selectedJob = useSelector((state) => state.job.selectedJob);
 
   const { data: jobsData, isLoading, error } = useGetAllJobsQuery();
 
   const handleJobClick = (job) => {
-    dispatch(setSelectedJob(job));
+    setSelectedJob(job);
 
     trackEvent(
       'Job Selection',
@@ -62,9 +60,9 @@ export default function JobsScreen() {
 
   useEffect(() => {
     if (!user) {
-      dispatch(setSelectedJob(null));
+      setSelectedJob(null);
     }
-  }, [user, dispatch]);
+  }, [user]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -81,7 +79,7 @@ export default function JobsScreen() {
   const renderBulletPoints = (text) => {
     if (!text) return null;
     return (
-      <ul className="list-disc pl-5 space-y-1 text-light-text dark:text-dark-text">
+      <ul className="list-disc space-y-1 pl-5 text-light-text dark:text-dark-text">
         {text.split(',').map((item, index) => (
           <li key={index} className="text-light-text dark:text-dark-text">
             {item.trim()}
@@ -94,38 +92,38 @@ export default function JobsScreen() {
   const renderDetailedJobCard = (job) => (
     <div
       key={job.id}
-      className="bg-light-surface dark:bg-dark-surface p-6 rounded-lg shadow-lg border border-light-border dark:border-dark-border transition-all duration-500 hover:shadow-xl"
+      className="rounded-lg border border-light-border bg-light-surface p-6 shadow-lg transition-all duration-500 hover:shadow-xl dark:border-dark-border dark:bg-dark-surface"
     >
-      <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
             {job.title}
           </h2>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="mt-2 flex items-center gap-2">
             <span className="font-medium text-light-secondary dark:text-dark-secondary">
               {job.company}
             </span>
-            <span className="text-light-text dark:text-dark-text opacity-60">
+            <span className="text-light-text opacity-60 dark:text-dark-text">
               •
             </span>
-            <span className="text-sm flex items-center gap-1 text-light-text dark:text-dark-text opacity-60">
+            <span className="flex items-center gap-1 text-sm text-light-text opacity-60 dark:text-dark-text">
               <FaMapMarkerAlt /> {job.location}
             </span>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <span className="bg-light-primary bg-opacity-10 text-light-primary dark:text-dark-primary text-xs font-medium px-3 py-1 rounded-full flex items-center">
+          <span className="flex items-center rounded-full bg-light-primary bg-opacity-10 px-3 py-1 text-xs font-medium text-light-primary dark:text-dark-primary">
             <FaDollarSign className="mr-1" /> {job.salaryRange}
           </span>
-          <span className="bg-light-secondary bg-opacity-10 text-light-secondary dark:text-dark-secondary text-xs font-medium px-3 py-1 rounded-full flex items-center">
+          <span className="flex items-center rounded-full bg-light-secondary bg-opacity-10 px-3 py-1 text-xs font-medium text-light-secondary dark:text-dark-secondary">
             <FaClock className="mr-1" /> {job.category}
           </span>
         </div>
       </div>
 
       <div className="space-y-6">
-        <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-          <h3 className="text-lg font-semibold text-light-text dark:text-dark-text flex items-center gap-2 mb-3">
+        <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+          <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-light-text dark:text-dark-text">
             <FaBriefcase className="text-light-primary dark:text-dark-primary" />{' '}
             Description
           </h3>
@@ -134,8 +132,8 @@ export default function JobsScreen() {
           </p>
         </div>
 
-        <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-          <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
+        <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+          <h3 className="mb-3 flex items-center text-lg font-semibold text-light-text dark:text-dark-text">
             <FaMapMarkerAlt className="mr-2 text-light-primary dark:text-dark-primary" />{' '}
             Requirements
           </h3>
@@ -146,8 +144,8 @@ export default function JobsScreen() {
           </div>
         </div>
 
-        <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-          <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
+        <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+          <h3 className="mb-3 flex items-center text-lg font-semibold text-light-text dark:text-dark-text">
             <FaDollarSign className="mr-2 text-light-primary dark:text-dark-primary" />{' '}
             Benefits
           </h3>
@@ -161,7 +159,7 @@ export default function JobsScreen() {
 
       {user && (
         <button
-          className="mt-6 w-full py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-1"
+          className="mt-6 w-full transform rounded-lg bg-light-primary py-3 font-medium text-white transition-all duration-300 hover:-translate-y-1 hover:bg-light-secondary hover:shadow-lg dark:bg-dark-primary dark:hover:bg-dark-secondary"
           onClick={() => {
             navigate(`/candidate/apply/${job.id}`);
             trackEvent(
@@ -190,33 +188,33 @@ export default function JobsScreen() {
           content="job listings, job search, career opportunities, find jobs, job openings, employment, job vacancies"
         />
       </Helmet>
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
-        <div className="max-w-7xl mx-auto text-center animate-slideUp">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-light-text dark:text-dark-text mb-6">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
+        <div className="mx-auto max-w-7xl animate-slideUp text-center">
+          <h1 className="mb-6 text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
             Discover Your Next{' '}
             <span className="text-light-primary dark:text-dark-primary">
               Career Opportunity
             </span>
           </h1>
-          <div className="flex flex-col md:flex-row gap-4 max-w-4xl mx-auto mb-12">
-            <div className="flex-1 relative">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-light-primary dark:text-dark-primary" />
+          <div className="mx-auto mb-12 flex max-w-4xl flex-col gap-4 md:flex-row">
+            <div className="relative flex-1">
+              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 transform text-light-primary dark:text-dark-primary" />
               <input
                 type="text"
                 placeholder="Search jobs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-lg bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none transition-all duration-300 hover:shadow-md"
+                className="w-full rounded-lg border border-light-border bg-light-surface py-4 pl-12 pr-4 text-light-text transition-all duration-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-light-primary dark:border-dark-border dark:bg-dark-surface dark:text-dark-text dark:focus:ring-dark-primary"
               />
             </div>
             <div className="relative">
-              <FaMapMarkerAlt className="absolute left-4 top-1/2 transform -translate-y-1/2 text-light-primary dark:text-dark-primary" />
+              <FaMapMarkerAlt className="absolute left-4 top-1/2 -translate-y-1/2 transform text-light-primary dark:text-dark-primary" />
               <input
                 type="text"
                 placeholder="Location..."
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-lg bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none transition-all duration-300 hover:shadow-md"
+                className="w-full rounded-lg border border-light-border bg-light-surface py-4 pl-12 pr-4 text-light-text transition-all duration-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-light-primary dark:border-dark-border dark:bg-dark-surface dark:text-dark-text dark:focus:ring-dark-primary"
               />
             </div>
           </div>
@@ -225,20 +223,20 @@ export default function JobsScreen() {
         {error && <Alert message={error?.data?.message} />}
 
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : filteredJobs.length > 0 ? (
           isMobile ? (
-            <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto">
+            <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
               {filteredJobs.map((job, index) =>
                 renderDetailedJobCard(job, index)
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl mx-auto">
-              <div className="hidden md:block space-y-4 md:pr-8 md:border-r md:border-light-border dark:md:border-dark-border animate-slideInLeft">
-                <h2 className="text-xl font-bold text-light-text dark:text-dark-text mb-4 flex items-center">
+            <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 md:grid-cols-3">
+              <div className="hidden animate-slideInLeft space-y-4 md:block md:border-r md:border-light-border md:pr-8 dark:md:border-dark-border">
+                <h2 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
                   <FaBriefcase className="mr-2 text-light-primary dark:text-dark-primary" />
                   Available Positions ({filteredJobs.length})
                 </h2>
@@ -246,65 +244,65 @@ export default function JobsScreen() {
                   <div
                     key={job.id}
                     onClick={() => handleJobClick(job)}
-                    className={`p-4 rounded-lg cursor-pointer transition-all duration-300 animate-slideUp hover:shadow-lg ${
+                    className={`animate-slideUp cursor-pointer rounded-lg p-4 transition-all duration-300 hover:shadow-lg ${
                       selectedJob?.id === job.id
-                        ? 'bg-light-primary bg-opacity-10 border-l-4 border-light-primary dark:border-dark-primary shadow-md'
-                        : 'bg-light-surface dark:bg-dark-surface hover:bg-light-primary hover:bg-opacity-5 dark:hover:bg-dark-primary dark:hover:bg-opacity-5'
+                        ? 'border-l-4 border-light-primary bg-light-primary bg-opacity-10 shadow-md dark:border-dark-primary'
+                        : 'bg-light-surface hover:bg-light-primary hover:bg-opacity-5 dark:bg-dark-surface dark:hover:bg-dark-primary dark:hover:bg-opacity-5'
                     }`}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <h3 className="font-semibold text-light-text dark:text-dark-text">
                       {job.title}
                     </h3>
-                    <p className="text-sm text-light-text dark:text-dark-text opacity-70 mt-1">
+                    <p className="mt-1 text-sm text-light-text opacity-70 dark:text-dark-text">
                       {job.company}
                     </p>
-                    <div className="flex items-center gap-2 mt-2 text-sm text-light-text dark:text-dark-text opacity-60">
+                    <div className="mt-2 flex items-center gap-2 text-sm text-light-text opacity-60 dark:text-dark-text">
                       <FaMapMarkerAlt className="text-light-primary dark:text-dark-primary" />{' '}
                       {job.location}
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <span className="bg-light-primary bg-opacity-10 text-light-primary dark:text-dark-primary text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-light-primary bg-opacity-10 px-2.5 py-0.5 text-xs font-medium text-light-primary dark:text-dark-primary">
                         {job.category}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="md:col-span-2 animate-slideIn">
+              <div className="animate-slideIn md:col-span-2">
                 {selectedJob ? (
-                  <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-lg shadow-lg border border-light-border dark:border-dark-border transition-all duration-500 hover:shadow-xl">
-                    <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+                  <div className="rounded-lg border border-light-border bg-light-surface p-6 shadow-lg transition-all duration-500 hover:shadow-xl dark:border-dark-border dark:bg-dark-surface">
+                    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
                           {selectedJob.title}
                         </h2>
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="mt-2 flex items-center gap-2">
                           <span className="font-medium text-light-secondary dark:text-dark-secondary">
                             {selectedJob.company}
                           </span>
-                          <span className="text-light-text dark:text-dark-text opacity-60">
+                          <span className="text-light-text opacity-60 dark:text-dark-text">
                             •
                           </span>
-                          <span className="text-sm flex items-center gap-1 text-light-text dark:text-dark-text opacity-60">
+                          <span className="flex items-center gap-1 text-sm text-light-text opacity-60 dark:text-dark-text">
                             <FaMapMarkerAlt /> {selectedJob.location}
                           </span>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <span className="bg-light-primary bg-opacity-10 text-light-primary dark:text-dark-primary text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                        <span className="flex items-center rounded-full bg-light-primary bg-opacity-10 px-3 py-1 text-xs font-medium text-light-primary dark:text-dark-primary">
                           <FaDollarSign className="mr-1" />{' '}
                           {selectedJob.salaryRange}
                         </span>
-                        <span className="bg-light-secondary bg-opacity-10 text-light-secondary dark:text-dark-secondary text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                        <span className="flex items-center rounded-full bg-light-secondary bg-opacity-10 px-3 py-1 text-xs font-medium text-light-secondary dark:text-dark-secondary">
                           <FaClock className="mr-1" /> {selectedJob.category}
                         </span>
                       </div>
                     </div>
 
                     <div className="space-y-6">
-                      <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                        <h3 className="text-lg font-semibold text-light-text dark:text-dark-text flex items-center gap-2 mb-3">
+                      <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+                        <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-light-text dark:text-dark-text">
                           <FaBriefcase className="text-light-primary dark:text-dark-primary" />
                           Description
                         </h3>
@@ -313,8 +311,8 @@ export default function JobsScreen() {
                         </p>
                       </div>
 
-                      <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                        <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
+                      <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+                        <h3 className="mb-3 flex items-center text-lg font-semibold text-light-text dark:text-dark-text">
                           <FaMapMarkerAlt className="mr-2 text-light-primary dark:text-dark-primary" />
                           Requirements
                         </h3>
@@ -325,8 +323,8 @@ export default function JobsScreen() {
                         </div>
                       </div>
 
-                      <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                        <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
+                      <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+                        <h3 className="mb-3 flex items-center text-lg font-semibold text-light-text dark:text-dark-text">
                           <FaDollarSign className="mr-2 text-light-primary dark:text-dark-primary" />
                           Benefits
                         </h3>
@@ -340,7 +338,7 @@ export default function JobsScreen() {
 
                     {user && (
                       <button
-                        className="mt-6 w-full py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-1"
+                        className="mt-6 w-full transform rounded-lg bg-light-primary py-3 font-medium text-white transition-all duration-300 hover:-translate-y-1 hover:bg-light-secondary hover:shadow-lg dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         onClick={() =>
                           navigate(`/candidate/apply/${selectedJob.id}`)
                         }
@@ -350,7 +348,7 @@ export default function JobsScreen() {
                     )}
                   </div>
                 ) : (
-                  <div className="h-64 flex items-center justify-center text-light-text dark:text-dark-text opacity-50 bg-light-surface dark:bg-dark-surface rounded-lg border border-light-border dark:border-dark-border animate-pulse">
+                  <div className="flex h-64 animate-pulse items-center justify-center rounded-lg border border-light-border bg-light-surface text-light-text opacity-50 dark:border-dark-border dark:bg-dark-surface dark:text-dark-text">
                     <p className="text-lg">Select a job to view details</p>
                   </div>
                 )}
@@ -358,11 +356,11 @@ export default function JobsScreen() {
             </div>
           )
         ) : (
-          <div className="p-8 text-center bg-light-surface dark:bg-dark-surface rounded-lg border border-light-border dark:border-dark-border shadow-md w-full max-w-lg mx-auto animate-slideUp">
+          <div className="mx-auto w-full max-w-lg animate-slideUp rounded-lg border border-light-border bg-light-surface p-8 text-center shadow-md dark:border-dark-border dark:bg-dark-surface">
             <p className="text-xl font-semibold text-light-primary dark:text-dark-primary">
               No jobs found
             </p>
-            <p className="mt-2 text-light-text dark:text-dark-text opacity-70">
+            <p className="mt-2 text-light-text opacity-70 dark:text-dark-text">
               Try adjusting your search criteria
             </p>
           </div>
