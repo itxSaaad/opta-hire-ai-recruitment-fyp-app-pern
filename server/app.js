@@ -34,6 +34,7 @@ const interviewRoutes = require('./routes/interview.routes');
 const interviewerRating = require('./routes/interviewerRating.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const aiRoutes = require('./routes/ai.routes.js');
+const reportRoutes = require('./routes/report.routes');
 
 const setupChatSocket = require('./sockets/chat.socket');
 const setupVideoCallSocket = require('./sockets/webrtc.socket');
@@ -136,6 +137,7 @@ app.use('/api/v1/interviewer-ratings', interviewerRating);
 app.use('/api/v1/payments', paymentRoutes);
 // app.use(rawBodyMiddleware);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/reports', reportRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
