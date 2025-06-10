@@ -38,22 +38,12 @@ export default function InterviewsScreen() {
 
   const [
     updateInterview,
-    {
-      isLoading: isUpdating,
-      error: updateError,
-      isSuccess: isUpdateSuccess,
-      data: updateData,
-    },
+    { isLoading: isUpdating, error: updateError, data: updateData },
   ] = useUpdateInterviewMutation();
 
   const [
     deleteInterview,
-    {
-      isLoading: isDeleting,
-      error: deleteError,
-      isSuccess: isDeleteSuccess,
-      data: deleteData,
-    },
+    { isLoading: isDeleting, error: deleteError, data: deleteData },
   ] = useDeleteInterviewMutation();
 
   useEffect(() => {
@@ -165,7 +155,7 @@ export default function InterviewsScreen() {
       label: 'Status',
       render: (interview) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             interview.status === 'scheduled'
               ? 'bg-blue-100 text-blue-800'
               : interview.status === 'ongoing'
@@ -193,7 +183,7 @@ export default function InterviewsScreen() {
     {
       onClick: handleEdit,
       render: () => (
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600">
           <FaPencilAlt />
           Edit
         </button>
@@ -202,7 +192,7 @@ export default function InterviewsScreen() {
     {
       onClick: handleDelete,
       render: () => (
-        <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
           <FaTrash />
           Delete
         </button>
@@ -224,30 +214,52 @@ export default function InterviewsScreen() {
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="w-full max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-light-text dark:text-dark-text">
-              Interviews Management
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Manage{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Interviews
+              </span>
             </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              View and manage all interview sessions in one place.
+            </p>
 
-            {error && <Alert message={error.data.message} />}
-
-            {isUpdateSuccess && updateData?.data?.message && (
+            {(error || updateError || deleteError) && (
               <Alert
-                message={updateData.data.message}
-                isSuccess={isUpdateSuccess}
+                message={
+                  error?.data?.message ||
+                  updateError?.data?.message ||
+                  deleteError?.data?.message
+                }
               />
             )}
 
-            {isDeleteSuccess && deleteData?.data?.message && (
+            {(!updateData?.success && updateData?.message) ||
+            (!deleteData?.success && deleteData?.message) ? (
               <Alert
-                message={deleteData.data.message}
-                isSuccess={isDeleteSuccess}
+                message={updateData?.message || deleteData?.message}
+                isSuccess={false}
+              />
+            ) : null}
+
+            {updateData?.message && updateData.success && (
+              <Alert
+                message={updateData?.message}
+                isSuccess={updateData?.success}
+              />
+            )}
+
+            {deleteData?.message && deleteData?.success && (
+              <Alert
+                message={deleteData?.message}
+                isSuccess={deleteData?.success}
               />
             )}
 
@@ -269,20 +281,12 @@ export default function InterviewsScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <Alert message={updateError.data.message} />}
             <InputField
               id="scheduledTime"
               type="datetime-local"
               label="Scheduled Time"
               value={scheduledTime}
               onChange={(e) => setScheduledTime(e.target.value)}
-            />
-            <InputField
-              id="summary"
-              type="textarea"
-              label="Summary"
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
             />
             <InputField
               id="status"
@@ -303,11 +307,14 @@ export default function InterviewsScreen() {
               label="Rating (0-5)"
               value={rating}
               onChange={(e) => setRating(e.target.value)}
-              placeholder="Enter rating"
+              min="0"
+              max="5"
+              step="0.1"
+              placeholder="Enter rating from 0 to 5"
             />
             <div className="flex justify-end space-x-2 pt-4">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowEditModal(false)}
                 disabled={isUpdating}
               >
@@ -315,7 +322,7 @@ export default function InterviewsScreen() {
                 Cancel
               </button>
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                 onClick={saveInterviewChanges}
                 disabled={isUpdating}
               >
@@ -327,6 +334,7 @@ export default function InterviewsScreen() {
         )}
       </Modal>
 
+      {/* Delete Modal */}
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
@@ -336,21 +344,20 @@ export default function InterviewsScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <Alert message={deleteError.data.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete this interview? This action cannot
               be undone.
             </p>
             <div className="flex justify-end space-x-2">
               <button
-                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all duration-200 flex items-center gap-2"
+                className="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white transition-all duration-200 hover:bg-red-700"
                 onClick={confirmDelete}
                 disabled={isDeleting}
               >

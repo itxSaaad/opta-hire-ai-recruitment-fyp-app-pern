@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { FaStar, FaPencilAlt, FaTrash, FaTimes, FaSave } from 'react-icons/fa';
+import { FaPencilAlt, FaSave, FaStar, FaTimes, FaTrash } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
@@ -12,36 +12,35 @@ import InputField from '../../components/ui/mainLayout/InputField';
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import {
+  useDeleteRatingMutation,
   useGetAllRatingsQuery,
   useUpdateRatingMutation,
-  useDeleteRatingMutation,
 } from '../../features/interviewerRating/interviewerRatingApi';
 
 export default function InterviewerRatingsScreen() {
-  const location = useLocation();
-
-  // Fetch all ratings
-  const { data, isLoading, error, refetch } = useGetAllRatingsQuery();
-  const [updateRating, { isLoading: isUpdating, error: updateError }] =
-    useUpdateRatingMutation();
-  const [deleteRating, { isLoading: isDeleting, error: deleteError }] =
-    useDeleteRatingMutation();
-
-  // Modal & selection state
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState(null);
 
-  // Form fields
   const [ratingValue, setRatingValue] = useState('');
   const [feedback, setFeedback] = useState('');
 
-  // Track page view
+  const location = useLocation();
+
+  const { data, isLoading, error, refetch } = useGetAllRatingsQuery();
+  const [
+    updateRating,
+    { isLoading: isUpdating, error: updateError, data: updateData },
+  ] = useUpdateRatingMutation();
+  const [
+    deleteRating,
+    { isLoading: isDeleting, error: deleteError, data: deleteData },
+  ] = useDeleteRatingMutation();
+
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
 
-  // When a rating is selected for edit
   useEffect(() => {
     if (selectedRating) {
       setRatingValue(selectedRating.rating);
@@ -49,20 +48,44 @@ export default function InterviewerRatingsScreen() {
     }
   }, [selectedRating]);
 
-  const handleEdit = (r) => {
-    setSelectedRating(r);
+  const handleEdit = (rating) => {
+    setSelectedRating(rating);
     setShowEditModal(true);
-    trackEvent('Edit Rating', 'User Action', `Clicked edit on rating ${r.id}`);
+    trackEvent(
+      'Edit Rating',
+      'User Action',
+      `Clicked edit on rating ${rating.id}`
+    );
   };
 
-  const handleDelete = (r) => {
-    setSelectedRating(r);
+  const handleDelete = (rating) => {
+    setSelectedRating(rating);
     setShowDeleteModal(true);
     trackEvent(
       'Delete Rating',
       'User Action',
-      `Clicked delete on rating ${r.id}`
+      `Clicked delete on rating ${rating.id}`
     );
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteRating(selectedRating.id).unwrap();
+      setShowDeleteModal(false);
+      refetch();
+      trackEvent(
+        'Rating Deleted',
+        'User Action',
+        `Deleted rating ${selectedRating.id}`
+      );
+    } catch (err) {
+      console.error('Deletion failed:', err);
+      trackEvent(
+        'Rating Delete Failed',
+        'User Action',
+        `Failed delete ${selectedRating.id}`
+      );
+    }
   };
 
   const saveChanges = async () => {
@@ -79,7 +102,7 @@ export default function InterviewerRatingsScreen() {
         `Updated rating ${selectedRating.id}`
       );
     } catch (err) {
-      console.error(err);
+      console.error('Update failed:', err);
       trackEvent(
         'Rating Update Failed',
         'User Action',
@@ -88,27 +111,6 @@ export default function InterviewerRatingsScreen() {
     }
   };
 
-  const confirmDelete = async () => {
-    try {
-      await deleteRating(selectedRating.id).unwrap();
-      setShowDeleteModal(false);
-      refetch();
-      trackEvent(
-        'Rating Deleted',
-        'User Action',
-        `Deleted rating ${selectedRating.id}`
-      );
-    } catch (err) {
-      console.error(err);
-      trackEvent(
-        'Rating Delete Failed',
-        'User Action',
-        `Failed delete ${selectedRating.id}`
-      );
-    }
-  };
-
-  // Table column definitions
   const columns = [
     { key: 'id', label: 'Rating ID' },
     {
@@ -155,7 +157,7 @@ export default function InterviewerRatingsScreen() {
     {
       onClick: handleEdit,
       render: () => (
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600">
           <FaPencilAlt /> Edit
         </button>
       ),
@@ -163,7 +165,7 @@ export default function InterviewerRatingsScreen() {
     {
       onClick: handleDelete,
       render: () => (
-        <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
           <FaTrash /> Delete
         </button>
       ),
@@ -181,29 +183,63 @@ export default function InterviewerRatingsScreen() {
         <meta name="keywords" content="OptaHire, Ratings, Admin" />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
-        <div className="w-full max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6 text-light-text dark:text-dark-text">
-            Interviewer Ratings
-          </h1>
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
+        {isLoading ? (
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
+            <Loader />
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Interviewer{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Ratings
+              </span>
+            </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              View and manage all interviewer ratings in one place.
+            </p>
 
-          {isLoading ? (
-            <div className="w-full max-w-sm mx-auto">
-              <Loader />
-            </div>
-          ) : error ? (
-            <Alert
-              isSuccess={false}
-              message={error.data?.message || 'Failed to load ratings'}
-            />
-          ) : (
+            {(error || updateError || deleteError) && (
+              <Alert
+                isSuccess={false}
+                message={
+                  error?.data?.message ||
+                  updateError?.data?.message ||
+                  deleteError?.data?.message
+                }
+              />
+            )}
+
+            {(!updateData?.success && updateData?.message) ||
+            (!deleteData?.success && deleteData?.message) ? (
+              <Alert
+                message={updateData?.message || deleteData?.message}
+                isSuccess={false}
+              />
+            ) : null}
+
+            {updateData?.message && updateData.success && (
+              <Alert
+                message={updateData?.message}
+                isSuccess={updateData?.success}
+              />
+            )}
+
+            {deleteData?.message && deleteData?.success && (
+              <Alert
+                message={deleteData?.message}
+                isSuccess={deleteData?.success}
+              />
+            )}
+
             <Table
               columns={columns}
               data={data?.interviewerRatings || []}
               actions={actions}
             />
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {/* Edit Rating Modal */}
@@ -216,16 +252,10 @@ export default function InterviewerRatingsScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && (
-              <Alert
-                isSuccess={false}
-                message={updateError.data?.message || 'Failed to update rating'}
-              />
-            )}
             <InputField
               id="ratingValue"
               type="number"
-              label="Rating (1–5)"
+              label="Rating (1-5)"
               min="1"
               max="5"
               step="0.1"
@@ -243,15 +273,17 @@ export default function InterviewerRatingsScreen() {
             <div className="flex justify-end space-x-2 pt-4">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition"
+                className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                disabled={isUpdating}
               >
                 <FaTimes /> Cancel
               </button>
               <button
                 onClick={saveChanges}
-                className="flex items-center gap-2 px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded hover:bg-light-secondary dark:hover:bg-dark-secondary transition"
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
+                disabled={isUpdating}
               >
-                <FaSave /> Save
+                <FaSave /> Save Changes
               </button>
             </div>
           </div>
@@ -262,32 +294,28 @@ export default function InterviewerRatingsScreen() {
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        title="Confirm Deletion"
+        title="Confirm Rating Deletion"
       >
         {isDeleting ? (
           <Loader />
         ) : (
           <div>
-            {deleteError && (
-              <Alert
-                isSuccess={false}
-                message={deleteError.data?.message || 'Failed to delete rating'}
-              />
-            )}
             <p className="mb-6 text-light-text dark:text-dark-text">
-              Are you sure you want to delete rating “{selectedRating?.id}”?
-              This action cannot be undone.
+              Are you sure you want to delete this rating? This action cannot be
+              undone.
             </p>
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition"
+                className="rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                disabled={isDeleting}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded flex items-center gap-2 transition"
+                className="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white transition-all duration-200 hover:bg-red-700"
+                disabled={isDeleting}
               >
                 <FaTrash /> Delete
               </button>

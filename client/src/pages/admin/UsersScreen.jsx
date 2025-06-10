@@ -100,6 +100,10 @@ export default function UsersScreen() {
   ] = useUpdateResumeByIdMutation();
 
   useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (selectedUser) {
       setFirstName(selectedUser.firstName || '');
       setLastName(selectedUser.lastName || '');
@@ -129,14 +133,9 @@ export default function UsersScreen() {
       setResumeAvailability(p.availability || 'Immediate');
       setResumeCompany(p.company || '');
       setResumeAchievements(p.achievements || '');
-
       setResumePortfolio(p.portfolio || '');
     }
   }, [resumeData]);
-
-  useEffect(() => {
-    trackPageView(location.pathname);
-  }, [location.pathname]);
 
   const handleEdit = (user) => {
     setSelectedUser(user);
@@ -295,12 +294,12 @@ export default function UsersScreen() {
       render: (user) => (
         <div className="flex items-center">
           {user.isVerified && (
-            <span className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+            <span className="mr-2 rounded bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
               Verified
             </span>
           )}
           {user.isTopRated && (
-            <span className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">
+            <span className="mr-2 rounded bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
               Top Rated
             </span>
           )}
@@ -318,25 +317,25 @@ export default function UsersScreen() {
     {
       onClick: handleEdit,
       render: () => (
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600">
           <FaPencilAlt />
-          Edit
+          Edit User
         </button>
       ),
     },
     {
       onClick: handleEditResume,
       render: () => (
-        <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-indigo-500 px-3 py-1 text-white hover:bg-indigo-600">
           <FaFileSignature />
-          Resume
+          Edit Resume
         </button>
       ),
     },
     {
       onClick: handleDelete,
       render: () => (
-        <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
           <FaTrash />
           Delete
         </button>
@@ -358,16 +357,22 @@ export default function UsersScreen() {
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="w-full max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-light-text dark:text-dark-text">
-              Users Management
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Manage{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Users
+              </span>
             </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              View and manage all system users in one place.
+            </p>
 
             {error && <Alert message={error.data?.message} />}
 
@@ -401,6 +406,7 @@ export default function UsersScreen() {
         )}
       </section>
 
+      {/* Edit User Modal */}
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -412,7 +418,7 @@ export default function UsersScreen() {
           <div className="space-y-4">
             {updateError && <Alert message={updateError.data?.message} />}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <InputField
                 id="firstName"
                 type="text"
@@ -474,7 +480,7 @@ export default function UsersScreen() {
             />
             <div className="flex justify-end space-x-2 pt-4">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowEditModal(false)}
                 disabled={isUpdating}
               >
@@ -482,7 +488,7 @@ export default function UsersScreen() {
                 Cancel
               </button>
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                 onClick={saveUserChanges}
                 disabled={isUpdating}
               >
@@ -513,14 +519,14 @@ export default function UsersScreen() {
             </p>
             <div className="flex justify-end space-x-2">
               <button
-                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all duration-200 flex items-center gap-2"
+                className="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white transition-all duration-200 hover:bg-red-700"
                 onClick={confirmDelete}
                 disabled={isDeleting}
               >
@@ -576,7 +582,7 @@ export default function UsersScreen() {
                 {resumeSkills.map((skill, index) => (
                   <div
                     key={index}
-                    className="flex items-center bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm text-light-text dark:text-dark-text"
+                    className="flex items-center rounded-full bg-gray-200 px-3 py-1 text-sm text-light-text dark:bg-gray-700 dark:text-dark-text"
                   >
                     {skill}
                     <button
@@ -591,7 +597,7 @@ export default function UsersScreen() {
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex-1 mt-5">
+                <div className="mt-5 flex-1">
                   <InputField
                     id="resumeNewSkill"
                     type="text"
@@ -620,19 +626,19 @@ export default function UsersScreen() {
                       setResumeNewSkill('');
                     }
                   }}
-                  className="px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                  className="flex items-center gap-1 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                 >
                   <FaSave />
-                  <span className="hidden md:block text-sm "> Add</span>
+                  <span className="hidden md:block"> Add</span>
                 </button>
                 {lastDeletedSkill !== null && (
                   <button
                     type="button"
                     onClick={handleUndoDelete}
-                    className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                    className="flex items-center gap-1 rounded-lg bg-yellow-500 px-4 py-2 text-sm font-semibold text-white transition-all duration-200 hover:bg-yellow-600"
                   >
                     <FaUndo />
-                    <span className="hidden md:block text-sm ">Undo</span>
+                    <span className="hidden md:block">Undo</span>
                   </button>
                 )}
               </div>
@@ -657,6 +663,7 @@ export default function UsersScreen() {
                 rows={4}
               />
             </div>
+
             {/* Additional Details Section */}
             <div className="space-y-4">
               <InputField
@@ -705,11 +712,12 @@ export default function UsersScreen() {
                 />
               </div>
             </div>
+
             <div className="flex justify-end pt-4">
               <button
                 type="button"
                 onClick={handleSaveResume}
-                className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
               >
                 <FaSave />
                 Save Resume

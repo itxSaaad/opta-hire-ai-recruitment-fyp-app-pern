@@ -12,9 +12,9 @@ import InputField from '../../components/ui/mainLayout/InputField';
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import {
+  useDeleteApplicationMutation,
   useGetAllApplicationsQuery,
   useUpdateApplicationMutation,
-  useDeleteApplicationMutation,
 } from '../../features/application/applicationApi';
 
 export default function ApplicationsScreen() {
@@ -27,28 +27,18 @@ export default function ApplicationsScreen() {
   const routeLocation = useLocation();
 
   const {
-    data: applications,
+    data: applicationsData,
     isLoading,
     error,
     refetch,
   } = useGetAllApplicationsQuery();
   const [
     updateApplication,
-    {
-      isLoading: isUpdating,
-      error: updateError,
-      isSuccess: updateSuccess,
-      data: updateApplicationData,
-    },
+    { isLoading: isUpdating, error: updateError, data: updateData },
   ] = useUpdateApplicationMutation();
   const [
     deleteApplication,
-    {
-      isLoading: isDeleting,
-      error: deleteError,
-      isSuccess: deleteSuccess,
-      data: deleteApplicationData,
-    },
+    { isLoading: isDeleting, error: deleteError, data: deleteData },
   ] = useDeleteApplicationMutation();
 
   useEffect(() => {
@@ -151,16 +141,18 @@ export default function ApplicationsScreen() {
       label: 'Status',
       render: (application) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
-            application.status === 'applied'
-              ? 'bg-blue-100 text-blue-800'
-              : application.status === 'shortlisted'
-                ? 'bg-green-100 text-green-800'
-                : application.status === 'accepted'
-                  ? 'bg-teal-100 text-teal-800'
-                  : application.status === 'rejected'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-gray-100 text-gray-800'
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
+            application.status === 'pending'
+              ? 'bg-gray-100 text-gray-800'
+              : application.status === 'applied'
+                ? 'bg-blue-100 text-blue-800'
+                : application.status === 'shortlisted'
+                  ? 'bg-green-100 text-green-800'
+                  : application.status === 'hired'
+                    ? 'bg-teal-100 text-teal-800'
+                    : application.status === 'rejected'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
           }`}
         >
           {application.status.charAt(0).toUpperCase() +
@@ -180,7 +172,7 @@ export default function ApplicationsScreen() {
     {
       onClick: handleEdit,
       render: () => (
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600">
           <FaPencilAlt />
           Edit
         </button>
@@ -189,7 +181,7 @@ export default function ApplicationsScreen() {
     {
       onClick: handleDelete,
       render: () => (
-        <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
           <FaTrash />
           Delete
         </button>
@@ -211,34 +203,58 @@ export default function ApplicationsScreen() {
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="w-full max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-light-text dark:text-dark-text">
-              Applications Management
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Manage{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Applications
+              </span>
             </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              View and manage all candidate applications in one place.
+            </p>
 
-            {error && <Alert message={error.data.message} />}
-            {updateSuccess && updateApplicationData?.data.message && (
+            {(error || updateError || deleteError) && (
               <Alert
-                isSuccess={updateSuccess}
-                message={updateApplicationData.data.message}
+                message={
+                  error?.data?.message ||
+                  updateError?.data?.message ||
+                  deleteError?.data?.message
+                }
               />
             )}
-            {deleteSuccess && deleteApplicationData?.data.message && (
+
+            {(!updateData?.success && updateData?.message) ||
+            (!deleteData?.success && deleteData?.message) ? (
               <Alert
-                isSuccess={deleteSuccess}
-                message={deleteApplicationData.data.message}
+                message={updateData?.message || deleteData?.message}
+                isSuccess={false}
+              />
+            ) : null}
+
+            {updateData?.message && updateData.success && (
+              <Alert
+                message={updateData?.message}
+                isSuccess={updateData?.success}
+              />
+            )}
+
+            {deleteData?.message && deleteData?.success && (
+              <Alert
+                message={deleteData?.message}
+                isSuccess={deleteData?.success}
               />
             )}
 
             <Table
               columns={columns}
-              data={applications?.applications || []}
+              data={applicationsData?.applications || []}
               actions={actions}
             />
           </div>
@@ -255,7 +271,6 @@ export default function ApplicationsScreen() {
           <Loader />
         ) : (
           <div className="space-y-4">
-            {updateError && <Alert message={updateError.data.message} />}
             <InputField
               id="status"
               type="select"
@@ -263,15 +278,16 @@ export default function ApplicationsScreen() {
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               options={[
+                { value: 'pending', label: 'Pending' },
                 { value: 'applied', label: 'Applied' },
                 { value: 'shortlisted', label: 'Shortlisted' },
-                { value: 'accepted', label: 'Accepted' },
+                { value: 'hired', label: 'Hired' },
                 { value: 'rejected', label: 'Rejected' },
               ]}
             />
             <div className="flex justify-end space-x-2 pt-4">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowEditModal(false)}
                 disabled={isUpdating}
               >
@@ -279,7 +295,7 @@ export default function ApplicationsScreen() {
                 Cancel
               </button>
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                 onClick={saveApplicationChanges}
                 disabled={isUpdating}
               >
@@ -301,21 +317,20 @@ export default function ApplicationsScreen() {
           <Loader />
         ) : (
           <div>
-            {deleteError && <Alert message={deleteError.data.message} />}
             <p className="mb-6 text-light-text dark:text-dark-text">
               Are you sure you want to delete this application? This action
               cannot be undone.
             </p>
             <div className="flex justify-end space-x-2">
               <button
-                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all duration-200 flex items-center gap-2"
+                className="flex items-center gap-2 rounded bg-red-600 px-4 py-2 text-white transition-all duration-200 hover:bg-red-700"
                 onClick={confirmDelete}
                 disabled={isDeleting}
               >
