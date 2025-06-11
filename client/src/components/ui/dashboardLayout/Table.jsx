@@ -364,7 +364,7 @@ export default function Table({ columns, data, actions }) {
       </div>
 
       {/* Pagination - Always Enabled for datasets > PAGE_SIZE */}
-      {totalPages > 1 && (
+      {totalPages > 1 ? (
         <div className="rounded-b-xl border-t border-light-border bg-light-surface/30 px-4 py-3 dark:border-dark-border dark:bg-dark-surface/30">
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             {/* Page Info */}
@@ -449,6 +449,14 @@ export default function Table({ columns, data, actions }) {
                 <FaAngleDoubleRight className="h-3 w-3" />
               </button>
             </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-b-xl border-t border-light-border bg-light-surface/30 px-4 py-3 dark:border-dark-border dark:bg-dark-surface/30">
+          <div className="text-sm text-light-text/70 dark:text-dark-text/70">
+            {searchTerm
+              ? `Showing ${filteredData.length} result${filteredData.length !== 1 ? 's' : ''}`
+              : 'No pagination available for single page of results'}
           </div>
         </div>
       )}
