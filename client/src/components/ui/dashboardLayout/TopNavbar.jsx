@@ -187,7 +187,7 @@ const TopNavbar = ({ navItems = [] }) => {
                       Profile
                     </Link>
 
-                    {!user.isAdmin && (
+                    {!user.isAdmin && !user.isRecruiter && (
                       <Link
                         to="/user/resume"
                         className="group flex w-full items-center px-4 py-2.5 text-sm text-light-text transition-colors duration-200 hover:bg-light-surface dark:text-dark-text dark:hover:bg-dark-surface"

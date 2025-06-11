@@ -3,13 +3,13 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import axiosBaseQueryWithReauth from '../../api/axiosBaseQueryWithReauth';
 
 const ENDPOINTS = {
-  HEALTH_SYSTEM: '/ml/health/system',
-  HEALTH_AI_SERVICE: '/ml/health/ai-service',
-  MODEL_STATUS: '/ml/model/status',
-  MODEL_METRICS: '/ml/model/metrics',
-  MODEL_TRAIN: '/ml/model/train',
-  SHORTLIST_CANDIDATES: (jobId) => `/ml/shortlist/${jobId}`,
-  SHORTLIST_PREVIEW: '/ml/shortlist/preview',
+  HEALTH_SYSTEM: '/ai/health/system',
+  HEALTH_AI_SERVICE: '/ai/health/ai-service',
+  MODEL_STATUS: '/ai/model/status',
+  MODEL_METRICS: '/ai/model/metrics',
+  MODEL_TRAIN: '/ai/model/train',
+  SHORTLIST_CANDIDATES: (jobId) => `/ai/shortlist/${jobId}`,
+  SHORTLIST_PREVIEW: '/ai/shortlist/preview',
 };
 
 export const aiApi = createApi({
@@ -46,10 +46,10 @@ export const aiApi = createApi({
       providesTags: ['AIModel'],
     }),
     trainModel: builder.mutation({
-      query: (trainingParams) => ({
+      query: ({ useHistoricalData, trainingSize }) => ({
         url: ENDPOINTS.MODEL_TRAIN,
         method: 'POST',
-        data: trainingParams,
+        data: { useHistoricalData, trainingSize },
       }),
       invalidatesTags: ['AIModel'],
     }),
@@ -61,10 +61,10 @@ export const aiApi = createApi({
       invalidatesTags: ['Shortlist'],
     }),
     previewCandidateShortlist: builder.mutation({
-      query: (previewData) => ({
+      query: ({ jobId }) => ({
         url: ENDPOINTS.SHORTLIST_PREVIEW,
         method: 'POST',
-        data: previewData,
+        data: { jobId },
       }),
     }),
   }),

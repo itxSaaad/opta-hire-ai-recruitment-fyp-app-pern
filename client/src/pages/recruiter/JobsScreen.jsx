@@ -3,9 +3,11 @@ import { Helmet } from 'react-helmet-async';
 import {
   FaAlignLeft,
   FaBriefcase,
+  FaCheckCircle,
   FaClipboardList,
   FaClock,
   FaDollarSign,
+  FaExclamationTriangle,
   FaMapMarkerAlt,
   FaPencilAlt,
   FaSave,
@@ -21,6 +23,10 @@ import InputField from '../../components/ui/mainLayout/InputField';
 
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
+import {
+  useCheckAiServiceStatusQuery,
+  useShortlistCandidatesMutation,
+} from '../../features/ai/aiApi';
 import {
   useGetAllJobsQuery,
   useUpdateJobByIdMutation,
@@ -42,7 +48,19 @@ export default function JobsScreen() {
 
   const routeLocation = useLocation();
 
-  const { data: jobs, isLoading, error, refetch } = useGetAllJobsQuery();
+  const {
+    data: jobs,
+    isLoading: isJobsLoading,
+    error,
+    refetch,
+  } = useGetAllJobsQuery();
+
+  const {
+    data: aiServiceStatus,
+    isLoading: isAiServiceLoading,
+    error: aiServiceError,
+    refetch: refetchAiServiceStatus,
+  } = useCheckAiServiceStatusQuery();
 
   const [
     updateJob,
@@ -53,6 +71,20 @@ export default function JobsScreen() {
       data: updateData,
     },
   ] = useUpdateJobByIdMutation();
+
+  const [
+    shortlistCandidates,
+    {
+      isLoading: isShortlisting,
+      error: shortlistError,
+      isSuccess: shortlistSuccess,
+      data: shortlistData,
+    },
+  ] = useShortlistCandidatesMutation();
+
+  useEffect(() => {
+    trackPageView(routeLocation.pathname);
+  }, [routeLocation.pathname]);
 
   useEffect(() => {
     if (selectedJob) {
@@ -91,8 +123,18 @@ export default function JobsScreen() {
         },
       }).unwrap();
 
+      if (isClosed) {
+        await shortlistCandidates(selectedJob.id).unwrap();
+        trackEvent(
+          'Shortlist Candidates',
+          'User Action',
+          `User shortlisted candidates for job ${selectedJob.title}`
+        );
+      }
+
       setShowEditModal(false);
       refetch();
+      refetchAiServiceStatus();
       trackEvent(
         'Update Job',
         'User Action',
@@ -118,9 +160,47 @@ export default function JobsScreen() {
     );
   };
 
-  useEffect(() => {
-    trackPageView(routeLocation.pathname);
-  }, [routeLocation.pathname]);
+  const handleShortlistCandidates = async (job) => {
+    if (!aiServiceStatus?.data?.model_trained) {
+      trackEvent(
+        'Shortlist Candidates Failed',
+        'User Action',
+        `User attempted to shortlist candidates for ${job.title} but AI service not ready`
+      );
+      return;
+    }
+
+    try {
+      await shortlistCandidates(job.id).unwrap();
+      trackEvent(
+        'Shortlist Candidates',
+        'User Action',
+        `User shortlisted candidates for job ${job.title}`
+      );
+      refetch();
+      refetchAiServiceStatus();
+    } catch (err) {
+      console.error('Shortlisting failed:', err);
+      trackEvent(
+        'Shortlist Candidates Failed',
+        'User Action',
+        `User failed to shortlist candidates for job ${job.title}`
+      );
+    }
+  };
+
+  const renderBulletPoints = (text) => {
+    if (!text) return null;
+    return (
+      <ul className="list-disc space-y-1 pl-5 text-light-text dark:text-dark-text">
+        {text.split(',').map((item, index) => (
+          <li key={index} className="text-light-text dark:text-dark-text">
+            {item.trim()}
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   const columns = [
     {
@@ -148,7 +228,7 @@ export default function JobsScreen() {
       label: 'Status',
       render: (job) => (
         <span
-          className={`${job.isClosed ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'} text-xs font-medium px-2.5 py-0.5 rounded`}
+          className={`${job.isClosed ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'} rounded px-2.5 py-0.5 text-xs font-medium`}
         >
           {job.isClosed ? 'Closed' : 'Open'}
         </span>
@@ -165,16 +245,25 @@ export default function JobsScreen() {
     {
       onClick: handleViewJob,
       render: () => (
-        <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-indigo-500 px-3 py-1 text-white hover:bg-indigo-600">
           <FaBriefcase />
-          View Job Details
+          View Job
+        </button>
+      ),
+    },
+    {
+      onClick: handleShortlistCandidates,
+      render: () => (
+        <button className="flex items-center gap-1 rounded bg-green-500 px-3 py-1 text-white hover:bg-green-600">
+          <FaCheckCircle />
+          Shortlist Candidates
         </button>
       ),
     },
     {
       onClick: handleEdit,
       render: () => (
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600">
           <FaPencilAlt />
           Edit
         </button>
@@ -182,18 +271,8 @@ export default function JobsScreen() {
     },
   ];
 
-  const renderBulletPoints = (text) => {
-    if (!text) return null;
-    return (
-      <ul className="list-disc pl-5 space-y-1 text-light-text dark:text-dark-text">
-        {text.split(',').map((item, index) => (
-          <li key={index} className="text-light-text dark:text-dark-text">
-            {item.trim()}
-          </li>
-        ))}
-      </ul>
-    );
-  };
+  const isLoading =
+    isJobsLoading || isAiServiceLoading || isUpdating || isShortlisting;
 
   return (
     <>
@@ -208,29 +287,104 @@ export default function JobsScreen() {
           content="job listings, job search, career opportunities, find jobs, job openings, employment, job vacancies"
         />
       </Helmet>
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-7xl w-full mx-auto animate-slideUp">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Manage Your{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Job Listings
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
               View, edit, and manage all your job listings in one place.
             </p>
-            {error && <Alert message={error.data.message} />}
+
+            {/* Simplified AI Service Status Card */}
+            {aiServiceStatus && (
+              <div className="mb-8 overflow-hidden rounded-lg border border-light-border bg-white shadow-md dark:border-dark-border dark:bg-dark-surface">
+                <div className="flex items-center justify-between p-6">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`rounded-full p-2 ${aiServiceStatus?.data?.model_trained ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}
+                    >
+                      {aiServiceStatus?.data?.model_trained ? (
+                        <FaCheckCircle className="h-6 w-6" />
+                      ) : (
+                        <FaExclamationTriangle className="h-6 w-6" />
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-light-text dark:text-dark-text">
+                        AI Shortlisting Service
+                      </h2>
+                      <p className="text-light-text/70 dark:text-dark-text/70">
+                        {aiServiceStatus?.data?.model_trained
+                          ? 'Ready to shortlist candidates when you close jobs'
+                          : 'Not ready - cannot perform automatic shortlisting'}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium ${
+                      aiServiceStatus?.data?.model_trained
+                        ? 'bg-light-primary/10 text-light-primary dark:bg-dark-primary/20 dark:text-dark-primary'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200'
+                    }`}
+                  >
+                    {aiServiceStatus?.data?.model_trained
+                      ? 'Active'
+                      : 'Inactive'}
+                  </span>
+                </div>
+
+                {!aiServiceStatus?.data?.model_trained && (
+                  <div className="border-t border-light-border bg-yellow-50 p-4 dark:border-dark-border dark:bg-yellow-900/20">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <FaExclamationTriangle className="h-5 w-5 text-yellow-500" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                          Action Required
+                        </h3>
+                        <div className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
+                          <p>
+                            The AI shortlisting service is currently
+                            unavailable. If you close jobs now, candidates will
+                            not be automatically shortlisted. Please contact
+                            your system administrator to resolve this issue.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(error || aiServiceError || updateError || shortlistError) && (
+              <Alert
+                message={
+                  error?.data?.message ||
+                  aiServiceError?.data?.message ||
+                  updateError?.data?.message ||
+                  shortlistError?.data?.message
+                }
+              />
+            )}
 
             {updateSuccess && updateData?.data?.message && (
-              <Alert
-                message={updateData?.data?.message}
-                isSuccess={updateSuccess}
-              />
+              <Alert message={updateData?.data?.message} isSuccess={true} />
+            )}
+
+            {shortlistSuccess && shortlistData?.data?.message && (
+              <Alert message={shortlistData?.data?.message} isSuccess={true} />
             )}
 
             <Table
@@ -242,6 +396,7 @@ export default function JobsScreen() {
         )}
       </section>
 
+      {/* Edit Modal */}
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -252,6 +407,9 @@ export default function JobsScreen() {
         ) : (
           <div className="space-y-4">
             {updateError && <Alert message={updateError.data.message} />}
+            {!aiServiceStatus?.data?.model_trained && !isClosed && (
+              <Alert message="Warning: The AI service is not ready. Closing a job now will not automatically shortlist candidates." />
+            )}
             <InputField
               id="title"
               type="text"
@@ -327,7 +485,7 @@ export default function JobsScreen() {
             />
             <div className="flex justify-end space-x-2 pt-4">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowEditModal(false)}
                 disabled={isUpdating}
               >
@@ -335,7 +493,7 @@ export default function JobsScreen() {
                 Cancel
               </button>
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                 onClick={saveJobChanges}
                 disabled={isUpdating}
               >
@@ -347,6 +505,7 @@ export default function JobsScreen() {
         )}
       </Modal>
 
+      {/* Details Modal */}
       <Modal
         isOpen={showDetailsModal}
         onClose={() => setShowDetailsModal(false)}
@@ -354,9 +513,9 @@ export default function JobsScreen() {
       >
         {selectedJob && (
           <div className="space-y-4 text-left">
-            <div className="border-b border-light-border dark:border-dark-border pb-4">
+            <div className="border-b border-light-border pb-4 dark:border-dark-border">
               <div className="flex items-start">
-                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                   <FaBriefcase
                     className="text-light-primary dark:text-dark-primary"
                     size={20}
@@ -366,19 +525,19 @@ export default function JobsScreen() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Title
                   </p>
-                  <p className="text-lg font-medium text-light-text dark:text-dark-text break-words">
+                  <p className="break-words text-lg font-medium text-light-text dark:text-dark-text">
                     {selectedJob.title}
                   </p>
-                  <p className="text-sm text-light-secondary dark:text-dark-secondary mt-1">
+                  <p className="mt-1 text-sm text-light-secondary dark:text-dark-secondary">
                     {selectedJob.company}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-b border-light-border dark:border-dark-border pb-4">
+            <div className="border-b border-light-border pb-4 dark:border-dark-border">
               <div className="flex items-start">
-                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                   <FaMapMarkerAlt
                     className="text-light-primary dark:text-dark-primary"
                     size={20}
@@ -388,16 +547,16 @@ export default function JobsScreen() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Location
                   </p>
-                  <p className="text-lg font-medium text-light-text dark:text-dark-text break-words">
+                  <p className="break-words text-lg font-medium text-light-text dark:text-dark-text">
                     {selectedJob.location}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-b border-light-border dark:border-dark-border pb-4">
+            <div className="border-b border-light-border pb-4 dark:border-dark-border">
               <div className="flex items-start">
-                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                   <FaDollarSign
                     className="text-light-primary dark:text-dark-primary"
                     size={20}
@@ -414,9 +573,9 @@ export default function JobsScreen() {
               </div>
             </div>
 
-            <div className="border-b border-light-border dark:border-dark-border pb-4">
+            <div className="border-b border-light-border pb-4 dark:border-dark-border">
               <div className="flex items-start">
-                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                   <FaClock
                     className="text-light-primary dark:text-dark-primary"
                     size={20}
@@ -433,9 +592,9 @@ export default function JobsScreen() {
               </div>
             </div>
 
-            <div className="border-b border-light-border dark:border-dark-border pb-4">
+            <div className="border-b border-light-border pb-4 dark:border-dark-border">
               <div className="flex items-start">
-                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                   <FaAlignLeft
                     className="text-light-primary dark:text-dark-primary"
                     size={20}
@@ -445,16 +604,16 @@ export default function JobsScreen() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Description
                   </p>
-                  <p className="text-lg font-medium text-light-text dark:text-dark-text whitespace-pre-wrap break-words">
+                  <p className="whitespace-pre-wrap break-words text-lg font-medium text-light-text dark:text-dark-text">
                     {selectedJob.description || 'No description provided.'}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-b border-light-border dark:border-dark-border pb-4">
+            <div className="border-b border-light-border pb-4 dark:border-dark-border">
               <div className="flex items-start">
-                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                   <FaClipboardList
                     className="text-light-primary dark:text-dark-primary"
                     size={20}
@@ -465,7 +624,7 @@ export default function JobsScreen() {
                     Requirements
                   </p>
                   {selectedJob.requirements ? (
-                    <div className="text-light-text dark:text-dark-text mt-1">
+                    <div className="mt-1 text-light-text dark:text-dark-text">
                       {renderBulletPoints(selectedJob.requirements)}
                     </div>
                   ) : (
@@ -477,9 +636,9 @@ export default function JobsScreen() {
               </div>
             </div>
 
-            <div className="border-b border-light-border dark:border-dark-border pb-4">
+            <div className="border-b border-light-border pb-4 dark:border-dark-border">
               <div className="flex items-start">
-                <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                   <FaDollarSign
                     className="text-light-primary dark:text-dark-primary"
                     size={20}
@@ -490,7 +649,7 @@ export default function JobsScreen() {
                     Benefits
                   </p>
                   {selectedJob.benefits ? (
-                    <div className="text-light-text dark:text-dark-text mt-1">
+                    <div className="mt-1 text-light-text dark:text-dark-text">
                       {renderBulletPoints(selectedJob.benefits)}
                     </div>
                   ) : (
@@ -504,7 +663,7 @@ export default function JobsScreen() {
 
             <div className="flex justify-end pt-2">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
+                className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 onClick={() => setShowDetailsModal(false)}
               >
                 <FaTimes />
