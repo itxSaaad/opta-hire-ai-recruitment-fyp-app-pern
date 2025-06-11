@@ -181,7 +181,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
   if (interviewerId) {
     const contracts = await Contract.findAll({
       where: {
-        interviewerId: req.user.id,
+        interviewerId: interviewerId,
       },
       attributes: ['jobId'],
     });
@@ -193,7 +193,9 @@ const getAllApplications = asyncHandler(async (req, res) => {
         [Op.in]: jobIds,
       };
     } else {
-      whereClause.id = -1;
+      whereClause.jobId = {
+        [Op.in]: [],
+      };
     }
   }
 
@@ -203,12 +205,12 @@ const getAllApplications = asyncHandler(async (req, res) => {
       {
         model: Job,
         as: 'job',
-        attributes: ['title', 'company', 'category', 'location'],
+        attributes: ['id', 'title', 'company', 'category', 'location'],
       },
       {
         model: User,
         as: 'candidate',
-        attributes: ['firstName', 'lastName', 'email'],
+        attributes: ['id', 'firstName', 'lastName', 'email'],
       },
     ],
     order: [['applicationDate', 'DESC']],

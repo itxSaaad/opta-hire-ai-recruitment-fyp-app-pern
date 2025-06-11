@@ -27,7 +27,7 @@ const createInterview = asyncHandler(async (req, res) => {
   const interviewerId = req.user.id;
   const { scheduledTime, candidateId, jobId, applicationId } = req.body;
 
-  if (!scheduledTime || !candidateId || !jobId || !applicationId || !roomId) {
+  if (!scheduledTime || !candidateId || !jobId || !applicationId) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error(
       'Please provide all required information to schedule the interview.'
@@ -44,14 +44,27 @@ const createInterview = asyncHandler(async (req, res) => {
     throw new Error('An interviewer cannot interview themselves.');
   }
 
-  const [interviewer, candidate, recruiter, job, application] =
-    await Promise.all([
-      User.findByPk(interviewerId),
-      User.findByPk(candidateId),
-      User.findByPk(job.recruiterId),
-      Job.findByPk(jobId),
-      Application.findByPk(applicationId),
-    ]);
+  const job = await Job.findByPk(jobId, {
+    include: [
+      {
+        model: User,
+        as: 'recruiter',
+        attributes: ['id', 'firstName', 'lastName', 'email'],
+      },
+    ],
+  });
+
+  if (!job) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('The specified job position was not found.');
+  }
+
+  const [interviewer, candidate, recruiter, application] = await Promise.all([
+    User.findByPk(interviewerId),
+    User.findByPk(candidateId),
+    User.findByPk(job.recruiterId),
+    Application.findByPk(applicationId),
+  ]);
 
   if (!interviewer || !candidate) {
     res.status(StatusCodes.NOT_FOUND);

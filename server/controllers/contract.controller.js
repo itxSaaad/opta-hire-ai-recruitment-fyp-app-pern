@@ -204,7 +204,7 @@ const createContract = asyncHandler(async (req, res) => {
  * @desc Get all contracts
  *
  * @route GET /api/contracts
- * @access Private 
+ * @access Private
  *
  * @param {object} req - Request object
  * @param {object} res - Response object
@@ -257,7 +257,13 @@ const getAllContracts = asyncHandler(async (req, res) => {
       {
         model: User,
         as: 'interviewer',
-        attributes: ['firstName', 'lastName', 'email'],
+        attributes: [
+          'firstName',
+          'lastName',
+          'email',
+          'payoutEnabled',
+          'stripeAccountId',
+        ],
       },
       {
         model: ChatRoom,
