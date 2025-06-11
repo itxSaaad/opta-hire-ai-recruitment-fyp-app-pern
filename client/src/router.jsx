@@ -18,9 +18,9 @@ import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
 import AdminInterviewerRatingsScreen from './pages/admin/InterviewerRatingsScreen.jsx';
 import AdminInterviewsScreen from './pages/admin/InterviewsScreen.jsx';
 import AdminJobsScreen from './pages/admin/JobsScreen.jsx';
+import AdminReportsScreen from './pages/admin/ReportsScreen.jsx';
 import AdminTransactionsScreen from './pages/admin/TransactionsScreen.jsx';
 import AdminUsersScreen from './pages/admin/UsersScreen.jsx';
-import AdminReportsScreen from './pages/admin/ReportsScreen.jsx';
 
 import LoginScreen from './pages/auth/LoginScreen.jsx';
 import RegisterScreen from './pages/auth/RegisterScreen.jsx';
@@ -46,6 +46,8 @@ import InterviewerDashboardScreen from './pages/interviewer/DashboardScreen.jsx'
 import InterviewerInterviewsScreen from './pages/interviewer/InterviewsScreen.jsx';
 import InterviewerJobsScreen from './pages/interviewer/JobsScreen.jsx';
 import InterviewerRatingsScreen from './pages/interviewer/RatingsScreen.jsx';
+import InterviewerStripeConnectRefreshScreen from './pages/interviewer/StripeConnectRefreshScreen.jsx';
+import InterviewerStripeConnectReturnScreen from './pages/interviewer/StripeConnectReturnScreen.jsx';
 
 import RecruiterApplicationsScreen from './pages/recruiter/ApplicationsScreen.jsx';
 import RecruiterChatsScreen from './pages/recruiter/ChatsScreen.jsx';
@@ -177,6 +179,14 @@ const router = createBrowserRouter(
         <Route path="interviews" element={<InterviewerInterviewsScreen />} />
         <Route path="chats" element={<InterviewerChatScreen />} />
         <Route path="ratings" element={<InterviewerRatingsScreen />} />
+        <Route
+          path="stripe/refresh"
+          element={<InterviewerStripeConnectRefreshScreen />}
+        />
+        <Route
+          path="stripe/return"
+          element={<InterviewerStripeConnectReturnScreen />}
+        />
       </Route>
 
       <Route element={<MainLayout />}>
