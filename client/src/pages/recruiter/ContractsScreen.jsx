@@ -1,21 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { FaCheckCircle, FaCreditCard } from 'react-icons/fa';
+import { FaCheckCircle, FaCreditCard, FaEye } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
+import Modal from '../../components/Modal';
+import StripePaymentForm from '../../components/payments/StripePaymentForm';
 import Table from '../../components/ui/dashboardLayout/Table';
 
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
+import { useGetAllContractsQuery } from '../../features/contract/contractApi';
 import {
-  useGetAllContractsQuery,
-  useUpdateContractByIdMutation,
-} from '../../features/contract/contractApi';
+  useCompleteContractAndPayoutMutation,
+  useGetContractPaymentStatusQuery,
+} from '../../features/payment/paymentApi';
 
 export default function ContractsScreen() {
+  const [selectedContract, setSelectedContract] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+
   const location = useLocation();
   const user = useSelector((state) => state.auth.userInfo);
 
@@ -29,14 +36,22 @@ export default function ContractsScreen() {
   });
 
   const [
-    updateContract,
+    completeContract,
     {
-      isLoading: isUpdating,
-      isSuccess,
-      data: updatedContract,
-      error: updateError,
+      isLoading: isCompleting,
+      isSuccess: isCompleteSuccess,
+      error: completeError,
+      data: completeData,
     },
-  ] = useUpdateContractByIdMutation();
+  ] = useCompleteContractAndPayoutMutation();
+
+  const {
+    data: paymentStatusData,
+    isLoading: isLoadingPaymentStatus,
+    error: paymentStatusError,
+  } = useGetContractPaymentStatusQuery(selectedContract?.id, {
+    skip: !selectedContract || !showStatusModal,
+  });
 
   useEffect(() => {
     trackPageView(location.pathname);
@@ -44,28 +59,74 @@ export default function ContractsScreen() {
 
   // Handle contract completion
   const handleCompleteContract = async (contract) => {
-    await updateContract({
-      id: contract.id,
-      contractData: { status: 'completed' },
-    }).unwrap();
+    try {
+      await completeContract(contract.id).unwrap();
 
-    trackEvent(
-      'Contract Completed',
-      'Contract Action',
-      `Completed contract for ${contract.job.title}`
-    );
+      trackEvent(
+        'Contract Completed',
+        'Contract Action',
+        `Completed contract for ${contract.job.title}`
+      );
 
-    // Refetch data to show updated status
-    refetch();
+      // Refetch data to show updated status
+      refetch();
+    } catch (error) {
+      console.error('Failed to complete contract:', error);
+    }
   };
 
-  // Handle payment (placeholder for now)
+  // Handle payment modal
   const handlePayContract = (contract) => {
+    // Check if interviewer has Stripe Connect set up
+    if (
+      !contract.interviewer?.stripeAccountId ||
+      !contract.interviewer?.payoutEnabled
+    ) {
+      alert(
+        'The interviewer has not completed their Stripe Connect setup yet. Please ask them to set up their payment account first.'
+      );
+      return;
+    }
+
+    setSelectedContract(contract);
+    setShowPaymentModal(true);
+
     trackEvent(
-      'Payment Processed',
+      'Payment Modal Opened',
       'Contract Action',
-      `Processed payment for contract ${contract.job.title}`
+      `Opened payment for contract ${contract.job.title}`
     );
+  };
+
+  // Handle payment success
+  const handlePaymentSuccess = () => {
+    setShowPaymentModal(false);
+    setSelectedContract(null);
+    refetch(); // Refresh contracts to show updated status
+
+    trackEvent(
+      'Payment Completed',
+      'Contract Action',
+      `Payment completed for contract ${selectedContract?.job?.title}`
+    );
+  };
+
+  // Handle payment modal close
+  const handlePaymentCancel = () => {
+    setShowPaymentModal(false);
+    setSelectedContract(null);
+  };
+
+  // Handle view payment status
+  const handleViewPaymentStatus = (contract) => {
+    setSelectedContract(contract);
+    setShowStatusModal(true);
+  };
+
+  // Close status modal
+  const handleCloseStatusModal = () => {
+    setShowStatusModal(false);
+    setSelectedContract(null);
   };
 
   const columns = [
@@ -82,8 +143,25 @@ export default function ContractsScreen() {
       key: 'interviewer',
       label: 'Interviewer',
       render: (contract) => (
-        <span className="text-light-text/70 dark:text-dark-text/70">
-          {`${contract.interviewer.firstName} ${contract.interviewer.lastName}`}
+        <div>
+          <span className="text-light-text/70 dark:text-dark-text/70">
+            {`${contract.interviewer.firstName} ${contract.interviewer.lastName}`}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'payoutEnabled',
+      label: 'Payout Enabled',
+      render: (contract) => (
+        <span
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
+            contract.interviewer?.payoutEnabled
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
+          }`}
+        >
+          {contract.interviewer?.payoutEnabled ? 'Yes' : 'No'}
         </span>
       ),
     },
@@ -91,9 +169,14 @@ export default function ContractsScreen() {
       key: 'agreedPrice',
       label: 'Agreed Price',
       render: (contract) => (
-        <span className="text-light-text/70 dark:text-dark-text/70">
-          ${contract.agreedPrice}
-        </span>
+        <div>
+          <span className="text-light-text/70 dark:text-dark-text/70">
+            ${contract.agreedPrice}
+          </span>
+          <div className="text-xs text-gray-500">
+            Net: ${(contract.agreedPrice * 0.975).toFixed(2)}
+          </div>
+        </div>
       ),
     },
     {
@@ -159,15 +242,44 @@ export default function ContractsScreen() {
 
   const actions = [
     {
+      onClick: handlePayContract,
+      render: (contract) => (
+        <button
+          className={`flex items-center gap-1 rounded px-3 py-1 ${
+            contract.paymentStatus === 'paid' ||
+            contract.status === 'cancelled' ||
+            !contract.interviewer?.payoutEnabled
+              ? 'cursor-not-allowed bg-gray-400 text-white'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+          disabled={
+            contract.paymentStatus === 'paid' ||
+            contract.status === 'cancelled' ||
+            !contract.interviewer?.payoutEnabled
+          }
+          title={
+            !contract.interviewer?.payoutEnabled
+              ? 'Interviewer needs to complete Stripe Connect setup'
+              : ''
+          }
+        >
+          <FaCreditCard />
+          Pay for Contract
+        </button>
+      ),
+    },
+    {
       onClick: handleCompleteContract,
       render: (contract) => (
         <button
           className={`flex items-center gap-1 rounded px-3 py-1 ${
-            contract.status !== 'active'
+            contract.status !== 'active' || contract.paymentStatus !== 'paid'
               ? 'cursor-not-allowed bg-gray-400 text-white'
               : 'bg-green-500 text-white hover:bg-green-600'
           }`}
-          disabled={contract.status !== 'active'}
+          disabled={
+            contract.status !== 'active' || contract.paymentStatus !== 'paid'
+          }
         >
           <FaCheckCircle />
           Mark as Completed
@@ -175,24 +287,11 @@ export default function ContractsScreen() {
       ),
     },
     {
-      onClick: handlePayContract,
-      render: (contract) => (
-        <button
-          className={`flex items-center gap-1 rounded px-3 py-1 ${
-            contract.paymentStatus === 'paid' ||
-            contract.status === 'pending' ||
-            contract.status === 'cancelled'
-              ? 'cursor-not-allowed bg-gray-400 text-white'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
-          disabled={
-            contract.paymentStatus === 'paid' ||
-            contract.status === 'pending' ||
-            contract.status === 'cancelled'
-          }
-        >
-          <FaCreditCard />
-          Pay for Contract
+      onClick: handleViewPaymentStatus,
+      render: () => (
+        <button className="flex items-center gap-1 rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600">
+          <FaEye />
+          View Details
         </button>
       ),
     },
@@ -213,7 +312,7 @@ export default function ContractsScreen() {
       </Helmet>
 
       <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
-        {isLoading || isUpdating ? (
+        {isLoading || isCompleting ? (
           <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
@@ -230,21 +329,14 @@ export default function ContractsScreen() {
               and transaction history in one place.
             </p>
 
-            {error ||
-              (updateError && (
-                <Alert
-                  message={error.data?.message || updateError.data?.message}
-                />
-              ))}
-
-            {isSuccess && updatedContract && (
+            {(error || completeError) && (
               <Alert
-                isSuccess={isSuccess}
-                message={
-                  updateContract.data?.message ||
-                  'Contract updated successfully!'
-                }
+                message={error?.data?.message || completeError?.data?.message}
               />
+            )}
+
+            {isCompleteSuccess && (
+              <Alert isSuccess={true} message={completeData?.message} />
             )}
 
             <Table
@@ -255,6 +347,127 @@ export default function ContractsScreen() {
           </div>
         )}
       </section>
+
+      {/* Payment Modal */}
+      <Modal
+        isOpen={showPaymentModal}
+        onClose={handlePaymentCancel}
+        title="Pay for Contract"
+      >
+        {selectedContract && (
+          <StripePaymentForm
+            contract={selectedContract}
+            onSuccess={handlePaymentSuccess}
+            onCancel={handlePaymentCancel}
+          />
+        )}
+      </Modal>
+
+      {/* Payment Status Modal */}
+      <Modal
+        isOpen={showStatusModal}
+        onClose={handleCloseStatusModal}
+        title="Contract Payment Details"
+      >
+        {selectedContract && (
+          <div className="max-w-2xl">
+            {isLoadingPaymentStatus ? (
+              <div className="flex items-center justify-center p-8">
+                <Loader />
+              </div>
+            ) : paymentStatusError ? (
+              <Alert
+                message={
+                  paymentStatusError.data?.message ||
+                  'Failed to load payment status'
+                }
+              />
+            ) : paymentStatusData ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-light-text dark:text-dark-text">
+                      Job Title
+                    </label>
+                    <p className="mt-1 text-sm text-light-text dark:text-dark-text">
+                      {selectedContract.job?.title}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light-text dark:text-dark-text">
+                      Agreed Price
+                    </label>
+                    <p className="mt-1 text-sm text-light-text dark:text-dark-text">
+                      ${paymentStatusData.data.agreedPrice}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light-text dark:text-dark-text">
+                      Platform Fee
+                    </label>
+                    <p className="mt-1 text-sm text-light-text dark:text-dark-text">
+                      ${paymentStatusData.data.platformFee || 'Not calculated'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light-text dark:text-dark-text">
+                      Contract Status
+                    </label>
+                    <p className="mt-1 text-sm text-light-text dark:text-dark-text">
+                      {paymentStatusData.data.contractStatus}
+                    </p>
+                  </div>
+                </div>
+
+                {paymentStatusData.data.transactions?.length > 0 && (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-light-text dark:text-dark-text">
+                      Transaction History
+                    </label>
+                    <div className="space-y-2">
+                      {paymentStatusData.data.transactions.map(
+                        (transaction) => (
+                          <div
+                            key={transaction.id}
+                            className="flex items-center justify-between rounded-lg bg-light-surface p-3 dark:bg-dark-surface"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-light-text dark:text-dark-text">
+                                {transaction.transactionType}
+                              </p>
+                              <p className="text-xs text-light-text/70 dark:text-dark-text/70">
+                                {new Date(
+                                  transaction.transactionDate
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-light-text dark:text-dark-text">
+                                ${transaction.amount}
+                              </p>
+                              <p
+                                className={`text-xs ${
+                                  transaction.status === 'completed'
+                                    ? 'text-green-600'
+                                    : transaction.status === 'failed'
+                                      ? 'text-red-600'
+                                      : 'text-yellow-600'
+                                }`}
+                              >
+                                {transaction.status}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </Modal>
     </>
   );
 }
