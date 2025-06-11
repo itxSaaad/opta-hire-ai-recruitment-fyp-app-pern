@@ -20,7 +20,7 @@ const {
   errorHandler,
   notFoundHandler,
 } = require('./middlewares/error.middleware');
-// const rawBodyMiddleware = require('./middlewares/webhook.middleware');
+const rawBodyMiddleware = require('./middlewares/webhook.middleware');
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
@@ -105,6 +105,8 @@ if (NODE_ENV === 'production') {
   app.use(morgan('combined'));
 }
 
+app.use(rawBodyMiddleware);
+
 app.get('/', (req, res) => {
   res
     .status(StatusCodes.OK)
@@ -135,7 +137,6 @@ app.use('/api/v1/transactions', transactionRoutes);
 app.use('/api/v1/interviews', interviewRoutes);
 app.use('/api/v1/interviewer-ratings', interviewerRating);
 app.use('/api/v1/payments', paymentRoutes);
-// app.use(rawBodyMiddleware);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/reports', reportRoutes);
 
