@@ -20,35 +20,35 @@ const router = Router();
 router.get(
   '/health/system',
   protectServer,
-  authorizeServerRoles('isAdmin'),
+  authorizeServerRoles('isAdmin', 'isRecruiter'),
   checkSystemHealth
 );
 
 router.get(
   '/health/ai-service',
   protectServer,
-  authorizeServerRoles('isAdmin'),
+  authorizeServerRoles('isAdmin', 'isRecruiter'),
   checkAiServiceStatus
 );
 
 router.get(
   '/model/status',
   protectServer,
-  authorizeServerRoles('isAdmin'),
+  authorizeServerRoles('isAdmin', 'isRecruiter'),
   getModelStatus
 );
 
 router.get(
   '/model/metrics',
   protectServer,
-  authorizeServerRoles('isAdmin'),
+  authorizeServerRoles('isAdmin', 'isRecruiter'),
   getModelMetrics
 );
 
 router.post(
   '/model/train',
   protectServer,
-  authorizeServerRoles('isAdmin'),
+  authorizeServerRoles('isAdmin', 'isRecruiter'),
   trainModel
 );
 
