@@ -8,6 +8,7 @@ import { contractApi } from './features/contract/contractApi';
 import { interviewApi } from './features/interview/interviewApi';
 import { interviewerRatingApi } from './features/interviewerRating/interviewerRatingApi';
 import { jobApi } from './features/job/jobApi';
+import { paymentApi } from './features/payment/paymentApi';
 import { reportApi } from './features/report/reportApi';
 import { resumeApi } from './features/resume/resumeApi';
 import { transactionApi } from './features/transaction/transactionApi';
@@ -25,6 +26,7 @@ const store = configureStore({
     [interviewApi.reducerPath]: interviewApi.reducer,
     [interviewerRatingApi.reducerPath]: interviewerRatingApi.reducer,
     [jobApi.reducerPath]: jobApi.reducer,
+    [paymentApi.reducerPath]: paymentApi.reducer,
     [reportApi.reducerPath]: reportApi.reducer,
     [resumeApi.reducerPath]: resumeApi.reducer,
     [transactionApi.reducerPath]: transactionApi.reducer,
@@ -41,6 +43,7 @@ const store = configureStore({
       interviewApi.middleware,
       interviewerRatingApi.middleware,
       jobApi.middleware,
+      paymentApi.middleware,
       reportApi.middleware,
       resumeApi.middleware,
       transactionApi.middleware,
@@ -57,6 +60,7 @@ const store = configureStore({
           store.dispatch(interviewApi.util.resetApiState());
           store.dispatch(interviewerRatingApi.util.resetApiState());
           store.dispatch(jobApi.util.resetApiState());
+          store.dispatch(paymentApi.util.resetApiState());
           store.dispatch(reportApi.util.resetApiState());
           store.dispatch(resumeApi.util.resetApiState());
           store.dispatch(transactionApi.util.resetApiState());
