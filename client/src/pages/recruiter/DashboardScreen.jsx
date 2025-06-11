@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
@@ -41,14 +42,45 @@ import { useGetAllJobsQuery } from '../../features/job/jobApi';
 import { useGetAllContractsQuery } from '../../features/contract/contractApi';
 
 const COLORS = [
-  '#0EB0E3',
-  '#3946AE',
-  '#FF8042',
-  '#00C49F',
-  '#FFBB28',
-  '#FF6B6B',
-  '#8884d8',
+  '#0EB0E3', // light-primary/dark-primary
+  '#3946AE', // light-secondary/dark-secondary
+  '#FF8042', // orange accent
+  '#00C49F', // teal accent
+  '#FFBB28', // amber accent
+  '#FF6B6B', // coral accent
+  '#8884d8', // purple accent
 ];
+
+// Custom tooltip component for consistency
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-md border border-light-border bg-light-surface p-3 shadow-lg dark:border-dark-border dark:bg-dark-surface">
+        {label && (
+          <p className="font-medium text-light-text dark:text-dark-text">
+            {label}
+          </p>
+        )}
+        {payload.map((entry, index) => (
+          <p
+            key={index}
+            style={{ color: entry.color }}
+            className="text-sm text-light-text dark:text-dark-text"
+          >
+            {entry.name}: {entry.value.toLocaleString()}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+CustomTooltip.propTypes = {
+  active: PropTypes.bool,
+  payload: PropTypes.array,
+  label: PropTypes.string,
+};
 
 export default function DashboardScreen() {
   const [applicationsByStatus, setApplicationsByStatus] = useState([]);
@@ -58,17 +90,17 @@ export default function DashboardScreen() {
   const [applicationTrend, setApplicationTrend] = useState([]);
   const [contractStatus, setContractStatus] = useState([]);
   const [contractsByMonth, setContractsByMonth] = useState([]);
-  const [selectedSection, setSelectedSection] = useState('overview');
 
   const location = useLocation();
   const { userInfo } = useSelector((state) => state.auth);
+  const recruiterId = userInfo?.id;
 
   const {
     data: jobs,
     isLoading: loadingJobs,
     error: errorJobs,
   } = useGetAllJobsQuery({
-    recruiterId: userInfo.id,
+    recruiterId,
   });
 
   const {
@@ -76,7 +108,7 @@ export default function DashboardScreen() {
     isLoading: loadingApplications,
     error: errorApplications,
   } = useGetAllApplicationsQuery({
-    recruiterId: userInfo.id,
+    recruiterId,
   });
 
   const {
@@ -92,7 +124,7 @@ export default function DashboardScreen() {
     isLoading: loadingRatings,
     error: errorRatings,
   } = useGetAllRatingsQuery({
-    recruiterId: userInfo.id,
+    recruiterId,
   });
 
   const {
@@ -100,14 +132,12 @@ export default function DashboardScreen() {
     isLoading: loadingContracts,
     error: errorContracts,
   } = useGetAllContractsQuery({
-    recruiterId: userInfo.id,
+    recruiterId,
   });
 
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
-
-  // First, let's update the useEffects to properly handle API responses based on controller structure
 
   useEffect(() => {
     if (applications?.applications && jobs?.jobs) {
@@ -123,8 +153,10 @@ export default function DashboardScreen() {
 
       recruiterApplications.forEach((app) => {
         // Status chart data
-        if (!statusCounts[app.status]) statusCounts[app.status] = 0;
-        statusCounts[app.status]++;
+        const formattedStatus =
+          app.status.charAt(0).toUpperCase() + app.status.slice(1);
+        if (!statusCounts[formattedStatus]) statusCounts[formattedStatus] = 0;
+        statusCounts[formattedStatus]++;
 
         // Monthly trends data
         const date = new Date(app.applicationDate);
@@ -134,7 +166,7 @@ export default function DashboardScreen() {
       });
 
       const statusData = Object.keys(statusCounts).map((status) => ({
-        name: status.charAt(0).toUpperCase() + status.slice(1), // Capitalize status
+        name: status,
         value: statusCounts[status],
       }));
       setApplicationsByStatus(statusData);
@@ -204,14 +236,18 @@ export default function DashboardScreen() {
     if (jobs?.jobs) {
       const categories = {};
       jobs.jobs.forEach((job) => {
-        if (!categories[job.category]) categories[job.category] = 0;
-        categories[job.category]++;
+        const formattedCategory =
+          job.category.charAt(0).toUpperCase() + job.category.slice(1);
+        if (!categories[formattedCategory]) categories[formattedCategory] = 0;
+        categories[formattedCategory]++;
       });
 
-      const chartData = Object.keys(categories).map((category) => ({
-        name: category,
-        jobs: categories[category],
-      }));
+      const chartData = Object.keys(categories)
+        .map((category) => ({
+          name: category,
+          jobs: categories[category],
+        }))
+        .sort((a, b) => b.jobs - a.jobs); // Sort by count descending
       setJobCategories(chartData);
     }
   }, [jobs]);
@@ -264,8 +300,10 @@ export default function DashboardScreen() {
 
       recruiterContracts.forEach((contract) => {
         // Status chart data
-        if (!statusCounts[contract.status]) statusCounts[contract.status] = 0;
-        statusCounts[contract.status]++;
+        const formattedStatus =
+          contract.status.charAt(0).toUpperCase() + contract.status.slice(1);
+        if (!statusCounts[formattedStatus]) statusCounts[formattedStatus] = 0;
+        statusCounts[formattedStatus]++;
 
         // Monthly trends data
         const date = new Date(contract.startDate);
@@ -275,7 +313,7 @@ export default function DashboardScreen() {
       });
 
       const statusData = Object.keys(statusCounts).map((status) => ({
-        name: status.charAt(0).toUpperCase() + status.slice(1),
+        name: status,
         value: statusCounts[status],
       }));
       setContractStatus(statusData);
@@ -315,422 +353,9 @@ export default function DashboardScreen() {
       0
     ) / (ratings?.interviewerRatings?.length || 1);
 
-  const renderSection = () => {
-    switch (selectedSection) {
-      case 'jobs':
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Jobs by Category
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={jobCategories}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="name"
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="jobs" name="Number of Jobs" fill="#3946AE" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Jobs Status
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        {
-                          name: 'Active',
-                          value:
-                            jobs?.jobs?.filter((j) => !j.isClosed).length || 0,
-                        },
-                        {
-                          name: 'Closed',
-                          value:
-                            jobs?.jobs?.filter((j) => j.isClosed).length || 0,
-                        },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) =>
-                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      <Cell fill="#00C49F" />
-                      <Cell fill="#FF8042" />
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'applications':
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Applications by Status
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={applicationsByStatus}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      label={({ name, percent }) =>
-                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {applicationsByStatus.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value) => [`${value} applications`, 'Count']}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Application Trends
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={applicationTrend}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip
-                      formatter={(value) => [`${value} applications`, 'Count']}
-                    />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="applications"
-                      name="Applications"
-                      stroke="#0EB0E3"
-                      fill="#0EB0E3"
-                      fillOpacity={0.2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'interviews':
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Interviews by Month
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={interviewsByMonth}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="interviews"
-                      stroke="#3946AE"
-                      strokeWidth={2}
-                      activeDot={{ r: 8 }}
-                      name="Interviews"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Interview Status
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        {
-                          name: 'Scheduled',
-                          value:
-                            interviews?.interviews?.filter(
-                              (i) => i.status === 'scheduled'
-                            ).length || 0,
-                        },
-                        {
-                          name: 'Completed',
-                          value:
-                            interviews?.interviews?.filter(
-                              (i) => i.status === 'completed'
-                            ).length || 0,
-                        },
-                        {
-                          name: 'Cancelled',
-                          value:
-                            interviews?.interviews?.filter(
-                              (i) => i.status === 'cancelled'
-                            ).length || 0,
-                        },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      label={({ name, percent }) =>
-                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      <Cell fill="#FFBB28" />
-                      <Cell fill="#00C49F" />
-                      <Cell fill="#FF8042" />
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'contracts':
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Contract Status
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={contractStatus}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {contractStatus.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Contracts by Month
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={contractsByMonth}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="contracts"
-                      stroke="#FF8042"
-                      strokeWidth={2}
-                      activeDot={{ r: 8 }}
-                      name="Contracts"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'ratings':
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Interviewer Ratings
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={interviewerRatings}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    layout="vertical"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="name" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar
-                      dataKey="value"
-                      name="Number of Ratings"
-                      fill="#FFBB28"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Average Interviewer Rating
-              </h3>
-              <div className="h-80 flex flex-col items-center justify-center">
-                <div className="text-6xl font-bold text-amber-500">
-                  {averageRating.toFixed(1)}
-                </div>
-                <div className="flex mt-4 text-amber-500">
-                  {[...Array(5)].map((_, i) => (
-                    <FaStar
-                      key={i}
-                      className={
-                        i < Math.round(averageRating)
-                          ? 'text-amber-500 text-2xl'
-                          : 'text-gray-300 text-2xl'
-                      }
-                    />
-                  ))}
-                </div>
-                <p className="mt-2 text-light-text/70 dark:text-dark-text/70">
-                  From {ratings?.interviewerRatings?.length || 0} ratings
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Applications by Status
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={applicationsByStatus}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={true}
-                      label={({ name, percent }) =>
-                        `${name.charAt(0).toUpperCase() + name.slice(1)}: ${(percent * 100).toFixed(0)}%`
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {applicationsByStatus.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-md transition-all hover:shadow-lg">
-              <h3 className="text-xl font-bold mb-4 text-light-text dark:text-dark-text">
-                Jobs by Category
-              </h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={jobCategories}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="name"
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="jobs" name="Number of Jobs" fill="#3946AE" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        );
-    }
-  };
+  const acceptedApplicationsCount =
+    applications?.applications?.filter((app) => app.status === 'accepted')
+      .length || 0;
 
   return (
     <>
@@ -746,20 +371,20 @@ export default function DashboardScreen() {
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {overallLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="w-full max-w-7xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
+          <div className="mx-auto w-full max-w-7xl">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Welcome to the{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Recruiter Dashboard
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
               Manage your recruitment process efficiently with our powerful
               tools and insights.
             </p>
@@ -780,22 +405,23 @@ export default function DashboardScreen() {
               />
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-              <div className="bg-light-surface dark:bg-dark-surface p-5 rounded-xl shadow-md transition-all hover:shadow-lg animate-slideUp">
-                <div className="flex justify-between items-center">
+            {/* Key Metrics Cards */}
+            <div className="mb-12 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              <div className="animate-slideUp rounded-xl bg-light-surface p-5 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-light-text/70 dark:text-dark-text/70 text-sm font-medium">
+                    <p className="text-sm font-medium text-light-text/70 dark:text-dark-text/70">
                       Active Jobs
                     </p>
                     <h3 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {jobs?.jobs?.filter((j) => !j.isClosed).length || 0}
                     </h3>
                   </div>
-                  <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
-                    <FaBriefcase className="text-green-500 dark:text-green-400 text-xl" />
+                  <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900/30">
+                    <FaBriefcase className="text-xl text-green-500 dark:text-green-400" />
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-light-border dark:border-dark-border">
+                <div className="mt-4 border-t border-light-border pt-4 dark:border-dark-border">
                   <p className="text-xs text-light-text/60 dark:text-dark-text/60">
                     <span className="font-medium text-red-500">
                       {jobs?.jobs?.filter((j) => j.isClosed).length || 0}
@@ -806,28 +432,26 @@ export default function DashboardScreen() {
               </div>
 
               <div
-                className="bg-light-surface dark:bg-dark-surface p-5 rounded-xl shadow-md transition-all hover:shadow-lg animate-slideUp"
+                className="animate-slideUp rounded-xl bg-light-surface p-5 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface"
                 style={{ animationDelay: '0.1s' }}
               >
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-light-text/70 dark:text-dark-text/70 text-sm font-medium">
+                    <p className="text-sm font-medium text-light-text/70 dark:text-dark-text/70">
                       Applications
                     </p>
                     <h3 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {applications?.applications?.length || 0}
                     </h3>
                   </div>
-                  <div className="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg">
-                    <FaEnvelopeOpenText className="text-yellow-500 dark:text-yellow-400 text-xl" />
+                  <div className="rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900/30">
+                    <FaEnvelopeOpenText className="text-xl text-yellow-500 dark:text-yellow-400" />
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-light-border dark:border-dark-border">
+                <div className="mt-4 border-t border-light-border pt-4 dark:border-dark-border">
                   <p className="text-xs text-light-text/60 dark:text-dark-text/60">
                     <span className="font-medium text-green-500">
-                      {applications?.applications?.filter(
-                        (a) => a.status === 'accepted'
-                      ).length || 0}
+                      {acceptedApplicationsCount}
                     </span>{' '}
                     accepted applications
                   </p>
@@ -835,23 +459,23 @@ export default function DashboardScreen() {
               </div>
 
               <div
-                className="bg-light-surface dark:bg-dark-surface p-5 rounded-xl shadow-md transition-all hover:shadow-lg animate-slideUp"
+                className="animate-slideUp rounded-xl bg-light-surface p-5 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface"
                 style={{ animationDelay: '0.2s' }}
               >
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-light-text/70 dark:text-dark-text/70 text-sm font-medium">
+                    <p className="text-sm font-medium text-light-text/70 dark:text-dark-text/70">
                       Interviews
                     </p>
                     <h3 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {interviews?.interviews?.length || 0}
                     </h3>
                   </div>
-                  <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
-                    <FaCalendarAlt className="text-purple-500 dark:text-purple-400 text-xl" />
+                  <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900/30">
+                    <FaCalendarAlt className="text-xl text-purple-500 dark:text-purple-400" />
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-light-border dark:border-dark-border">
+                <div className="mt-4 border-t border-light-border pt-4 dark:border-dark-border">
                   <p className="text-xs text-light-text/60 dark:text-dark-text/60">
                     <span className="font-medium text-blue-500">
                       {interviews?.interviews?.filter(
@@ -864,23 +488,23 @@ export default function DashboardScreen() {
               </div>
 
               <div
-                className="bg-light-surface dark:bg-dark-surface p-5 rounded-xl shadow-md transition-all hover:shadow-lg animate-slideUp"
+                className="animate-slideUp rounded-xl bg-light-surface p-5 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface"
                 style={{ animationDelay: '0.3s' }}
               >
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-light-text/70 dark:text-dark-text/70 text-sm font-medium">
+                    <p className="text-sm font-medium text-light-text/70 dark:text-dark-text/70">
                       Contracts
                     </p>
                     <h3 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {contracts?.contracts?.length || 0}
                     </h3>
                   </div>
-                  <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg">
-                    <FaFileContract className="text-red-500 dark:text-red-400 text-xl" />
+                  <div className="rounded-lg bg-red-100 p-3 dark:bg-red-900/30">
+                    <FaFileContract className="text-xl text-red-500 dark:text-red-400" />
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-light-border dark:border-dark-border">
+                <div className="mt-4 border-t border-light-border pt-4 dark:border-dark-border">
                   <p className="text-xs text-light-text/60 dark:text-dark-text/60">
                     <span className="font-medium text-green-500">
                       {contracts?.contracts?.filter(
@@ -893,31 +517,31 @@ export default function DashboardScreen() {
               </div>
 
               <div
-                className="bg-light-surface dark:bg-dark-surface p-5 rounded-xl shadow-md transition-all hover:shadow-lg animate-slideUp"
+                className="animate-slideUp rounded-xl bg-light-surface p-5 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface"
                 style={{ animationDelay: '0.4s' }}
               >
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-light-text/70 dark:text-dark-text/70 text-sm font-medium">
+                    <p className="text-sm font-medium text-light-text/70 dark:text-dark-text/70">
                       Avg. Rating
                     </p>
                     <h3 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {averageRating.toFixed(1)}/5.0
                     </h3>
                   </div>
-                  <div className="bg-amber-100 dark:bg-amber-900/30 p-3 rounded-lg">
-                    <FaStar className="text-amber-500 dark:text-amber-400 text-xl" />
+                  <div className="rounded-lg bg-amber-100 p-3 dark:bg-amber-900/30">
+                    <FaStar className="text-xl text-amber-500 dark:text-amber-400" />
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-light-border dark:border-dark-border">
+                <div className="mt-4 border-t border-light-border pt-4 dark:border-dark-border">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <FaStar
                         key={i}
                         className={
                           i < Math.round(averageRating)
-                            ? 'text-amber-500 text-xs'
-                            : 'text-gray-300 text-xs'
+                            ? 'text-xs text-amber-500'
+                            : 'text-xs text-gray-300'
                         }
                       />
                     ))}
@@ -926,72 +550,419 @@ export default function DashboardScreen() {
               </div>
             </div>
 
-            <div className="mb-8">
-              <div className="flex overflow-x-auto pb-2 scrollbar-hide">
-                <button
-                  onClick={() => setSelectedSection('overview')}
-                  className={`px-4 py-2 rounded-lg mr-2 whitespace-nowrap ${
-                    selectedSection === 'overview'
-                      ? 'bg-light-primary text-white dark:bg-dark-primary'
-                      : 'bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text'
-                  }`}
-                >
-                  <FaChartLine className="inline mr-2" /> Overview
-                </button>
-                <button
-                  onClick={() => setSelectedSection('jobs')}
-                  className={`px-4 py-2 rounded-lg mr-2 whitespace-nowrap ${
-                    selectedSection === 'jobs'
-                      ? 'bg-light-primary text-white dark:bg-dark-primary'
-                      : 'bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text'
-                  }`}
-                >
-                  <FaBriefcase className="inline mr-2" /> Jobs
-                </button>
-                <button
-                  onClick={() => setSelectedSection('applications')}
-                  className={`px-4 py-2 rounded-lg mr-2 whitespace-nowrap ${
-                    selectedSection === 'applications'
-                      ? 'bg-light-primary text-white dark:bg-dark-primary'
-                      : 'bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text'
-                  }`}
-                >
-                  <FaEnvelopeOpenText className="inline mr-2" /> Applications
-                </button>
-                <button
-                  onClick={() => setSelectedSection('interviews')}
-                  className={`px-4 py-2 rounded-lg mr-2 whitespace-nowrap ${
-                    selectedSection === 'interviews'
-                      ? 'bg-light-primary text-white dark:bg-dark-primary'
-                      : 'bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text'
-                  }`}
-                >
-                  <FaCalendarAlt className="inline mr-2" /> Interviews
-                </button>
-                <button
-                  onClick={() => setSelectedSection('contracts')}
-                  className={`px-4 py-2 rounded-lg mr-2 whitespace-nowrap ${
-                    selectedSection === 'contracts'
-                      ? 'bg-light-primary text-white dark:bg-dark-primary'
-                      : 'bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text'
-                  }`}
-                >
-                  <FaHandshake className="inline mr-2" /> Contracts
-                </button>
-                <button
-                  onClick={() => setSelectedSection('ratings')}
-                  className={`px-4 py-2 rounded-lg mr-2 whitespace-nowrap ${
-                    selectedSection === 'ratings'
-                      ? 'bg-light-primary text-white dark:bg-dark-primary'
-                      : 'bg-light-surface dark:bg-dark-surface text-light-text dark:text-dark-text'
-                  }`}
-                >
-                  <FaStar className="inline mr-2" /> Ratings
-                </button>
+            {/* Updated Charts Layout */}
+            <div className="mb-8 grid grid-cols-1 gap-8">
+              {/* First row - Full width application trend */}
+              <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                  <FaChartLine className="mr-2 text-light-primary" />{' '}
+                  Application Trends
+                </h3>
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={applicationTrend}
+                      margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="colorApplications"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#0EB0E3"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#0EB0E3"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#eaeaea" />
+                      <XAxis
+                        dataKey="month"
+                        stroke="#888"
+                        tick={{ fill: '#888' }}
+                        tickLine={{ stroke: '#888' }}
+                      />
+                      <YAxis
+                        stroke="#888"
+                        tick={{ fill: '#888' }}
+                        tickLine={{ stroke: '#888' }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Area
+                        type="monotone"
+                        dataKey="applications"
+                        name="Applications"
+                        stroke="#0EB0E3"
+                        fill="url(#colorApplications)"
+                        activeDot={{ r: 8 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Second row - Two columns */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {/* Applications by Status */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaEnvelopeOpenText className="mr-2 text-yellow-500" />{' '}
+                    Applications by Status
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={applicationsByStatus}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          paddingAngle={2}
+                          dataKey="value"
+                          labelLine={true}
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(0)}%`
+                          }
+                        >
+                          {applicationsByStatus.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend
+                          layout="horizontal"
+                          verticalAlign="bottom"
+                          align="center"
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Jobs by Category */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaBriefcase className="mr-2 text-green-500" /> Top Job
+                    Categories
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={jobCategories.slice(0, 5)} // Show top 5 for clarity
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 50, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eaeaea" />
+                        <XAxis type="number" stroke="#888" />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          width={100}
+                          stroke="#888"
+                          tick={{ fill: '#888' }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar
+                          dataKey="jobs"
+                          name="Number of Jobs"
+                          fill="#3946AE"
+                          radius={[0, 4, 4, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Third row - Two columns */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {/* Interviews by Month */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaCalendarAlt className="mr-2 text-purple-500" /> Monthly
+                    Interview Volume
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={interviewsByMonth}
+                        margin={{ top: 5, right: 30, left: 0, bottom: 20 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eaeaea" />
+                        <XAxis
+                          dataKey="month"
+                          stroke="#888"
+                          tick={{ fill: '#888' }}
+                          tickLine={{ stroke: '#888' }}
+                        />
+                        <YAxis
+                          stroke="#888"
+                          tick={{ fill: '#888' }}
+                          tickLine={{ stroke: '#888' }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar
+                          dataKey="interviews"
+                          name="Interviews"
+                          fill="#8884d8"
+                          radius={[4, 4, 0, 0]}
+                        >
+                          {interviewsByMonth.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={`#8884d8${index % 2 ? 'cc' : 'ff'}`}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Interview Status */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaCalendarAlt className="mr-2 text-purple-500" /> Interview
+                    Status
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            {
+                              name: 'Scheduled',
+                              value:
+                                interviews?.interviews?.filter(
+                                  (i) => i.status === 'scheduled'
+                                ).length || 0,
+                            },
+                            {
+                              name: 'Completed',
+                              value:
+                                interviews?.interviews?.filter(
+                                  (i) => i.status === 'completed'
+                                ).length || 0,
+                            },
+                            {
+                              name: 'Cancelled',
+                              value:
+                                interviews?.interviews?.filter(
+                                  (i) => i.status === 'cancelled'
+                                ).length || 0,
+                            },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          paddingAngle={3}
+                          dataKey="value"
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(0)}%`
+                          }
+                        >
+                          <Cell fill="#FFBB28" />
+                          <Cell fill="#00C49F" />
+                          <Cell fill="#FF8042" />
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fourth row - Two columns */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {/* Contract Status */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaHandshake className="mr-2 text-blue-500" /> Contract
+                    Status Distribution
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={contractStatus}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          paddingAngle={3}
+                          dataKey="value"
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(0)}%`
+                          }
+                        >
+                          {contractStatus.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Contracts by Month */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaFileContract className="mr-2 text-red-500" /> Contracts
+                    by Month
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={contractsByMonth}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eaeaea" />
+                        <XAxis
+                          dataKey="month"
+                          stroke="#888"
+                          tick={{ fill: '#888' }}
+                          tickLine={{ stroke: '#888' }}
+                        />
+                        <YAxis
+                          stroke="#888"
+                          tick={{ fill: '#888' }}
+                          tickLine={{ stroke: '#888' }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="contracts"
+                          name="Contracts"
+                          stroke="#FF8042"
+                          strokeWidth={3}
+                          dot={{ r: 4 }}
+                          activeDot={{ r: 8 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fifth row - Two columns */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {/* Interviewer Rating Distribution */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaStar className="mr-2 text-amber-500" /> Interviewer
+                    Rating Distribution
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={interviewerRatings}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        layout="vertical"
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eaeaea" />
+                        <XAxis
+                          type="number"
+                          stroke="#888"
+                          tick={{ fill: '#888' }}
+                          tickLine={{ stroke: '#888' }}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          stroke="#888"
+                          tick={{ fill: '#888' }}
+                          tickLine={{ stroke: '#888' }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar
+                          dataKey="value"
+                          name="Number of Ratings"
+                          fill="#FFBB28"
+                          radius={[0, 4, 4, 0]}
+                        >
+                          {interviewerRatings.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={`rgba(255, 187, 40, ${0.5 + index * 0.1})`}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Job Status */}
+                <div className="rounded-xl bg-light-surface p-6 shadow-md transition-all hover:shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 flex items-center text-xl font-bold text-light-text dark:text-dark-text">
+                    <FaBriefcase className="mr-2 text-green-500" /> Job Status
+                    Distribution
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            {
+                              name: 'Active Jobs',
+                              value:
+                                jobs?.jobs?.filter((j) => !j.isClosed).length ||
+                                0,
+                            },
+                            {
+                              name: 'Closed Jobs',
+                              value:
+                                jobs?.jobs?.filter((j) => j.isClosed).length ||
+                                0,
+                            },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={70}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          paddingAngle={5}
+                          dataKey="value"
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(0)}%`
+                          }
+                        >
+                          <Cell fill="#00C49F" />
+                          <Cell fill="#FF8042" />
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {renderSection()}
           </div>
         )}
       </section>

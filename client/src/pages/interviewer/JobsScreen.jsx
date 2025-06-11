@@ -15,6 +15,7 @@ import Loader from '../../components/Loader';
 
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
+import { useCreateChatRoomMutation } from '../../features/chat/chatApi';
 import { useGetAllJobsQuery } from '../../features/job/jobApi';
 
 export default function JobsScreen() {
@@ -29,7 +30,16 @@ export default function JobsScreen() {
 
   const user = useSelector((state) => state.auth.userInfo);
 
-  const { data: jobsData, isLoading, error } = useGetAllJobsQuery();
+  const {
+    data: jobsData,
+    isLoading: isLoadingJobs,
+    error,
+  } = useGetAllJobsQuery();
+
+  const [
+    createChatRoom,
+    { isLoading: isCreatingChatRoom, error: chatRoomCreationError },
+  ] = useCreateChatRoomMutation();
 
   const handleJobClick = (job) => {
     setSelectedJob(job);
@@ -39,6 +49,27 @@ export default function JobsScreen() {
       'User Action',
       `User selected job: ${job.title}`
     );
+  };
+
+  const handleCreateChatRoom = async (job) => {
+    try {
+      await createChatRoom({
+        interviewerId: user.id,
+        jobId: job.id,
+      })
+        .unwrap()
+        .then(() => {
+          navigate('/interviewer/chats');
+        });
+
+      trackEvent(
+        'Chat Room Created',
+        'User Action',
+        `User created chat room for job: ${job.title}`
+      );
+    } catch (error) {
+      console.error('Error creating chat room:', error);
+    }
   };
 
   useEffect(() => {
@@ -161,7 +192,7 @@ export default function JobsScreen() {
         <button
           className="mt-6 w-full transform rounded-lg bg-light-primary py-3 font-medium text-white transition-all duration-300 hover:-translate-y-1 hover:bg-light-secondary hover:shadow-lg dark:bg-dark-primary dark:hover:bg-dark-secondary"
           onClick={() => {
-            navigate(`/candidate/apply/${job.id}`);
+            handleCreateChatRoom(job);
             trackEvent(
               'Job Application',
               'User Action',
@@ -174,6 +205,8 @@ export default function JobsScreen() {
       )}
     </div>
   );
+
+  const isLoading = isLoadingJobs || isCreatingChatRoom;
 
   return (
     <>
@@ -219,8 +252,14 @@ export default function JobsScreen() {
             </div>
           </div>
         </div>
-
-        {error && <Alert message={error?.data?.message} />}
+        {error ||
+          (chatRoomCreationError && (
+            <Alert
+              message={
+                error?.data?.message || chatRoomCreationError?.data?.message
+              }
+            />
+          ))}
 
         {isLoading ? (
           <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
@@ -339,9 +378,14 @@ export default function JobsScreen() {
                     {user && (
                       <button
                         className="mt-6 w-full transform rounded-lg bg-light-primary py-3 font-medium text-white transition-all duration-300 hover:-translate-y-1 hover:bg-light-secondary hover:shadow-lg dark:bg-dark-primary dark:hover:bg-dark-secondary"
-                        onClick={() =>
-                          navigate(`/candidate/apply/${selectedJob.id}`)
-                        }
+                        onClick={() => {
+                          handleCreateChatRoom(selectedJob);
+                          trackEvent(
+                            'Job Application',
+                            'User Action',
+                            `User applied for job: ${selectedJob.title}`
+                          );
+                        }}
                       >
                         Apply Now
                       </button>
