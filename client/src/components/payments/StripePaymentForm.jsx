@@ -1,4 +1,3 @@
-// components/payments/StripePaymentForm.jsx
 import {
   CardElement,
   Elements,
@@ -8,7 +7,17 @@ import {
 import { loadStripe } from '@stripe/stripe-js';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import { FaCheckCircle, FaCreditCard, FaTimes } from 'react-icons/fa';
+import {
+  FaBriefcase,
+  FaCheckCircle,
+  FaCreditCard,
+  FaDollarSign,
+  FaMoneyBillWave,
+  FaPercent,
+  FaShieldAlt,
+  FaTimes,
+  FaUser,
+} from 'react-icons/fa';
 
 import Alert from '../Alert';
 import Loader from '../Loader';
@@ -201,87 +210,210 @@ function PaymentForm({ contract, onSuccess, onCancel }) {
 
   if (paymentSuccess) {
     return (
-      <div className="animate-fadeIn py-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-          <FaCheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+      <div className="space-y-4 text-left">
+        <div className="py-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+            <FaCheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+          </div>
+          <h3 className="mb-2 text-lg font-semibold text-green-600 dark:text-green-400">
+            Payment Successful!
+          </h3>
+          <p className="text-light-text/70 dark:text-dark-text/70">
+            Your payment has been processed and the contract is now active.
+          </p>
         </div>
-        <h3 className="mb-2 text-lg font-semibold text-green-600 dark:text-green-400">
-          Payment Successful!
-        </h3>
-        <p className="text-light-text/70 dark:text-dark-text/70">
-          Your payment has been processed and the contract is now active.
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="animate-fadeIn space-y-6">
-      <div className="text-center">
-        <h3 className="mb-2 text-lg font-semibold text-light-text dark:text-dark-text">
-          Pay for Contract
-        </h3>
-        <p className="mb-4 text-light-text/70 dark:text-dark-text/70">
-          Job: {contract.job?.title}
-        </p>
-        <div className="mb-4 rounded-lg bg-light-surface p-4 dark:bg-dark-surface">
-          <p className="text-xl font-bold text-light-text dark:text-dark-text">
-            Amount: ${contract.agreedPrice}
-          </p>
-          <p className="text-sm text-light-text/60 dark:text-dark-text/60">
-            Platform fee (2.5%): ${(contract.agreedPrice * 0.025).toFixed(2)}
-          </p>
-          <p className="text-sm text-light-text/60 dark:text-dark-text/60">
-            Interviewer receives: ${(contract.agreedPrice * 0.975).toFixed(2)}
-          </p>
+    <div className="space-y-4 text-left">
+      {/* Job Title */}
+      <div className="break-words border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaBriefcase
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Job Title
+            </p>
+            <p className="text-lg font-medium text-light-text dark:text-dark-text">
+              {contract.job?.title || 'Not specified'}
+            </p>
+          </div>
         </div>
       </div>
 
-      {paymentError && <Alert message={paymentError} />}
+      {/* Interviewer Information */}
+      <div className="break-words border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaUser
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Interviewer
+            </p>
+            <p className="text-lg font-medium text-light-text dark:text-dark-text">
+              {contract.interviewer?.firstName} {contract.interviewer?.lastName}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {contract.interviewer?.email}
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="animate-slideUp space-y-4">
-        <div className="rounded-lg border border-light-border p-4 dark:border-dark-border">
-          <label className="mb-2 block text-sm font-medium text-light-text dark:text-dark-text">
-            Card Information
-          </label>
-          <CardElement
-            options={
-              isDarkMode ? CARD_ELEMENT_OPTIONS_DARK : CARD_ELEMENT_OPTIONS
-            }
-          />
+      {/* Contract Value */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaDollarSign
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Contract Value
+            </p>
+            <p className="text-lg font-medium text-light-text dark:text-dark-text">
+              ${contract.agreedPrice}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Fee */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaPercent
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Platform Fee (2.5%)
+            </p>
+            <p className="text-lg font-medium text-blue-600 dark:text-blue-400">
+              ${(contract.agreedPrice * 0.025).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Interviewer Earnings */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaMoneyBillWave
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Interviewer Receives
+            </p>
+            <p className="text-lg font-medium text-green-600 dark:text-green-400">
+              ${(contract.agreedPrice * 0.975).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Payment Error */}
+      {paymentError && (
+        <div className="border-b border-light-border pb-4 dark:border-dark-border">
+          <Alert message={paymentError} />
+        </div>
+      )}
+
+      {/* Payment Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Card Information */}
+        <div className="border-b border-light-border pb-4 dark:border-dark-border">
+          <div className="flex items-start">
+            <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+              <FaCreditCard
+                className="text-light-primary dark:text-dark-primary"
+                size={20}
+              />
+            </div>
+            <div className="w-full">
+              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                Card Information
+              </p>
+              <div className="rounded-lg border border-light-border p-4 dark:border-dark-border">
+                <CardElement
+                  options={
+                    isDarkMode
+                      ? CARD_ELEMENT_OPTIONS_DARK
+                      : CARD_ELEMENT_OPTIONS
+                  }
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-3">
+        {/* Security Notice */}
+        <div className="border-b border-light-border pb-4 dark:border-dark-border">
+          <div className="flex items-start">
+            <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+              <FaShieldAlt
+                className="text-light-primary dark:text-dark-primary"
+                size={20}
+              />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Security Information
+              </p>
+              <p className="text-sm text-light-text/60 dark:text-dark-text/60">
+                Your payment is secured by Stripe. Funds will be held in escrow
+                until contract completion.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+          >
+            <FaTimes />
+            Cancel
+          </button>
+
           {isProcessing || isCreatingPayment || isConfirmingPayment ? (
-            <div className="flex flex-1 items-center justify-center p-2">
+            <div className="flex items-center justify-center px-4 py-2">
               <Loader />
             </div>
           ) : (
             <button
               type="submit"
               disabled={!stripe}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-light-primary px-4 py-2 font-medium text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:bg-gray-400 dark:bg-dark-primary"
+              className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 font-medium text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:bg-gray-400 dark:bg-dark-primary"
             >
               <FaCreditCard />
               Pay Now
             </button>
           )}
-
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex items-center gap-2 rounded-lg border border-light-border px-4 py-2 text-light-text transition-colors hover:bg-light-background dark:border-dark-border dark:text-dark-text dark:hover:bg-dark-background"
-          >
-            <FaTimes />
-            Cancel
-          </button>
         </div>
       </form>
-
-      <div className="rounded-lg bg-light-surface p-3 text-center text-xs text-light-text/60 dark:bg-dark-surface dark:text-dark-text/60">
-        Your payment is secured by Stripe. Funds will be held in escrow until
-        contract completion.
-      </div>
     </div>
   );
 }

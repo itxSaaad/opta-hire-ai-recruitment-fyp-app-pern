@@ -1,9 +1,18 @@
+import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import {
   FaCheckCircle,
+  FaClock,
+  FaCog,
   FaExclamationTriangle,
   FaExternalLinkAlt,
+  FaInfoCircle,
   FaLightbulb,
+  FaMoneyBillWave,
+  FaPercent,
+  FaShieldAlt,
+  FaTimes,
+  FaUser,
 } from 'react-icons/fa';
 
 import Alert from '../Alert';
@@ -18,7 +27,7 @@ import {
   useRefreshStripeConnectLinkMutation,
 } from '../../features/payment/paymentApi';
 
-export default function StripeConnectSetup() {
+export default function StripeConnectSetup({ onClose }) {
   const [showDashboard, setShowDashboard] = useState(false);
 
   const {
@@ -144,7 +153,12 @@ export default function StripeConnectSetup() {
     }
   }, [dashboardData]);
 
-  if (isLoadingStatus) {
+  if (
+    isLoadingStatus ||
+    isLoadingDashboard ||
+    isRefreshingLink ||
+    isCreatingAccount
+  ) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader />
@@ -157,79 +171,55 @@ export default function StripeConnectSetup() {
   const payoutEnabled = connectStatus?.data?.payoutEnabled;
 
   return (
-    <div className="mx-auto max-w-2xl animate-fadeIn">
-      <div className="mb-6 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-light-text dark:text-dark-text">
-          Payment Setup
-        </h2>
-        <p className="text-light-text/70 dark:text-dark-text/70">
-          Set up your Stripe Connect account to receive payments from completed
-          contracts
-        </p>
+    <div className="space-y-4 text-left">
+      {/* Account Status */}
+      <div className="break-words border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaUser
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Payment Account Status
+            </p>
+            <p className="text-lg font-medium text-light-text dark:text-dark-text">
+              {hasAccount
+                ? 'Stripe Connect Account Created'
+                : 'No Account Setup'}
+            </p>
+            {hasAccount && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Status: <span className="capitalize">{accountStatus}</span>
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
-      {(statusError || createError || refreshError || dashboardError) && (
-        <div className="mb-6">
-          <Alert
-            message={
-              statusError?.data?.message ||
-              createError?.data?.message ||
-              refreshError?.data?.message ||
-              dashboardError?.data?.message ||
-              'An error occurred'
-            }
-          />
-        </div>
-      )}
-
-      {!hasAccount ? (
-        // No account - show setup option
-        <div className="animate-slideUp text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-light-primary/10 dark:bg-dark-primary/10">
-            <FaExternalLinkAlt className="h-8 w-8 text-light-primary dark:text-dark-primary" />
+      {/* Setup Status */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            {payoutEnabled ? (
+              <FaCheckCircle
+                className="text-green-600 dark:text-green-400"
+                size={20}
+              />
+            ) : (
+              <FaExclamationTriangle
+                className="text-yellow-600 dark:text-yellow-400"
+                size={20}
+              />
+            )}
           </div>
-          <h3 className="mb-2 text-lg font-semibold text-light-text dark:text-dark-text">
-            Connect Your Stripe Account
-          </h3>
-          <p className="mb-6 text-light-text/70 dark:text-dark-text/70">
-            To receive payments, you need to set up a Stripe Connect account.
-            This is secure and takes just a few minutes.
-          </p>
-
-          {isCreatingAccount ? (
-            <div className="flex items-center justify-center p-4">
-              <Loader />
-            </div>
-          ) : (
-            <button
-              onClick={handleCreateAccount}
-              className="inline-flex items-center gap-2 rounded-lg bg-light-primary px-6 py-3 font-medium text-white transition-colors hover:opacity-90 dark:bg-dark-primary"
-            >
-              <FaExternalLinkAlt />
-              Set Up Stripe Account
-            </button>
-          )}
-        </div>
-      ) : (
-        // Has account - show status
-        <div className="animate-slideUp space-y-6">
-          <div className="flex items-center justify-between rounded-lg bg-light-surface p-4 dark:bg-dark-surface">
-            <div className="flex items-center gap-3">
-              {payoutEnabled ? (
-                <FaCheckCircle className="text-xl text-green-600 dark:text-green-400" />
-              ) : (
-                <FaExclamationTriangle className="text-xl text-yellow-600 dark:text-yellow-400" />
-              )}
-              <div>
-                <h3 className="font-semibold text-light-text dark:text-dark-text">
-                  Stripe Connect Account
-                </h3>
-                <p className="text-sm text-light-text/70 dark:text-dark-text/70">
-                  Status: <span className="capitalize">{accountStatus}</span>
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Payout Capability
+            </p>
+            <div className="flex items-center gap-2">
               {payoutEnabled ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900/20 dark:text-green-400">
                   <FaCheckCircle className="text-xs" />
@@ -243,79 +233,226 @@ export default function StripeConnectSetup() {
               )}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Action buttons */}
-          <div className="flex gap-3">
-            {!payoutEnabled && (
-              <>
-                {isRefreshingLink ? (
-                  <div className="flex flex-1 items-center justify-center p-2">
-                    <Loader />
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleRefreshLink}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-light-primary px-4 py-2 font-medium text-white transition-colors hover:opacity-90 dark:bg-dark-primary"
-                  >
-                    <FaExternalLinkAlt />
-                    Complete Setup
-                  </button>
-                )}
-              </>
-            )}
-
-            {isLoadingDashboard ? (
-              <div className="flex flex-1 items-center justify-center p-2">
-                <Loader />
-              </div>
-            ) : (
-              <button
-                onClick={handleOpenDashboard}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-light-border px-4 py-2 text-light-text transition-colors hover:bg-light-background dark:border-dark-border dark:text-dark-text dark:hover:bg-dark-background"
-              >
-                <FaExternalLinkAlt />
-                Open Stripe Dashboard
-              </button>
-            )}
-          </div>
-
-          {/* Status details */}
-          <div className="space-y-2 text-sm text-light-text/70 dark:text-dark-text/70">
-            {payoutEnabled ? (
-              <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                <p className="flex items-center gap-2 text-green-800 dark:text-green-400">
-                  <FaCheckCircle /> Your account is fully set up and ready to
-                  receive payments!
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
-                <p className="flex items-center gap-2 text-yellow-800 dark:text-yellow-400">
-                  <FaExclamationTriangle /> Complete your Stripe setup to start
-                  receiving payments from contracts.
-                </p>
-                {connectStatus?.data?.requirementsDue?.length > 0 && (
-                  <p className="mt-2 text-sm">
-                    Missing requirements:{' '}
-                    {connectStatus.data.requirementsDue.join(', ')}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Platform fee info */}
-          <div className="rounded-lg bg-light-surface p-3 text-xs text-light-text/60 dark:bg-dark-surface dark:text-dark-text/60">
-            <p>
-              <FaLightbulb className="mr-1 inline" />{' '}
-              <strong>How payments work:</strong> When a contract is completed,
-              you&apos;ll receive 97.5% of the agreed amount (2.5% platform fee
-              is deducted). Payments are automatically transferred to your bank
-              account within 2-7 business days.
-            </p>
+      {/* Missing Requirements (if any) */}
+      {connectStatus?.data?.requirementsDue?.length > 0 && (
+        <div className="border-b border-light-border pb-4 dark:border-dark-border">
+          <div className="flex items-start">
+            <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+              <FaInfoCircle
+                className="text-light-primary dark:text-dark-primary"
+                size={20}
+              />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Missing Requirements
+              </p>
+              <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                {connectStatus.data.requirementsDue.join(', ')}
+              </p>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Platform Fee Information */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaPercent
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Platform Fee
+            </p>
+            <p className="text-lg font-medium text-blue-600 dark:text-blue-400">
+              2.5% per contract
+            </p>
+            <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+              Deducted from your earnings automatically
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Your Earnings */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaMoneyBillWave
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              You Receive
+            </p>
+            <p className="text-lg font-medium text-green-600 dark:text-green-400">
+              97.5% of contract value
+            </p>
+            <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+              Automatically transferred to your bank account
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Transfer Timeline */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaClock
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Transfer Timeline
+            </p>
+            <p className="text-lg font-medium text-light-text dark:text-dark-text">
+              2-7 business days
+            </p>
+            <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+              After contract completion and payout processing
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Security Information */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaShieldAlt
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Security & Compliance
+            </p>
+            <p className="text-sm text-light-text/60 dark:text-dark-text/60">
+              Your financial information is secured by Stripe, a PCI DSS Level 1
+              certified payment processor trusted by millions of businesses
+              worldwide.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Error Display */}
+      {(statusError || createError || refreshError || dashboardError) && (
+        <div className="border-b border-light-border pb-4 dark:border-dark-border">
+          <Alert
+            message={
+              statusError?.data?.message ||
+              createError?.data?.message ||
+              refreshError?.data?.message ||
+              dashboardError?.data?.message ||
+              'An error occurred'
+            }
+          />
+        </div>
+      )}
+
+      {/* Status Messages */}
+      <div className="border-b border-light-border pb-4 dark:border-dark-border">
+        <div className="flex items-start">
+          <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+            <FaLightbulb
+              className="text-light-primary dark:text-dark-primary"
+              size={20}
+            />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Current Status
+            </p>
+            {payoutEnabled ? (
+              <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+                <p className="flex items-center gap-2 text-green-800 dark:text-green-400">
+                  <FaCheckCircle size={16} />
+                  Your account is fully set up and ready to receive payments!
+                </p>
+              </div>
+            ) : hasAccount ? (
+              <div className="rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
+                <p className="flex items-center gap-2 text-yellow-800 dark:text-yellow-400">
+                  <FaExclamationTriangle size={16} />
+                  Complete your Stripe setup to start receiving payments from
+                  contracts.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                <p className="flex items-center gap-2 text-blue-800 dark:text-blue-400">
+                  <FaInfoCircle size={16} />
+                  Set up your Stripe Connect account to receive payments and
+                  accept contracts.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+        >
+          <FaTimes />
+          Close
+        </button>
+
+        {!hasAccount ? (
+          // No account - show setup button
+
+          <button
+            onClick={handleCreateAccount}
+            className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 font-medium text-white transition-colors hover:opacity-90 dark:bg-dark-primary"
+          >
+            <FaExternalLinkAlt />
+            Set Up Stripe Account
+          </button>
+        ) : (
+          // Has account - show management buttons
+          <>
+            {!payoutEnabled && (
+              <button
+                onClick={handleRefreshLink}
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 font-medium text-white transition-colors hover:opacity-90 dark:bg-dark-primary"
+              >
+                <FaExternalLinkAlt />
+                Complete Setup
+              </button>
+            )}
+
+            <button
+              onClick={handleOpenDashboard}
+              className="flex items-center gap-2 rounded border border-light-border px-4 py-2 text-light-text transition-colors hover:bg-light-background dark:border-dark-border dark:text-dark-text dark:hover:bg-dark-background"
+            >
+              <FaCog />
+              Stripe Dashboard
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
+
+StripeConnectSetup.propTypes = {
+  onClose: PropTypes.func.isRequired,
+};
