@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
+  FaBriefcase,
+  FaBuilding,
+  FaCalendarAlt,
+  FaChartLine,
   FaCheckCircle,
+  FaClock,
   FaCog,
+  FaDollarSign,
   FaExclamationTriangle,
   FaExternalLinkAlt,
-  FaEye,
+  FaFileContract,
+  FaHistory,
+  FaInfoCircle,
+  FaMoneyBillWave,
+  FaPercent,
   FaTimes,
+  FaUser,
   FaWallet,
 } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
@@ -26,6 +37,7 @@ import {
 } from '../../features/contract/contractApi';
 import {
   useCompleteContractAndPayoutMutation,
+  useGetContractPayoutStatusQuery,
   useGetPayoutHistoryQuery,
   useGetStripeConnectStatusQuery,
 } from '../../features/payment/paymentApi';
@@ -36,8 +48,9 @@ export default function ContractsScreen() {
 
   const [showStripeModal, setShowStripeModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
-  const [selectedContract, setSelectedContract] = useState(null);
   const [stripeReturnAlert, setStripeReturnAlert] = useState(null);
+  const [showPayoutInfoModal, setShowPayoutInfoModal] = useState(false);
+  const [payoutInfoContract, setPayoutInfoContract] = useState(null);
 
   const {
     data: contractsData,
@@ -82,6 +95,12 @@ export default function ContractsScreen() {
     },
   ] = useCompleteContractAndPayoutMutation();
 
+  // Query payout status for the selected contract when viewing details
+  const { data: payoutStatusData, isLoading: isLoadingPayoutStatus } =
+    useGetContractPayoutStatusQuery(payoutInfoContract?.id, {
+      skip: !payoutInfoContract || !showPayoutInfoModal,
+    });
+
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
@@ -90,7 +109,6 @@ export default function ContractsScreen() {
   useEffect(() => {
     if (location.state?.openStripeModal) {
       setShowStripeModal(true);
-      // Clear the state by replacing the current location
       window.history.replaceState({}, document.title);
     }
 
@@ -99,7 +117,6 @@ export default function ContractsScreen() {
         type: 'error',
         message: location.state.stripeError,
       });
-      // Clear the state
       window.history.replaceState({}, document.title);
     }
 
@@ -108,9 +125,7 @@ export default function ContractsScreen() {
         type: 'success',
         message: location.state.stripeSuccess,
       });
-      // Refetch Stripe status to get updated data
       refetchStripeStatus();
-      // Clear the state
       window.history.replaceState({}, document.title);
     }
   }, [location.state, refetchStripeStatus]);
@@ -127,7 +142,6 @@ export default function ContractsScreen() {
 
   // Handle contract acceptance
   const handleAcceptContract = async (contract) => {
-    // Check if Stripe Connect is set up
     if (!stripeStatus?.data?.payoutEnabled) {
       alert(
         'Please complete your Stripe Connect setup before accepting contracts.'
@@ -174,7 +188,7 @@ export default function ContractsScreen() {
     }
   };
 
-  // Handle contract completion
+  // Handle contract completion (updated logic)
   const handleCompleteContract = async (contract) => {
     try {
       await completeContract(contract.id).unwrap();
@@ -191,14 +205,34 @@ export default function ContractsScreen() {
     }
   };
 
-  // Handle view contract details
-  const handleViewContract = (contract) => {
-    setSelectedContract(contract);
+  // Handle view payout information
+  const handleViewPayoutInfo = (contract) => {
+    setPayoutInfoContract(contract);
+    setShowPayoutInfoModal(true);
   };
 
   // Handle showing earnings
   const handleViewEarnings = () => {
     setShowPayoutModal(true);
+  };
+
+  // Helper function to check if contract has scheduled payout
+  const hasScheduledPayout = (contract) => {
+    return contract.status === 'completed' && contract.paymentStatus === 'paid';
+  };
+
+  // Helper function to get contract status message
+  const getContractStatusMessage = (contract) => {
+    if (contract.status === 'completed' && contract.paymentStatus === 'paid') {
+      return 'Auto-Payout Scheduled';
+    }
+    if (contract.status === 'active' && contract.paymentStatus === 'paid') {
+      return 'Payment Received - Awaiting Completion';
+    }
+    if (contract.status === 'pending') {
+      return 'Awaiting Payment';
+    }
+    return '';
   };
 
   const hasStripeAccount = stripeStatus?.data?.hasAccount;
@@ -208,34 +242,28 @@ export default function ContractsScreen() {
     {
       key: 'jobTitle',
       label: 'Job Title',
-      render: (contract) => (
-        <span className="font-medium text-light-text dark:text-dark-text">
-          {contract.job.title}
-        </span>
-      ),
+      render: (contract) => contract.job.title,
     },
     {
       key: 'recruiter',
       label: 'Recruiter',
-      render: (contract) => (
-        <span className="text-light-text/70 dark:text-dark-text/70">
-          {`${contract.recruiter.firstName} ${contract.recruiter.lastName}`}
-        </span>
-      ),
+      render: (contract) =>
+        `${contract.recruiter.firstName} ${contract.recruiter.lastName}`,
     },
     {
-      key: 'agreedPrice',
-      label: 'Payment',
-      render: (contract) => (
-        <div>
-          <span className="text-light-text/70 dark:text-dark-text/70">
-            ${contract.agreedPrice}
-          </span>
-          <div className="text-xs text-green-600">
-            You earn: ${(contract.agreedPrice * 0.975).toFixed(2)}
-          </div>
-        </div>
-      ),
+      key: 'contractValue',
+      label: 'Contract Value',
+      render: (contract) => `$${contract.agreedPrice}`,
+    },
+    {
+      key: 'platformFee',
+      label: 'Platform Fee',
+      render: (contract) => `$${(contract.agreedPrice * 0.025).toFixed(2)}`,
+    },
+    {
+      key: 'yourEarnings',
+      label: 'Your Earnings',
+      render: (contract) => `$${(contract.agreedPrice * 0.975).toFixed(2)}`,
     },
     {
       key: 'status',
@@ -244,11 +272,11 @@ export default function ContractsScreen() {
         <span
           className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             contract.status === 'pending'
-              ? 'bg-blue-100 text-blue-800'
+              ? 'bg-gray-100 text-gray-800'
               : contract.status === 'active'
-                ? 'bg-green-100 text-green-800'
+                ? 'bg-blue-100 text-blue-800'
                 : contract.status === 'completed'
-                  ? 'bg-teal-100 text-teal-800'
+                  ? 'bg-green-100 text-green-800'
                   : contract.status === 'cancelled'
                     ? 'bg-red-100 text-red-800'
                     : 'bg-gray-100 text-gray-800'
@@ -260,15 +288,20 @@ export default function ContractsScreen() {
       ),
     },
     {
-      key: 'paymentStatus',
-      label: 'Payment Status',
+      key: 'statusInfo',
+      label: 'Status Info',
+      render: (contract) => getContractStatusMessage(contract) || '-',
+    },
+    {
+      key: 'payment',
+      label: 'Payment',
       render: (contract) => (
         <span
           className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             contract.paymentStatus === 'paid'
               ? 'bg-green-100 text-green-800'
               : contract.paymentStatus === 'pending'
-                ? 'bg-yellow-100 text-yellow-800'
+                ? 'bg-gray-100 text-gray-800'
                 : contract.paymentStatus === 'failed'
                   ? 'bg-red-100 text-red-800'
                   : contract.paymentStatus === 'refunded'
@@ -282,18 +315,28 @@ export default function ContractsScreen() {
       ),
     },
     {
+      key: 'payoutStatus',
+      label: 'Payout Status',
+      render: (contract) => (
+        <span
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
+            hasScheduledPayout(contract)
+              ? 'bg-blue-100 text-blue-800'
+              : 'bg-gray-100 text-gray-800'
+          }`}
+        >
+          {hasScheduledPayout(contract) ? 'Auto-payout Scheduled' : 'No Payout'}
+        </span>
+      ),
+    },
+    {
       key: 'transactions',
       label: 'Latest Transaction',
       render: (contract) => {
         const latestTransaction = contract.transactions?.[0];
-        return latestTransaction ? (
-          <span className="text-light-text/70 dark:text-dark-text/70">
-            ${latestTransaction.amount} (
-            {new Date(latestTransaction.transactionDate).toLocaleDateString()})
-          </span>
-        ) : (
-          <span className="text-light-text/70 dark:text-dark-text/70">-</span>
-        );
+        return latestTransaction
+          ? `$${latestTransaction.amount} (${new Date(latestTransaction.transactionDate).toLocaleDateString()})`
+          : '-';
       },
     },
   ];
@@ -305,9 +348,9 @@ export default function ContractsScreen() {
         <button
           className={`flex items-center gap-1 rounded px-3 py-1 ${
             contract.status !== 'pending'
-              ? 'cursor-not-allowed bg-gray-400 text-white'
+              ? 'cursor-not-allowed bg-gray-500 text-white'
               : !payoutEnabled
-                ? 'cursor-not-allowed bg-orange-400 text-white'
+                ? 'cursor-not-allowed bg-orange-500 text-white'
                 : 'bg-green-500 text-white hover:bg-green-600'
           }`}
           disabled={contract.status !== 'pending' || !payoutEnabled}
@@ -324,8 +367,8 @@ export default function ContractsScreen() {
         <button
           className={`flex items-center gap-1 rounded px-3 py-1 ${
             contract.status !== 'pending'
-              ? 'cursor-not-allowed bg-gray-400 text-white'
-              : 'bg-red-500 text-white hover:bg-red-600'
+              ? 'cursor-not-allowed bg-gray-500 text-white'
+              : 'bg-red-600 text-white hover:bg-red-700'
           }`}
           disabled={contract.status !== 'pending'}
         >
@@ -336,28 +379,43 @@ export default function ContractsScreen() {
     },
     {
       onClick: handleCompleteContract,
-      render: (contract) => (
-        <button
-          className={`flex items-center gap-1 rounded px-3 py-1 ${
-            contract.status !== 'active' || contract.paymentStatus !== 'paid'
-              ? 'cursor-not-allowed bg-gray-400 text-white'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
-          disabled={
-            contract.status !== 'active' || contract.paymentStatus !== 'paid'
-          }
-        >
-          <FaCheckCircle />
-          Complete
-        </button>
-      ),
+      render: (contract) => {
+        const isScheduledPayout = hasScheduledPayout(contract);
+        const canComplete =
+          contract.status === 'completed' &&
+          contract.paymentStatus === 'paid' &&
+          !isScheduledPayout;
+
+        return (
+          <button
+            className={`flex items-center gap-1 rounded px-3 py-1 ${
+              !canComplete
+                ? 'cursor-not-allowed bg-gray-500 text-white'
+                : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
+            disabled={!canComplete}
+            title={
+              isScheduledPayout
+                ? 'Payout is scheduled automatically by recruiter'
+                : contract.status !== 'completed'
+                  ? 'Contract must be completed first'
+                  : contract.paymentStatus !== 'paid'
+                    ? 'Payment must be received before completing'
+                    : ''
+            }
+          >
+            <FaCheckCircle />
+            {hasScheduledPayout(contract) ? 'Completed' : 'Complete'}
+          </button>
+        );
+      },
     },
     {
-      onClick: handleViewContract,
+      onClick: handleViewPayoutInfo,
       render: () => (
-        <button className="flex items-center gap-1 rounded bg-gray-500 px-3 py-1 text-white hover:bg-gray-600">
-          <FaEye />
-          View
+        <button className="flex items-center gap-1 rounded bg-indigo-500 px-3 py-1 text-white hover:bg-indigo-600">
+          <FaFileContract />
+          Details
         </button>
       ),
     },
@@ -394,7 +452,6 @@ export default function ContractsScreen() {
               View and manage all your recruitment contracts, accept or reject
               offers, and track your earnings.
             </p>
-
             {/* Stripe Return Alert */}
             {stripeReturnAlert && (
               <div className="mb-6">
@@ -404,113 +461,142 @@ export default function ContractsScreen() {
                 />
               </div>
             )}
-
-            {/* Stripe Connect Status Banner */}
+            {/*  Stripe Connect Status Banner  */}
             {!isLoadingStripe && (
-              <div className="mb-6 animate-slideUp">
-                {!hasStripeAccount ? (
-                  <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+              <div className="mb-8 overflow-hidden rounded-xl bg-light-surface shadow-md dark:bg-dark-surface">
+                <div className="border-b border-light-border px-6 py-4 dark:border-dark-border">
+                  <div className="flex items-center gap-3">
+                    {!hasStripeAccount ? (
+                      <FaExclamationTriangle className="text-light-primary dark:text-dark-primary" />
+                    ) : !payoutEnabled ? (
+                      <FaExclamationTriangle className="text-light-primary dark:text-dark-primary" />
+                    ) : (
+                      <FaCheckCircle className="text-light-primary dark:text-dark-primary" />
+                    )}
+                    <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">
+                      {!hasStripeAccount
+                        ? 'Payment Setup'
+                        : !payoutEnabled
+                          ? 'Complete Setup'
+                          : 'Payment Status'}
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  {!hasStripeAccount ? (
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <FaExclamationTriangle className="text-xl text-yellow-600 dark:text-yellow-400" />
-                        <div>
-                          <h3 className="font-semibold text-yellow-800 dark:text-yellow-400">
-                            Payment Setup Required
-                          </h3>
-                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                            Set up your Stripe Connect account to receive
-                            payments and accept contracts.
-                          </p>
-                        </div>
+                      <div>
+                        <p className="mb-2 font-medium text-light-text dark:text-dark-text">
+                          Payment Setup Required
+                        </p>
+                        <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+                          Set up your Stripe Connect account to receive payments
+                          and accept contracts.
+                        </p>
                       </div>
                       <button
                         onClick={() => setShowStripeModal(true)}
-                        className="flex items-center gap-2 rounded-lg bg-yellow-600 px-4 py-2 text-white transition-colors hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-700"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-white transition-colors hover:bg-light-primary/90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-dark-primary dark:hover:bg-dark-primary/90"
                       >
                         <FaCog />
                         Setup Now
                       </button>
                     </div>
-                  </div>
-                ) : !payoutEnabled ? (
-                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
+                  ) : !payoutEnabled ? (
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <FaExclamationTriangle className="text-xl text-orange-600 dark:text-orange-400" />
-                        <div>
-                          <h3 className="font-semibold text-orange-800 dark:text-orange-400">
-                            Complete Your Setup
-                          </h3>
-                          <p className="text-sm text-orange-700 dark:text-orange-300">
-                            Finish your Stripe Connect verification to start
-                            accepting contracts.
-                          </p>
-                        </div>
+                      <div>
+                        <p className="mb-2 font-medium text-light-text dark:text-dark-text">
+                          Complete Your Setup
+                        </p>
+                        <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+                          Finish your Stripe Connect verification to start
+                          accepting contracts.
+                        </p>
                       </div>
                       <button
                         onClick={() => setShowStripeModal(true)}
-                        className="flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-white transition-colors hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-white transition-colors hover:bg-light-primary/90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-dark-primary dark:hover:bg-dark-primary/90"
                       >
                         <FaExternalLinkAlt />
                         Complete Setup
                       </button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+                  ) : (
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <FaCheckCircle className="text-xl text-green-600 dark:text-green-400" />
-                        <div>
-                          <h3 className="font-semibold text-green-800 dark:text-green-400">
-                            Payment Setup Complete
-                          </h3>
-                          <p className="text-sm text-green-700 dark:text-green-300">
-                            You're all set to receive payments! Earnings are
-                            automatically transferred to your bank account.
-                          </p>
-                        </div>
+                      <div>
+                        <p className="mb-2 font-medium text-light-text dark:text-dark-text">
+                          Payment Setup Complete
+                        </p>
+                        <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+                          You&apos;re all set to receive payments! Earnings are
+                          automatically transferred to your Stripe account.
+                        </p>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={handleViewEarnings}
-                          className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-white transition-colors hover:bg-light-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90"
                         >
                           <FaWallet />
                           View Earnings
                         </button>
                         <button
                           onClick={() => setShowStripeModal(true)}
-                          className="flex items-center gap-2 rounded-lg border border-green-600 bg-light-background px-4 py-2 text-green-600 transition-colors hover:bg-green-50 dark:border-green-600 dark:bg-dark-background dark:text-green-400 dark:hover:bg-green-900/20"
+                          className="flex items-center gap-2 rounded-lg bg-light-secondary px-4 py-2 text-white transition-colors hover:bg-light-secondary/90 dark:bg-dark-secondary dark:hover:bg-dark-secondary/90"
                         >
                           <FaCog />
                           Manage
                         </button>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
-
+            {/* Alerts */}
             {(error || updateError || completeError || stripeError) && (
-              <Alert
-                message={
-                  error?.data?.message ||
-                  updateError?.data?.message ||
-                  completeError?.data?.message ||
-                  stripeError?.data?.message
-                }
-              />
+              <div className="mb-6 overflow-hidden rounded-xl bg-light-surface shadow-md dark:bg-dark-surface">
+                <div className="border-b border-light-border px-6 py-4 dark:border-dark-border">
+                  <div className="flex items-center gap-3">
+                    <FaExclamationTriangle className="text-light-primary dark:text-dark-primary" />
+                    <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">
+                      Error
+                    </h2>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <Alert
+                    message={
+                      error?.data?.message ||
+                      updateError?.data?.message ||
+                      completeError?.data?.message ||
+                      stripeError?.data?.message
+                    }
+                  />
+                </div>
+              </div>
             )}
-
             {(isSuccess || isCompleteSuccess) && (
-              <Alert
-                message={
-                  updatedContract?.message || 'Contract updated successfully'
-                }
-                isSuccess={true}
-              />
+              <div className="mb-6 overflow-hidden rounded-xl bg-light-surface shadow-md dark:bg-dark-surface">
+                <div className="border-b border-light-border px-6 py-4 dark:border-dark-border">
+                  <div className="flex items-center gap-3">
+                    <FaCheckCircle className="text-light-primary dark:text-dark-primary" />
+                    <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">
+                      Success
+                    </h2>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <Alert
+                    message={
+                      updatedContract?.message ||
+                      'Contract updated successfully'
+                    }
+                    isSuccess={true}
+                  />
+                </div>
+              </div>
             )}
 
             <Table
@@ -520,106 +606,466 @@ export default function ContractsScreen() {
             />
           </div>
         )}
+      </section>
 
-        {/* Stripe Connect Setup Modal */}
-        <Modal
-          isOpen={showStripeModal}
-          onClose={() => setShowStripeModal(false)}
-          title="Payment Setup"
-        >
-          <StripeConnectSetup />
-        </Modal>
+      {/* Stripe Connect Setup Modal */}
+      <Modal
+        isOpen={showStripeModal}
+        onClose={() => setShowStripeModal(false)}
+        title="Payment Setup"
+      >
+        {isLoadingStripe ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader />
+          </div>
+        ) : (
+          <StripeConnectSetup onClose={() => setShowStripeModal(false)} />
+        )}
+      </Modal>
 
-        {/* Payout History Modal */}
-        <Modal
-          isOpen={showPayoutModal}
-          onClose={() => setShowPayoutModal(false)}
-          title="Earnings History"
-        >
-          <div className="max-w-4xl">
-            {isLoadingPayouts ? (
+      {/* Payout Information Modal - Redesigned */}
+      <Modal
+        isOpen={showPayoutInfoModal}
+        onClose={() => setShowPayoutInfoModal(false)}
+        title="Contract & Payout Details"
+      >
+        {payoutInfoContract && (
+          <div className="space-y-4 text-left">
+            {isLoadingPayoutStatus ? (
               <div className="flex items-center justify-center p-8">
                 <Loader />
               </div>
-            ) : payoutError ? (
-              <Alert
-                message={payoutError.data?.message || 'Failed to load earnings'}
-              />
-            ) : payoutData ? (
-              <div className="animate-fadeIn space-y-6">
-                {/* Summary */}
-                <div className="rounded-lg bg-gradient-to-r from-green-50 to-blue-50 p-6 dark:from-green-900/20 dark:to-blue-900/20">
-                  <h4 className="mb-2 text-lg font-semibold text-light-text dark:text-dark-text">
-                    Total Earnings
-                  </h4>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                    ${payoutData.data.totalEarnings.toFixed(2)}
-                  </p>
-                  <p className="mt-1 text-sm text-light-text/70 dark:text-dark-text/70">
-                    From {payoutData.data.payouts.length} completed contracts
-                  </p>
+            ) : (
+              <>
+                {/* Job Title */}
+                <div className="break-words border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaBriefcase
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Job Title
+                      </p>
+                      <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                        {payoutInfoContract.job?.title || 'Not specified'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Payout List */}
-                {payoutData.data.payouts.length > 0 ? (
-                  <div className="animate-slideUp space-y-3">
-                    <h4 className="font-semibold text-light-text dark:text-dark-text">
-                      Recent Payouts
-                    </h4>
-                    {payoutData.data.payouts.map((payout) => (
-                      <div
-                        key={payout.id}
-                        className="flex items-center justify-between rounded-lg bg-light-surface p-4 dark:bg-dark-surface"
-                      >
-                        <div>
-                          <p className="font-medium text-light-text dark:text-dark-text">
-                            {payout.contract.job.title}
-                          </p>
-                          <p className="text-sm text-light-text/70 dark:text-dark-text/70">
-                            {payout.contract.job.company} •{' '}
-                            {payout.contract.recruiter.firstName}{' '}
-                            {payout.contract.recruiter.lastName}
-                          </p>
-                          <p className="text-xs text-light-text/60 dark:text-dark-text/60">
-                            {new Date(
-                              payout.transactionDate
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-green-600 dark:text-green-400">
-                            +${payout.netAmount}
-                          </p>
-                          <p className="text-xs text-light-text/60 dark:text-dark-text/60">
-                            Fee: ${payout.platformFee}
-                          </p>
-                          <span
-                            className={`inline-block rounded-full px-2 py-1 text-xs ${
-                              payout.status === 'completed'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                            }`}
-                          >
-                            {payout.status}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                {/* Recruiter Information */}
+                <div className="break-words border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaUser
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Recruiter
+                      </p>
+                      <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                        {payoutInfoContract.recruiter?.firstName}{' '}
+                        {payoutInfoContract.recruiter?.lastName}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {payoutInfoContract.recruiter?.email}
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="animate-fadeIn py-8 text-center">
-                    <FaWallet className="mx-auto mb-4 text-4xl text-light-text/40 dark:text-dark-text/40" />
-                    <p className="text-light-text/70 dark:text-dark-text/70">No earnings yet</p>
-                    <p className="text-sm text-light-text/60 dark:text-dark-text/60">
-                      Complete contracts to start earning money!
-                    </p>
+                </div>
+
+                {/* Contract Value */}
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaDollarSign
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Contract Value
+                      </p>
+                      <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                        ${payoutInfoContract.agreedPrice}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Platform Fee */}
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaPercent
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Platform Fee (2.5%)
+                      </p>
+                      <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                        ${(payoutInfoContract.agreedPrice * 0.025).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Your Earnings */}
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaMoneyBillWave
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Your Earnings
+                      </p>
+                      <p className="text-lg font-medium text-green-600 dark:text-green-400">
+                        ${(payoutInfoContract.agreedPrice * 0.975).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contract Status */}
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaInfoCircle
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Contract Status
+                      </p>
+                      <span
+                        className={`mt-1 inline-block rounded-full px-3 py-1 text-sm font-semibold ${
+                          payoutInfoContract.status === 'pending'
+                            ? 'bg-gray-100 text-gray-800'
+                            : payoutInfoContract.status === 'active'
+                              ? 'bg-blue-100 text-blue-800'
+                              : payoutInfoContract.status === 'completed'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {payoutInfoContract.status.charAt(0).toUpperCase() +
+                          payoutInfoContract.status.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Status */}
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaCheckCircle
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Payment Status
+                      </p>
+                      <span
+                        className={`mt-1 inline-block rounded-full px-3 py-1 text-sm font-semibold ${
+                          payoutInfoContract.paymentStatus === 'paid'
+                            ? 'bg-green-100 text-green-800'
+                            : payoutInfoContract.paymentStatus === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : payoutInfoContract.paymentStatus === 'failed'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {payoutInfoContract.paymentStatus
+                          .charAt(0)
+                          .toUpperCase() +
+                          payoutInfoContract.paymentStatus.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payout Status */}
+                {payoutStatusData?.data && (
+                  <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                    <div className="flex items-start">
+                      <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                        <FaClock
+                          className="text-light-primary dark:text-dark-primary"
+                          size={20}
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Payout Status
+                        </p>
+                        {payoutStatusData.data.hasScheduledPayout ? (
+                          <div className="space-y-1">
+                            <p className="text-lg font-medium text-green-600 dark:text-green-400">
+                              Automatic Payout Scheduled
+                            </p>
+                            <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+                              Date:{' '}
+                              {new Date(
+                                payoutStatusData.data.scheduledPayoutDate
+                              ).toLocaleDateString()}
+                            </p>
+                            <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+                              Amount: ${payoutStatusData.data.scheduledAmount}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-lg font-medium text-yellow-600 dark:text-yellow-400">
+                            No Scheduled Payout
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
-              </div>
-            ) : null}
+
+                {/* Transaction History */}
+                {payoutInfoContract.transactions?.length > 0 && (
+                  <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                    <div className="flex items-start">
+                      <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                        <FaHistory
+                          className="text-light-primary dark:text-dark-primary"
+                          size={20}
+                        />
+                      </div>
+                      <div className="w-full">
+                        <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                          Transaction History
+                        </p>
+                        <div className="space-y-2">
+                          {payoutInfoContract.transactions.map(
+                            (transaction) => (
+                              <div
+                                key={transaction.id}
+                                className="flex items-center justify-between rounded-lg bg-light-surface p-3 dark:bg-dark-surface"
+                              >
+                                <div>
+                                  <p className="text-sm font-medium text-light-text dark:text-dark-text">
+                                    {transaction.transactionType}
+                                  </p>
+                                  <p className="text-xs text-light-text/70 dark:text-dark-text/70">
+                                    {new Date(
+                                      transaction.transactionDate
+                                    ).toLocaleString()}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-medium text-light-text dark:text-dark-text">
+                                    ${transaction.amount}
+                                  </p>
+                                  <p
+                                    className={`text-xs ${
+                                      transaction.status === 'completed'
+                                        ? 'text-green-600'
+                                        : transaction.status === 'failed'
+                                          ? 'text-red-600'
+                                          : transaction.status === 'pending'
+                                            ? 'text-yellow-600'
+                                            : 'text-gray-600'
+                                    }`}
+                                  >
+                                    {transaction.status}
+                                  </p>
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Close Button */}
+                <div className="flex justify-end pt-2">
+                  <button
+                    className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    onClick={() => setShowPayoutInfoModal(false)}
+                  >
+                    <FaTimes />
+                    Close
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        </Modal>
-      </section>
+        )}
+      </Modal>
+
+      {/* Payout History Modal - Redesigned */}
+      <Modal
+        isOpen={showPayoutModal}
+        onClose={() => setShowPayoutModal(false)}
+        title="Earnings History"
+      >
+        <div className="space-y-4 text-left">
+          {isLoadingPayouts ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader />
+            </div>
+          ) : payoutError ? (
+            <Alert
+              message={payoutError.data?.message || 'Failed to load earnings'}
+            />
+          ) : payoutData ? (
+            <>
+              {/* Total Earnings Summary */}
+              <div className="break-words border-b border-light-border pb-4 dark:border-dark-border">
+                <div className="flex items-start">
+                  <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                    <FaChartLine
+                      className="text-light-primary dark:text-dark-primary"
+                      size={20}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Total Earnings
+                    </p>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                      ${payoutData.data.totalEarnings.toFixed(2)}
+                    </p>
+                    <p className="text-sm text-light-text/70 dark:text-dark-text/70">
+                      From {payoutData.data.payouts.length} completed contracts
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payout History */}
+              {payoutData.data.payouts.length > 0 ? (
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaWallet
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div className="w-full">
+                      <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">
+                        Recent Payouts
+                      </p>
+                      <div className="space-y-3">
+                        {payoutData.data.payouts.map((payout) => (
+                          <div
+                            key={payout.id}
+                            className="rounded-lg bg-light-surface p-4 dark:bg-dark-surface"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start">
+                                <div className="mr-3 mt-1 flex w-5 min-w-[20px] justify-center">
+                                  <FaBriefcase
+                                    className="text-light-primary dark:text-dark-primary"
+                                    size={16}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-light-text dark:text-dark-text">
+                                    {payout.contract.job.title}
+                                  </p>
+                                  <div className="flex items-center gap-2 text-sm text-light-text/70 dark:text-dark-text/70">
+                                    <FaBuilding size={12} />
+                                    {payout.contract.job.company}
+                                  </div>
+                                  <div className="flex items-center gap-2 text-sm text-light-text/70 dark:text-dark-text/70">
+                                    <FaUser size={12} />
+                                    {payout.contract.recruiter.firstName}{' '}
+                                    {payout.contract.recruiter.lastName}
+                                  </div>
+                                  <div className="flex items-center gap-2 text-xs text-light-text/60 dark:text-dark-text/60">
+                                    <FaCalendarAlt size={10} />
+                                    {new Date(
+                                      payout.transactionDate
+                                    ).toLocaleDateString()}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-semibold text-green-600 dark:text-green-400">
+                                  +${payout.netAmount}
+                                </p>
+                                <p className="text-xs text-light-text/60 dark:text-dark-text/60">
+                                  Fee: ${payout.platformFee}
+                                </p>
+                                <span
+                                  className={`mt-1 inline-block rounded-full px-2 py-1 text-xs ${
+                                    payout.status === 'completed'
+                                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                                  }`}
+                                >
+                                  {payout.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
+                  <div className="flex items-start">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
+                      <FaWallet
+                        className="text-light-primary dark:text-dark-primary"
+                        size={20}
+                      />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-medium text-light-text dark:text-dark-text">
+                        No earnings yet
+                      </p>
+                      <p className="text-sm text-light-text/60 dark:text-dark-text/60">
+                        Complete contracts to start earning money!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Close Button */}
+              <div className="flex justify-end pt-2">
+                <button
+                  className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                  onClick={() => setShowPayoutModal(false)}
+                >
+                  <FaTimes />
+                  Close
+                </button>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </Modal>
     </>
   );
 }

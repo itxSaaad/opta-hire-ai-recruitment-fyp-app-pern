@@ -11,6 +11,8 @@ const ENDPOINTS = {
   CONTRACT_COMPLETE: (contractId) =>
     `/payments/contracts/${contractId}/complete`,
   CONTRACT_STATUS: (contractId) => `/payments/contracts/${contractId}/status`,
+  CONTRACT_PAYOUT_STATUS: (contractId) =>
+    `/payments/contracts/${contractId}/payout-status`,
   PAYOUTS: '/payments/payouts',
 };
 
@@ -84,6 +86,14 @@ export const paymentApi = createApi({
       providesTags: ['Payment', 'Contract'],
     }),
 
+    getContractPayoutStatus: builder.query({
+      query: (contractId) => ({
+        url: ENDPOINTS.CONTRACT_PAYOUT_STATUS(contractId),
+        method: 'GET',
+      }),
+      providesTags: ['Payment', 'Contract'],
+    }),
+
     // Payout history
     getPayoutHistory: builder.query({
       query: () => ({
@@ -104,5 +114,6 @@ export const {
   useConfirmContractPaymentMutation,
   useCompleteContractAndPayoutMutation,
   useGetContractPaymentStatusQuery,
+  useGetContractPayoutStatusQuery,
   useGetPayoutHistoryQuery,
 } = paymentApi;
