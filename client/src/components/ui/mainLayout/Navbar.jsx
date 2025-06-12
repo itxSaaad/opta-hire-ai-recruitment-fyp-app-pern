@@ -21,18 +21,11 @@ import Logo from '../../../assets/images/logo.png';
 
 const NavLinks = [
   { title: 'Jobs', link: '/jobs', sectionId: null },
-  {
-    title: 'For Recruiters',
-    link: '/#for-recruiters',
-    sectionId: 'for-recruiters',
-  },
-  {
-    title: 'For Interviewers',
-    link: '/#for-interviewers',
-    sectionId: 'for-interviewers',
-  },
+  { title: 'How It Works', link: '/#how-it-works', sectionId: 'how-it-works' },
+  { title: 'Benefits', link: '/#benefits', sectionId: 'benefits' },
+  { title: 'Stats', link: '/#stats', sectionId: 'stats' },
   { title: 'Pricing', link: '/#pricing', sectionId: 'pricing' },
-  { title: 'About', link: '/#about', sectionId: 'about' },
+  { title: 'FAQ', link: '/#faq', sectionId: 'faq' },
 ];
 
 export default function Navbar() {
