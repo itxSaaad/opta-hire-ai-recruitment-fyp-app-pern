@@ -17,11 +17,11 @@ const {
   getContractPaymentStatus,
   handleStripeWebhook,
   getPayoutHistory,
+  getContractPayoutStatus,
 } = require('../controllers/payment.controller');
 
 const router = Router();
 
-// Rate limiting for payment operations
 const paymentLimiter = rateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // limit each IP to 10 payment requests per windowMs
@@ -38,7 +38,6 @@ const paymentLimiter = rateLimiter({
   legacyHeaders: true,
 });
 
-// Stripe Connect Routes (For Interviewers)
 router
   .route('/connect/onboard')
   .post(
@@ -73,7 +72,6 @@ router
     getStripeConnectDashboard
   );
 
-// Contract Payment Routes
 router
   .route('/contracts/:contractId/pay')
   .post(
@@ -108,12 +106,18 @@ router
     getContractPaymentStatus
   );
 
-// Payout Routes
+router
+  .route('/contracts/:contractId/payout-status')
+  .get(
+    protectServer,
+    authorizeServerRoles('isInterviewer', 'isRecruiter', 'isAdmin'),
+    getContractPayoutStatus
+  );
+
 router
   .route('/payouts')
   .get(protectServer, authorizeServerRoles('isInterviewer'), getPayoutHistory);
 
-// Webhook Routes (No authentication needed for Stripe webhooks)
 router.route('/webhooks/stripe').post(handleStripeWebhook);
 
 module.exports = router;

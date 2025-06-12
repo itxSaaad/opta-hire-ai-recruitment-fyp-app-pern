@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
+const cron = require('node-cron');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { Op } = require('sequelize');
 
 const { User, Contract, Transaction, Job } = require('../models');
 const {
@@ -11,9 +13,158 @@ const {
 const PLATFORM_FEE_PERCENTAGE = 0.025; // 2.5%
 
 /**
+ * Helper function to add business days (excludes weekends)
+ */
+const addBusinessDays = (date, days) => {
+  const result = new Date(date);
+  let count = 0;
+
+  while (count < days) {
+    result.setDate(result.getDate() + 1);
+    // Skip weekends (Saturday = 6, Sunday = 0)
+    if (result.getDay() !== 0 && result.getDay() !== 6) {
+      count++;
+    }
+  }
+
+  return result;
+};
+
+/**
+ * Helper function to check if payout is scheduled for a contract
+ */
+const isPayoutScheduled = async (contractId) => {
+  const scheduledTransaction = await Transaction.findOne({
+    where: {
+      contractId: contractId,
+      transactionType: 'payout',
+      status: 'pending', // We'll use 'pending' for scheduled payouts
+    },
+  });
+  return scheduledTransaction;
+};
+
+/**
+ * Process scheduled payouts (called by cron job)
+ */
+const processScheduledPayouts = async () => {
+  try {
+    const now = new Date();
+
+    // Find all scheduled payouts that are due
+    const duePayouts = await Transaction.findAll({
+      where: {
+        status: 'pending',
+        transactionType: 'payout',
+        transactionDate: {
+          [Op.lte]: now,
+        },
+      },
+      include: [
+        {
+          model: Contract,
+          as: 'contract',
+          include: [
+            { model: User, as: 'recruiter' },
+            { model: User, as: 'interviewer' },
+          ],
+        },
+      ],
+    });
+
+    console.log(`Found ${duePayouts.length} payouts to process`);
+
+    for (const transaction of duePayouts) {
+      try {
+        // Update transaction status to completed
+        await Transaction.update(
+          {
+            status: 'completed',
+            transactionDate: new Date(),
+          },
+          { where: { id: transaction.id } }
+        );
+
+        // Send payout completion emails
+        await Promise.all([
+          // Email to recruiter
+          sendEmail({
+            from: process.env.NODEMAILER_SMTP_EMAIL,
+            to: transaction.contract.recruiter.email,
+            subject: 'OptaHire - Scheduled Payout Processed',
+            html: generateEmailTemplate({
+              firstName: transaction.contract.recruiter.firstName,
+              subject: 'Scheduled Payout Processed',
+              content: [
+                {
+                  type: 'heading',
+                  value: 'Payout Processed!',
+                },
+                {
+                  type: 'text',
+                  value: `The scheduled payout for your contract has been processed. $${transaction.netAmount} has been transferred to the interviewer.`,
+                },
+              ],
+            }),
+          }),
+          // Email to interviewer
+          sendEmail({
+            from: process.env.NODEMAILER_SMTP_EMAIL,
+            to: transaction.contract.interviewer.email,
+            subject: 'OptaHire - Payment Released',
+            html: generateEmailTemplate({
+              firstName: transaction.contract.interviewer.firstName,
+              subject: 'Scheduled Payment Released',
+              content: [
+                {
+                  type: 'heading',
+                  value: 'Payment Released!',
+                },
+                {
+                  type: 'text',
+                  value: `Your scheduled payment of $${transaction.netAmount} has been transferred to your Stripe account.`,
+                },
+                {
+                  type: 'text',
+                  value:
+                    'The funds should appear in your bank account within 2-7 business days.',
+                },
+              ],
+            }),
+          }),
+        ]);
+
+        console.log(
+          `✅ Processed scheduled payout for contract ${transaction.contractId}`
+        );
+      } catch (error) {
+        console.error(
+          `❌ Failed to process payout for transaction ${transaction.id}:`,
+          error
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Error processing scheduled payouts:', error);
+  }
+};
+
+// Set up cron job to run every hour to check for due payouts
+cron.schedule('0 * * * *', () => {
+  console.log('🔄 Checking for scheduled payouts...');
+  processScheduledPayouts();
+});
+
+/**
  * @desc Create Stripe Connect account for interviewer
+ *
  * @route POST /api/v1/payments/connect/onboard
  * @access Private (Interviewer)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const createStripeConnectAccount = asyncHandler(async (req, res) => {
   const user = req.user;
@@ -32,7 +183,7 @@ const createStripeConnectAccount = asyncHandler(async (req, res) => {
     // Create Stripe Connect Express account
     const account = await stripe.accounts.create({
       type: 'express',
-      country: 'US', // You might want to make this dynamic based on user location
+      country: 'US',
       email: user.email,
       capabilities: {
         card_payments: { requested: true },
@@ -55,7 +206,6 @@ const createStripeConnectAccount = asyncHandler(async (req, res) => {
       { where: { id: user.id } }
     );
 
-    // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: `${process.env.CLIENT_URL}/interviewer/stripe/refresh`,
@@ -81,8 +231,14 @@ const createStripeConnectAccount = asyncHandler(async (req, res) => {
 
 /**
  * @desc Get Stripe Connect account status
+ *
  * @route GET /api/v1/payments/connect/status
  * @access Private (Interviewer)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const getStripeConnectStatus = asyncHandler(async (req, res) => {
   const user = req.user;
@@ -151,8 +307,14 @@ const getStripeConnectStatus = asyncHandler(async (req, res) => {
 
 /**
  * @desc Create account link for re-onboarding
+ *
  * @route POST /api/v1/payments/connect/refresh
  * @access Private (Interviewer)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const refreshStripeConnectLink = asyncHandler(async (req, res) => {
   const user = req.user;
@@ -186,8 +348,14 @@ const refreshStripeConnectLink = asyncHandler(async (req, res) => {
 
 /**
  * @desc Get Stripe Connect dashboard link
+ *
  * @route GET /api/v1/payments/connect/dashboard
  * @access Private (Interviewer)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const getStripeConnectDashboard = asyncHandler(async (req, res) => {
   const user = req.user;
@@ -218,8 +386,14 @@ const getStripeConnectDashboard = asyncHandler(async (req, res) => {
 
 /**
  * @desc Create payment intent for contract
+ *
  * @route POST /api/v1/payments/contracts/:contractId/pay
  * @access Private (Recruiter)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const createContractPayment = asyncHandler(async (req, res) => {
   const { contractId } = req.params;
@@ -347,8 +521,14 @@ const createContractPayment = asyncHandler(async (req, res) => {
 
 /**
  * @desc Confirm contract payment
+ *
  * @route POST /api/v1/payments/contracts/:contractId/confirm
  * @access Private (Recruiter)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const confirmContractPayment = asyncHandler(async (req, res) => {
   const { contractId } = req.params;
@@ -466,8 +646,14 @@ const confirmContractPayment = asyncHandler(async (req, res) => {
 
 /**
  * @desc Complete contract and trigger payout
+ *
  * @route POST /api/v1/payments/contracts/:contractId/complete
  * @access Private (Interviewer, Recruiter, Admin)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const completeContractAndPayout = asyncHandler(async (req, res) => {
   const { contractId } = req.params;
@@ -477,6 +663,7 @@ const completeContractAndPayout = asyncHandler(async (req, res) => {
     include: [
       { model: User, as: 'recruiter' },
       { model: User, as: 'interviewer' },
+      { model: Job, as: 'job' },
     ],
   });
 
@@ -506,89 +693,266 @@ const completeContractAndPayout = asyncHandler(async (req, res) => {
   }
 
   try {
-    // The transfer to the connected account happens automatically when PaymentIntent succeeds
-    // We just need to update the contract status and create payout transaction
+    // RECRUITER COMPLETION: Schedule automatic payout after 2 business days
+    if (user.isRecruiter && contract.recruiterId === user.id) {
+      // Update contract status to completed
+      await Contract.update(
+        { status: 'completed' },
+        { where: { id: contractId } }
+      );
 
-    // Update contract status
-    await Contract.update(
-      { status: 'completed' },
-      { where: { id: contractId } }
-    );
+      // Calculate payout date (2 business days from now)
+      const payoutDate = addBusinessDays(new Date(), 2);
+      const netAmount = contract.agreedPrice * (1 - PLATFORM_FEE_PERCENTAGE);
 
-    // Create payout transaction record
-    const netAmount = contract.agreedPrice * (1 - PLATFORM_FEE_PERCENTAGE);
-
-    await Transaction.create({
-      amount: netAmount,
-      status: 'completed',
-      transactionDate: new Date(),
-      transactionType: 'payout',
-      contractId: contractId,
-      platformFee: contract.stripeApplicationFee,
-      netAmount: netAmount,
-    });
-
-    // Send completion emails
-    await Promise.all([
-      // Email to recruiter
-      sendEmail({
-        from: process.env.NODEMAILER_SMTP_EMAIL,
-        to: contract.recruiter.email,
-        subject: 'OptaHire - Contract Completed',
-        html: generateEmailTemplate({
-          firstName: contract.recruiter.firstName,
-          subject: 'Contract Completed Successfully',
-          content: [
-            {
-              type: 'heading',
-              value: 'Contract Completed!',
-            },
-            {
-              type: 'text',
-              value:
-                'Your interview contract has been completed successfully. The interviewer has been paid.',
-            },
-          ],
-        }),
-      }),
-      // Email to interviewer
-      sendEmail({
-        from: process.env.NODEMAILER_SMTP_EMAIL,
-        to: contract.interviewer.email,
-        subject: 'OptaHire - Payment Released',
-        html: generateEmailTemplate({
-          firstName: contract.interviewer.firstName,
-          subject: 'Payment Released to Your Account',
-          content: [
-            {
-              type: 'heading',
-              value: 'Payment Released!',
-            },
-            {
-              type: 'text',
-              value: `Your contract has been completed and $${netAmount.toFixed(2)} has been transferred to your Stripe account.`,
-            },
-            {
-              type: 'text',
-              value:
-                'The funds should appear in your bank account within 2-7 business days.',
-            },
-          ],
-        }),
-      }),
-    ]);
-
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: 'Contract completed and payout processed successfully.',
-      data: {
+      // Create scheduled payout transaction
+      await Transaction.create({
+        amount: netAmount,
+        status: 'pending', // Use 'pending' for scheduled payouts
+        transactionDate: payoutDate,
+        transactionType: 'payout',
         contractId: contractId,
-        status: 'completed',
-        payoutAmount: netAmount,
         platformFee: contract.stripeApplicationFee,
-      },
-      timestamp: new Date().toISOString(),
-    });
+        netAmount: netAmount,
+      });
+
+      // Send emails about completion and scheduled payout
+      await Promise.all([
+        // Email to recruiter
+        sendEmail({
+          from: process.env.NODEMAILER_SMTP_EMAIL,
+          to: contract.recruiter.email,
+          subject: 'OptaHire - Contract Completed',
+          html: generateEmailTemplate({
+            firstName: contract.recruiter.firstName,
+            subject: 'Contract Completed Successfully',
+            content: [
+              {
+                type: 'heading',
+                value: 'Contract Marked as Completed!',
+              },
+              {
+                type: 'text',
+                value: `You have successfully marked the contract for "${contract.job.title}" as completed. The interviewer payment has been scheduled for automatic processing.`,
+              },
+              {
+                type: 'text',
+                value: `Payout will be processed on: ${payoutDate.toLocaleDateString()}`,
+              },
+              {
+                type: 'text',
+                value: `Net amount to be transferred: $${netAmount.toFixed(2)} (after 2.5% platform fee)`,
+              },
+            ],
+          }),
+        }),
+        // Email to interviewer
+        sendEmail({
+          from: process.env.NODEMAILER_SMTP_EMAIL,
+          to: contract.interviewer.email,
+          subject: 'OptaHire - Contract Completed - Payment Scheduled',
+          html: generateEmailTemplate({
+            firstName: contract.interviewer.firstName,
+            subject: 'Contract Completed - Payment Scheduled',
+            content: [
+              {
+                type: 'heading',
+                value: 'Great News! Contract Completed!',
+              },
+              {
+                type: 'text',
+                value: `The recruiter has marked your contract for "${contract.job.title}" as completed. Your payment of $${netAmount.toFixed(2)} has been scheduled for automatic processing.`,
+              },
+              {
+                type: 'text',
+                value: `Payment will be transferred to your account on: ${payoutDate.toLocaleDateString()}`,
+              },
+              {
+                type: 'text',
+                value:
+                  'The funds should appear in your bank account within 2-7 business days after processing.',
+              },
+            ],
+          }),
+        }),
+      ]);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message:
+          'Contract completed successfully. Payout has been scheduled for automatic processing.',
+        data: {
+          contractId: contractId,
+          status: 'completed',
+          payoutAmount: netAmount,
+          payoutScheduledFor: payoutDate,
+          platformFee: contract.stripeApplicationFee,
+          automatedPayout: true,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    // INTERVIEWER COMPLETION: Only allow if no scheduled payout exists
+    else if (user.isInterviewer && contract.interviewerId === user.id) {
+      const scheduledPayout = await isPayoutScheduled(contractId);
+      if (scheduledPayout) {
+        res.status(StatusCodes.CONFLICT);
+        throw new Error(
+          'Contract completion is scheduled for automatic processing by the recruiter. Manual completion is disabled. Your payment will be processed automatically on the scheduled date.'
+        );
+      }
+
+      // Process immediate payout (fallback for when automation fails)
+      await Contract.update(
+        { status: 'completed' },
+        { where: { id: contractId } }
+      );
+
+      const netAmount = contract.agreedPrice * (1 - PLATFORM_FEE_PERCENTAGE);
+
+      await Transaction.create({
+        amount: netAmount,
+        status: 'completed',
+        transactionDate: new Date(),
+        transactionType: 'payout',
+        contractId: contractId,
+        platformFee: contract.stripeApplicationFee,
+        netAmount: netAmount,
+      });
+
+      // Send completion emails
+      await Promise.all([
+        sendEmail({
+          from: process.env.NODEMAILER_SMTP_EMAIL,
+          to: contract.recruiter.email,
+          subject: 'OptaHire - Contract Completed by Interviewer',
+          html: generateEmailTemplate({
+            firstName: contract.recruiter.firstName,
+            subject: 'Contract Completed by Interviewer',
+            content: [
+              {
+                type: 'heading',
+                value: 'Contract Completed!',
+              },
+              {
+                type: 'text',
+                value: `The interviewer has manually completed the contract for "${contract.job.title}". Payment has been processed immediately.`,
+              },
+            ],
+          }),
+        }),
+        sendEmail({
+          from: process.env.NODEMAILER_SMTP_EMAIL,
+          to: contract.interviewer.email,
+          subject: 'OptaHire - Payment Released',
+          html: generateEmailTemplate({
+            firstName: contract.interviewer.firstName,
+            subject: 'Payment Released to Your Account',
+            content: [
+              {
+                type: 'heading',
+                value: 'Payment Released!',
+              },
+              {
+                type: 'text',
+                value: `You have successfully completed the contract and $${netAmount.toFixed(2)} has been transferred to your Stripe account.`,
+              },
+              {
+                type: 'text',
+                value:
+                  'The funds should appear in your bank account within 2-7 business days.',
+              },
+            ],
+          }),
+        }),
+      ]);
+
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Contract completed and payout processed immediately.',
+        data: {
+          contractId: contractId,
+          status: 'completed',
+          payoutAmount: netAmount,
+          platformFee: contract.stripeApplicationFee,
+          automatedPayout: false,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    // ADMIN COMPLETION: Allow both immediate and scheduled based on request
+    else if (user.isAdmin) {
+      const { forceImmediate } = req.body;
+
+      if (forceImmediate) {
+        // Process immediate payout
+        await Contract.update(
+          { status: 'completed' },
+          { where: { id: contractId } }
+        );
+
+        const netAmount = contract.agreedPrice * (1 - PLATFORM_FEE_PERCENTAGE);
+
+        await Transaction.create({
+          amount: netAmount,
+          status: 'completed',
+          transactionDate: new Date(),
+          transactionType: 'payout',
+          contractId: contractId,
+          platformFee: contract.stripeApplicationFee,
+          netAmount: netAmount,
+        });
+
+        res.status(StatusCodes.OK).json({
+          success: true,
+          message: 'Contract completed by admin with immediate payout.',
+          data: {
+            contractId: contractId,
+            status: 'completed',
+            payoutAmount: netAmount,
+            platformFee: contract.stripeApplicationFee,
+            automatedPayout: false,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        // Default admin behavior: schedule payout
+        await Contract.update(
+          { status: 'completed' },
+          { where: { id: contractId } }
+        );
+
+        const payoutDate = addBusinessDays(new Date(), 2);
+        const netAmount = contract.agreedPrice * (1 - PLATFORM_FEE_PERCENTAGE);
+
+        await Transaction.create({
+          amount: netAmount,
+          status: 'pending',
+          transactionDate: payoutDate,
+          transactionType: 'payout',
+          contractId: contractId,
+          platformFee: contract.stripeApplicationFee,
+          netAmount: netAmount,
+        });
+
+        res.status(StatusCodes.OK).json({
+          success: true,
+          message: 'Contract completed by admin with scheduled payout.',
+          data: {
+            contractId: contractId,
+            status: 'completed',
+            payoutAmount: netAmount,
+            payoutScheduledFor: payoutDate,
+            platformFee: contract.stripeApplicationFee,
+            automatedPayout: true,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } else {
+      res.status(StatusCodes.FORBIDDEN);
+      throw new Error('Invalid user role for completing contracts.');
+    }
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(`Contract completion failed: ${error.message}`);
@@ -597,8 +961,14 @@ const completeContractAndPayout = asyncHandler(async (req, res) => {
 
 /**
  * @desc Get payment status for contract
+ *
  * @route GET /api/v1/payments/contracts/:contractId/status
  * @access Private
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const getContractPaymentStatus = asyncHandler(async (req, res) => {
   const { contractId } = req.params;
@@ -639,9 +1009,126 @@ const getContractPaymentStatus = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc Get contract payout status (for frontend to check if payout is scheduled)
+ *
+ * @route GET /api/v1/payments/contracts/:contractId/payout-status
+ * @access Private (Recruiter, Interviewer, Admin)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
+ */
+const getContractPayoutStatus = asyncHandler(async (req, res) => {
+  const { contractId } = req.params;
+  const user = req.user;
+
+  const contract = await Contract.findByPk(contractId);
+
+  if (!contract) {
+    res.status(StatusCodes.NOT_FOUND);
+    throw new Error('Contract not found.');
+  }
+
+  // Check authorization
+  if (
+    !user.isAdmin &&
+    contract.recruiterId !== user.id &&
+    contract.interviewerId !== user.id
+  ) {
+    res.status(StatusCodes.UNAUTHORIZED);
+    throw new Error('You are not authorized to view this contract.');
+  }
+
+  // Check for scheduled payout
+  const scheduledPayout = await Transaction.findOne({
+    where: {
+      contractId: contractId,
+      transactionType: 'payout',
+      status: 'pending',
+    },
+  });
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Contract payout status retrieved successfully.',
+    data: {
+      contractId: contractId,
+      hasScheduledPayout: !!scheduledPayout,
+      scheduledPayoutDate: scheduledPayout?.transactionDate || null,
+      scheduledAmount: scheduledPayout?.netAmount || null,
+      contractStatus: contract.status,
+      paymentStatus: contract.paymentStatus,
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
+ * @desc Get payout history for interviewer
+ *
+ * @route GET /api/v1/payments/payouts
+ * @access Private (Interviewer)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
+ */
+const getPayoutHistory = asyncHandler(async (req, res) => {
+  const user = req.user;
+
+  if (!user.isInterviewer) {
+    res.status(StatusCodes.FORBIDDEN);
+    throw new Error('Only interviewers can view payout history.');
+  }
+
+  const payouts = await Transaction.findAll({
+    where: {
+      transactionType: 'payout',
+    },
+    include: [
+      {
+        model: Contract,
+        as: 'contract',
+        where: { interviewerId: user.id },
+        include: [
+          { model: Job, as: 'job' },
+          {
+            model: User,
+            as: 'recruiter',
+            attributes: ['firstName', 'lastName', 'email'],
+          },
+        ],
+      },
+    ],
+    order: [['createdAt', 'DESC']],
+  });
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Payout history retrieved successfully.',
+    data: {
+      payouts: payouts,
+      totalEarnings: payouts.reduce(
+        (sum, payout) => sum + parseFloat(payout.netAmount || 0),
+        0
+      ),
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
  * @desc Handle Stripe webhooks
+ *
  * @route POST /api/v1/payments/webhooks/stripe
  * @access Public (Stripe)
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object.
+ *
+ * @returns {Promise<void>}
  */
 const handleStripeWebhook = asyncHandler(async (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -691,55 +1178,6 @@ const handleStripeWebhook = asyncHandler(async (req, res) => {
   res.json({ received: true });
 });
 
-/**
- * @desc Get payout history for interviewer
- * @route GET /api/v1/payments/payouts
- * @access Private (Interviewer)
- */
-const getPayoutHistory = asyncHandler(async (req, res) => {
-  const user = req.user;
-
-  if (!user.isInterviewer) {
-    res.status(StatusCodes.FORBIDDEN);
-    throw new Error('Only interviewers can view payout history.');
-  }
-
-  const payouts = await Transaction.findAll({
-    where: {
-      transactionType: 'payout',
-    },
-    include: [
-      {
-        model: Contract,
-        as: 'contract',
-        where: { interviewerId: user.id },
-        include: [
-          { model: Job, as: 'job' },
-          {
-            model: User,
-            as: 'recruiter',
-            attributes: ['firstName', 'lastName', 'email'],
-          },
-        ],
-      },
-    ],
-    order: [['createdAt', 'DESC']],
-  });
-
-  res.status(StatusCodes.OK).json({
-    success: true,
-    message: 'Payout history retrieved successfully.',
-    data: {
-      payouts: payouts,
-      totalEarnings: payouts.reduce(
-        (sum, payout) => sum + parseFloat(payout.netAmount || 0),
-        0
-      ),
-    },
-    timestamp: new Date().toISOString(),
-  });
-});
-
 module.exports = {
   createStripeConnectAccount,
   getStripeConnectStatus,
@@ -749,6 +1187,8 @@ module.exports = {
   confirmContractPayment,
   completeContractAndPayout,
   getContractPaymentStatus,
-  handleStripeWebhook,
+  getContractPayoutStatus,
   getPayoutHistory,
+  handleStripeWebhook,
+  processScheduledPayouts,
 };
