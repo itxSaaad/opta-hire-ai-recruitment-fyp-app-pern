@@ -96,7 +96,7 @@ export default function CandidateInterviewsScreen() {
       label: 'Status',
       render: (interview) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             interview.status === 'scheduled'
               ? 'bg-blue-100 text-blue-800'
               : interview.status === 'ongoing'
@@ -149,10 +149,10 @@ export default function CandidateInterviewsScreen() {
         return (
           <button
             disabled={!isJoinable}
-            className={`px-3 py-1 rounded flex items-center gap-1 ${
+            className={`flex items-center gap-1 rounded px-3 py-1 ${
               isJoinable
-                ? 'bg-green-500 hover:bg-green-600 text-white'
-                : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                ? 'bg-green-500 text-white hover:bg-green-600'
+                : 'cursor-not-allowed bg-gray-300 text-gray-600'
             }`}
           >
             <FaVideo />
@@ -164,7 +164,7 @@ export default function CandidateInterviewsScreen() {
     {
       onClick: handleViewDetails,
       render: () => (
-        <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600">
           <FaEye />
           View Details
         </button>
@@ -175,32 +175,35 @@ export default function CandidateInterviewsScreen() {
   return (
     <>
       <Helmet>
-        <title>Track Your Interviews [Candidate] - OptaHire</title>
+        <title>
+          My Interviews - OptaHire | Interview Schedule & Preparation
+        </title>
         <meta
           name="description"
-          content="Track your interviews with OptaHire. Stay updated on your interview schedules and statuses."
+          content="Manage your interview schedule on OptaHire. View upcoming interviews, join video calls, and track interview feedback."
         />
         <meta
           name="keywords"
-          content="interviews, track interviews, interview schedules, interview statuses, OptaHire"
+          content="OptaHire My Interviews, Interview Schedule, Video Interviews, Interview Preparation, Interview Feedback"
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isInterviewsLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-7xl w-full mx-auto animate-slideUp">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
-              Track Your{' '}
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              My{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Interviews
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
-              Stay updated on your interview schedules and statuses
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Manage your interview schedule, join video interviews, and track
+              your performance feedback.
             </p>
 
             {interviewsError && (
@@ -222,22 +225,22 @@ export default function CandidateInterviewsScreen() {
         title="Interview Details"
       >
         {isInterviewLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md mx-auto">
+          <div className="mx-auto w-full max-w-sm sm:max-w-md">
             <Loader />
           </div>
         ) : (
           <>
             {selectedInterview && (
-              <div className="bg-light-surface dark:bg-dark-surface rounded-lg p-6">
+              <div className="rounded-lg bg-light-surface p-6 dark:bg-dark-surface">
                 {interviewError && (
                   <Alert message={interviewError.data.message} />
                 )}
 
                 <div className="space-y-6">
-                  <div className="border-b border-light-border dark:border-dark-border pb-4">
+                  <div className="border-b border-light-border pb-4 dark:border-dark-border">
                     <div className="flex items-center">
                       <FaBriefcase
-                        className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                        className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                         size={20}
                       />
                       <div className="flex flex-col items-start">
@@ -251,10 +254,10 @@ export default function CandidateInterviewsScreen() {
                     </div>
                   </div>
 
-                  <div className="border-b border-light-border dark:border-dark-border pb-4">
+                  <div className="border-b border-light-border pb-4 dark:border-dark-border">
                     <div className="flex items-center">
                       <FaVideo
-                        className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                        className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                         size={20}
                       />
                       <div className="flex flex-col items-start">
@@ -268,10 +271,10 @@ export default function CandidateInterviewsScreen() {
                     </div>
                   </div>
 
-                  <div className="border-b border-light-border dark:border-dark-border pb-4">
+                  <div className="border-b border-light-border pb-4 dark:border-dark-border">
                     <div className="flex items-center">
                       <FaUser
-                        className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                        className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                         size={20}
                       />
                       <div className="flex flex-col items-start">
@@ -285,10 +288,10 @@ export default function CandidateInterviewsScreen() {
                     </div>
                   </div>
 
-                  <div className="border-b border-light-border dark:border-dark-border pb-4">
+                  <div className="border-b border-light-border pb-4 dark:border-dark-border">
                     <div className="flex items-center">
                       <FaCalendar
-                        className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                        className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                         size={20}
                       />
                       <div className="flex flex-col items-start">
@@ -307,14 +310,14 @@ export default function CandidateInterviewsScreen() {
                   <div className="pb-2">
                     <div className="flex items-center">
                       <FaInfo
-                        className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                        className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                         size={20}
                       />
                       <div className="flex flex-col items-start">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                           Status
                         </p>
-                        <p className="text-lg font-medium text-light-text dark:text-dark-text capitalize">
+                        <p className="text-lg font-medium capitalize text-light-text dark:text-dark-text">
                           {interviewDetails?.interview?.status}
                         </p>
                       </div>
@@ -322,9 +325,9 @@ export default function CandidateInterviewsScreen() {
                   </div>
                 </div>
 
-                <div className="flex justify-end mt-6">
+                <div className="mt-6 flex justify-end">
                   <button
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                    className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                     onClick={() => setShowDetailsModal(false)}
                   >
                     <FaTimes />

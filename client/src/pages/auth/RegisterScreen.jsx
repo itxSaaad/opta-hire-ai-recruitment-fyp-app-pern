@@ -142,146 +142,156 @@ function RegisterScreen() {
   return (
     <>
       <Helmet>
-        <title>Register - OptaHire</title>
+        <title>
+          Register - OptaHire | Join the AI-Powered Recruitment Platform
+        </title>
         <meta
           name="description"
-          content="Register for an OptaHire account to start applying for jobs and managing your applications."
+          content="Join OptaHire - Create your account as a recruiter, candidate, or interviewer. Start your AI-powered recruitment journey today."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Register, Join OptaHire, Recruitment Signup, Create Account, AI Recruitment"
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-16 px-4 bg-light-background dark:bg-dark-background">
+      <section className="flex min-h-screen items-center justify-center bg-light-background px-4 py-14 dark:bg-dark-background">
         <Link
           to="/"
-          className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
+          className="absolute left-4 top-4 text-light-text transition-all hover:text-light-primary dark:text-dark-text dark:hover:text-dark-primary"
         >
-          <FaArrowLeft className="inline-block -mt-1 mr-2" />
+          <FaArrowLeft className="-mt-1 mr-2 inline-block" />
           Back to Home
         </Link>
 
-        <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
-          {isLoading ? (
+        {isLoading ? (
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
-          ) : (
-            <>
-              <h2 className="text-2xl sm:text-3xl font-bold text-center text-light-primary dark:text-dark-primary mb-4 sm:mb-6">
-                Create an Account
-              </h2>
-              <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
-                Please fill in the details to create your account.
-              </p>
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-lg animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Join{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                OptaHire
+              </span>
+            </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Create your account and start optimizing your recruitment journey
+              with AI-powered candidate matching.
+            </p>
 
-              {error && <Alert message={error.data.message} />}
+            {error && <Alert message={error.data.message} />}
 
-              {isSuccess && data.data?.message && (
-                <Alert message={data.data?.message} isSuccess={true} />
-              )}
+            {isSuccess && data.data?.message && (
+              <Alert message={data.data?.message} isSuccess={true} />
+            )}
 
-              <form onSubmit={handleSubmit} noValidate>
-                <div className="grid grid-cols-1 sm:gap-1 sm:grid-cols-2">
-                  <InputField
-                    id="firstName"
-                    type="text"
-                    label="First Name"
-                    value={firstName}
-                    onChange={(e) => handleChange('firstName', e.target.value)}
-                    validationMessage={errors.firstName}
-                  />
-                  <InputField
-                    id="lastName"
-                    type="text"
-                    label="Last Name"
-                    value={lastName}
-                    onChange={(e) => handleChange('lastName', e.target.value)}
-                    validationMessage={errors.lastName}
-                  />
-                  <div className="mb-6">
-                    <select
-                      id="role"
-                      value={role}
-                      onChange={(e) => {
-                        setRole(e.target.value);
-                        setErrors((prev) => ({ ...prev, role: '' }));
-                      }}
-                      className="w-full p-4 bg-light-background dark:bg-dark-background border border-light-border dark:border-dark-border rounded-lg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary focus:outline-none transition-all duration-300"
-                    >
-                      <option value="" disabled>
-                        Select Role
-                      </option>
-                      <option value="candidate">Candidate</option>
-                      <option value="recruiter">Recruiter</option>
-                      <option value="interviewer">Interviewer</option>
-                    </select>
-                    {errors.role && (
-                      <p className="text-red-500 text-sm mt-1">{errors.role}</p>
-                    )}
-                  </div>
-
-                  <InputField
-                    id="phone"
-                    type="tel"
-                    label="Phone Number"
-                    value={phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    validationMessage={errors.phone}
-                  />
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-1">
+                <InputField
+                  id="firstName"
+                  type="text"
+                  label="First Name"
+                  value={firstName}
+                  onChange={(e) => handleChange('firstName', e.target.value)}
+                  validationMessage={errors.firstName}
+                />
+                <InputField
+                  id="lastName"
+                  type="text"
+                  label="Last Name"
+                  value={lastName}
+                  onChange={(e) => handleChange('lastName', e.target.value)}
+                  validationMessage={errors.lastName}
+                />
+                <div className="mb-6">
+                  <select
+                    id="role"
+                    value={role}
+                    onChange={(e) => {
+                      setRole(e.target.value);
+                      setErrors((prev) => ({ ...prev, role: '' }));
+                    }}
+                    className="w-full rounded-lg border border-light-border bg-light-background p-4 text-light-text transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-light-primary dark:border-dark-border dark:bg-dark-background dark:text-dark-text dark:focus:ring-dark-primary"
+                  >
+                    <option value="" disabled>
+                      Select Role
+                    </option>
+                    <option value="candidate">Candidate</option>
+                    <option value="recruiter">Recruiter</option>
+                    <option value="interviewer">Interviewer</option>
+                  </select>
+                  {errors.role && (
+                    <p className="mt-1 text-sm text-red-500">{errors.role}</p>
+                  )}
                 </div>
 
                 <InputField
-                  id="email"
-                  type="email"
-                  label="Email Address"
-                  value={email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  validationMessage={errors.email}
+                  id="phone"
+                  type="tel"
+                  label="Phone Number"
+                  value={phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  validationMessage={errors.phone}
                 />
-
-                <InputField
-                  id="password"
-                  type="password"
-                  label="Password"
-                  value={password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  validationMessage={errors.password}
-                />
-                <InputField
-                  id="confirmPassword"
-                  type="password"
-                  label="Confirm Password"
-                  value={confirmPassword}
-                  onChange={(e) =>
-                    handleChange('confirmPassword', e.target.value)
-                  }
-                  validationMessage={errors.confirmPassword}
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-light-primary dark:bg-dark-primary text-white py-2 sm:py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 shadow-md"
-                  disabled={isLoading}
-                >
-                  Register
-                </button>
-              </form>
-
-              <div className="text-center mt-4 sm:mt-6">
-                <p className="text-light-text dark:text-dark-text">
-                  Already have an account?{' '}
-                  <Link
-                    to="/auth/login"
-                    className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
-                    onClick={() =>
-                      trackEvent(
-                        'Authentication',
-                        'Login',
-                        'Clicked from Register'
-                      )
-                    }
-                  >
-                    Login
-                  </Link>
-                </p>
               </div>
-            </>
-          )}
-        </div>
+
+              <InputField
+                id="email"
+                type="email"
+                label="Email Address"
+                value={email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                validationMessage={errors.email}
+              />
+
+              <InputField
+                id="password"
+                type="password"
+                label="Password"
+                value={password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                validationMessage={errors.password}
+              />
+              <InputField
+                id="confirmPassword"
+                type="password"
+                label="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) =>
+                  handleChange('confirmPassword', e.target.value)
+                }
+                validationMessage={errors.confirmPassword}
+              />
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-light-primary py-2 text-lg font-semibold text-white shadow-md transition-all duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary sm:py-3"
+                disabled={isLoading}
+              >
+                Register
+              </button>
+            </form>
+
+            <div className="mt-4 text-center sm:mt-6">
+              <p className="text-light-text dark:text-dark-text">
+                Already have an account?{' '}
+                <Link
+                  to="/auth/login"
+                  className="text-light-primary transition-all duration-200 hover:text-light-secondary dark:text-dark-primary dark:hover:text-dark-secondary"
+                  onClick={() =>
+                    trackEvent(
+                      'Authentication',
+                      'Login',
+                      'Clicked from Register'
+                    )
+                  }
+                >
+                  Login
+                </Link>
+              </p>
+            </div>
+          </div>
+        )}
       </section>
       <ScrollRestoration />
     </>

@@ -365,14 +365,14 @@ export default function ContractsScreen() {
   return (
     <>
       <Helmet>
-        <title>Manage Contracts [Recruiter] - OptaHire</title>
+        <title>My Contracts - OptaHire | Manage Interview Services</title>
         <meta
           name="description"
-          content="OptaHire Recruiter Contracts - View and track all your recruitment contracts, payment statuses, and automated payout schedules."
+          content="Manage interview service contracts on OptaHire. Track payments, interview progress, and build relationships with top interviewers."
         />
         <meta
           name="keywords"
-          content="contracts, payment status, transaction history, manage contracts, recruiter dashboard"
+          content="OptaHire Recruiter Contracts, Interview Services, Contract Management, Interview Payments, Professional Services"
         />
       </Helmet>
 
@@ -384,14 +384,14 @@ export default function ContractsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Manage Your{' '}
+              My{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Contracts
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and track all your recruitment contracts, payment statuses,
-              and automated payout schedules.
+              Manage your interview service contracts and build lasting
+              relationships with professional interviewers.
             </p>
 
             {/* Alerts */}

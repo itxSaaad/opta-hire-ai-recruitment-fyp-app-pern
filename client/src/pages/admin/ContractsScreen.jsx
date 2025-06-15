@@ -220,14 +220,16 @@ export default function ContractsScreen() {
   return (
     <>
       <Helmet>
-        <title>Contracts Management [Admin] - OptaHire</title>
+        <title>
+          Contract Management [Admin] - OptaHire | Monitor Interviewer Contracts
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin Contracts Management - Manage and monitor all contracts seamlessly."
+          content="OptaHire Contract Management - Oversee all interviewer-recruiter contracts, payments, and transaction security on the platform."
         />
         <meta
           name="keywords"
-          content="OptaHire, Contracts, Recruitment, Administration"
+          content="OptaHire Contract Management, Admin Contracts, Payment Management, Interviewer Contracts"
         />
       </Helmet>
 
@@ -239,13 +241,14 @@ export default function ContractsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Contracts{' '}
+              Manage{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Management
+                Contracts
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              Manage and monitor all contracts in one place.
+              Monitor all interviewer-recruiter contracts, ensure secure
+              payments, and maintain platform transaction integrity.
             </p>
 
             {(error || updateError || deleteError) && (

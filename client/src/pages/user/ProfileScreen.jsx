@@ -274,27 +274,33 @@ function ProfileScreen() {
   return (
     <>
       <Helmet>
-        <title>Profile - OptaHire</title>
+        <title>My Profile - OptaHire | Manage Your Professional Profile</title>
         <meta
           name="description"
-          content="Manage your personal information and account security on OptaHire."
+          content="Manage your OptaHire profile. Update personal information, preferences, and optimize your presence on the recruitment platform."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Profile, User Profile, Professional Profile, Account Settings, Personal Information"
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background">
+      <section className="flex min-h-screen items-center justify-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {overallLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="w-full max-w-7xl relative animate-fadeIn">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl sm:text-4xl font-bold text-light-primary dark:text-dark-primary mb-2">
-                Your Profile
-              </h2>
-              <p className="text-light-text dark:text-dark-text">
-                Manage your personal information and account security
-              </p>
-            </div>
+          <div className="relative w-full max-w-7xl animate-fadeIn">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              My{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Profile
+              </span>
+            </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Manage your professional profile and optimize your presence on the
+              OptaHire platform.
+            </p>
 
             {(userError || updateError || passwordError || deleteError) && (
               <Alert
@@ -307,16 +313,16 @@ function ProfileScreen() {
               />
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideInLeft">
-                <div className="flex justify-between items-center mb-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="animate-slideInLeft rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                <div className="mb-6 flex items-center justify-between">
                   <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                     Personal Information
                   </h3>
                   <button
                     type="button"
                     onClick={() => setEditMode(!editMode)}
-                    className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                    className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                   >
                     {editMode ? (
                       <>
@@ -332,10 +338,10 @@ function ProfileScreen() {
 
                 {!editMode ? (
                   <div className="space-y-6">
-                    <div className="border-b border-light-border dark:border-dark-border pb-4">
+                    <div className="border-b border-light-border pb-4 dark:border-dark-border">
                       <div className="flex items-start">
                         <FaUser
-                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                           size={20}
                         />
                         <div>
@@ -350,10 +356,10 @@ function ProfileScreen() {
                       </div>
                     </div>
 
-                    <div className="border-b border-light-border dark:border-dark-border pb-4">
+                    <div className="border-b border-light-border pb-4 dark:border-dark-border">
                       <div className="flex items-start">
                         <FaPhone
-                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                           size={20}
                         />
                         <div>
@@ -367,10 +373,10 @@ function ProfileScreen() {
                       </div>
                     </div>
 
-                    <div className="border-b border-light-border dark:border-dark-border pb-4">
+                    <div className="border-b border-light-border pb-4 dark:border-dark-border">
                       <div className="flex items-start">
                         <FaEnvelope
-                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                           size={20}
                         />
                         <div>
@@ -387,14 +393,14 @@ function ProfileScreen() {
                     <div className="pb-2">
                       <div className="flex items-start">
                         <FaIdCard
-                          className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                          className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                           size={20}
                         />
                         <div>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             Role
                           </p>
-                          <div className="flex flex-wrap gap-2 mt-1">
+                          <div className="mt-1 flex flex-wrap gap-2">
                             {getRoleString() &&
                               getRoleString()
                                 .split(', ')
@@ -417,7 +423,7 @@ function ProfileScreen() {
                     noValidate
                     className="space-y-6"
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                       <InputField
                         id="firstName"
                         type="text"
@@ -467,9 +473,9 @@ function ProfileScreen() {
                     <div className="flex justify-end pt-2">
                       <button
                         type="submit"
-                        className={`flex items-center justify-center bg-light-primary dark:bg-dark-primary text-white py-2 px-6 rounded-lg font-semibold text-md hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
+                        className={`text-md active:scale-98 flex items-center justify-center rounded-lg bg-light-primary px-6 py-2 font-semibold text-white shadow-md transition-all duration-300 hover:bg-light-secondary hover:shadow-lg dark:bg-dark-primary dark:hover:bg-dark-secondary ${
                           isUpdatingProfile || !isFormChanged
-                            ? 'opacity-50 cursor-not-allowed'
+                            ? 'cursor-not-allowed opacity-50'
                             : ''
                         }`}
                         disabled={isUpdatingProfile || !isFormChanged}
@@ -483,15 +489,15 @@ function ProfileScreen() {
               </div>
 
               <div className="space-y-6">
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="animate-slideIn rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                       Password Management
                     </h3>
                     <button
                       type="button"
                       onClick={() => setPasswordEditMode(!passwordEditMode)}
-                      className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                      className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                     >
                       {passwordEditMode ? (
                         <>
@@ -546,9 +552,9 @@ function ProfileScreen() {
                       <div className="flex justify-end">
                         <button
                           type="submit"
-                          className={`flex items-center justify-center bg-light-primary dark:bg-dark-primary text-white py-2 px-6 rounded-lg font-semibold text-md hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
+                          className={`text-md active:scale-98 flex items-center justify-center rounded-lg bg-light-primary px-6 py-2 font-semibold text-white shadow-md transition-all duration-300 hover:bg-light-secondary hover:shadow-lg dark:bg-dark-primary dark:hover:bg-dark-secondary ${
                             isUpdatingPassword || !isPasswordFormValid
-                              ? 'opacity-50 cursor-not-allowed'
+                              ? 'cursor-not-allowed opacity-50'
                               : ''
                           }`}
                           disabled={isUpdatingPassword || !isPasswordFormValid}
@@ -568,11 +574,11 @@ function ProfileScreen() {
                   )}
                 </div>
 
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
-                  <h3 className="text-xl font-semibold text-red-600 dark:text-red-500 mb-4">
+                <div className="animate-slideIn rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <h3 className="mb-4 text-xl font-semibold text-red-600 dark:text-red-500">
                     Delete Account
                   </h3>
-                  <div className="flex items-start mb-6">
+                  <div className="mb-6 flex items-start">
                     <p className="text-gray-600 dark:text-gray-400">
                       Once you delete your account, there is no going back.
                       Please be certain.
@@ -581,8 +587,8 @@ function ProfileScreen() {
                   <div className="flex justify-end">
                     <button
                       type="button"
-                      className={`flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg font-semibold text-md active:scale-98 transition-all duration-300 shadow-md hover:shadow-lg ${
-                        isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                      className={`text-md active:scale-98 flex items-center justify-center rounded-lg bg-red-600 px-6 py-2 font-semibold text-white shadow-md transition-all duration-300 hover:bg-red-700 hover:shadow-lg ${
+                        isDeleting ? 'cursor-not-allowed opacity-50' : ''
                       }`}
                       onClick={() => setShowModal(true)}
                       disabled={isDeleting}
@@ -609,13 +615,13 @@ function ProfileScreen() {
             </p>
             <div className="flex justify-end space-x-2">
               <button
-                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all duration-200"
+                className="rounded bg-red-600 px-4 py-2 text-white transition-all duration-200 hover:bg-red-700"
                 onClick={() => {
                   confirmDelete();
                   setShowModal(false);

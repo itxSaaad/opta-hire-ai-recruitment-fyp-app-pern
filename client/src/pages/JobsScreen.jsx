@@ -44,8 +44,16 @@ export default function JobsScreen() {
   };
 
   const handleViewMore = () => {
-    if (user) {
-      navigate('/candidate/dashboard');
+    if (!user) {
+      navigate('/auth/login');
+    } else if (user.isCandidate) {
+      navigate('/candidate/jobs');
+    } else if (user.isInterviewer) {
+      navigate('/interviewer/jobs');
+    } else if (user.isRecruiter) {
+      navigate('/recruiter/jobs');
+    } else if (user.isAdmin) {
+      navigate('/admin/job');
     } else {
       navigate('/auth/login');
     }
@@ -158,25 +166,29 @@ export default function JobsScreen() {
   return (
     <>
       <Helmet>
-        <title>Jobs - OptaHire</title>
+        <title>Browse Jobs - OptaHire | Find Your Perfect Career Match</title>
         <meta
           name="description"
-          content="Explore job opportunities and find your next career move with OptaHire. Search for jobs by title, location, and more."
+          content="Explore career opportunities on OptaHire. Discover jobs matched to your skills with AI-powered recommendations and easy applications."
         />
         <meta
           name="keywords"
-          content="jobs, career, job search, employment, opportunities, OptaHire"
+          content="OptaHire Jobs, Career Opportunities, Job Search, AI Job Matching, Employment, Career Growth"
         />
       </Helmet>
       <section className="relative flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         <div className="absolute inset-0 z-10 bg-gradient-to-b from-light-primary/20 to-light-background dark:from-dark-primary/20 dark:to-dark-background" />
         <div className="mx-auto max-w-7xl animate-slideUp text-center">
-          <h1 className="mb-6 text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-            Discover Your Next{' '}
+          <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+            Discover Your{' '}
             <span className="text-light-primary dark:text-dark-primary">
-              Career Opportunity
+              Dream Career
             </span>
           </h1>
+          <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+            Explore thousands of opportunities and find the perfect match for
+            your skills and aspirations.
+          </p>
           <div className="mx-auto mb-12 flex max-w-4xl flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 transform text-light-primary dark:text-dark-primary" />
@@ -348,7 +360,7 @@ export default function JobsScreen() {
           </div>
         )}
 
-        <div className="flex w-full justify-center">
+        <div className="z-10 flex w-full justify-center">
           <button
             onClick={handleViewMore}
             className="my-8 w-full rounded-lg bg-light-primary px-12 py-4 text-lg text-light-background shadow-lg hover:opacity-90 dark:bg-dark-primary dark:text-dark-background sm:w-1/2 md:w-1/4"

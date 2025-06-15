@@ -346,14 +346,16 @@ export default function UsersScreen() {
   return (
     <>
       <Helmet>
-        <title>Users Management [Admin] - OptaHire</title>
+        <title>
+          User Management [Admin] - OptaHire | Manage Platform Users
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin - Manage users and their resumes effectively."
+          content="OptaHire User Management - Efficiently manage recruiters, candidates, and interviewers. Control user permissions and platform access."
         />
         <meta
           name="keywords"
-          content="OptaHire, Admin Users Management, Recruitment, Management"
+          content="OptaHire User Management, Admin Users, Recruitment Platform, User Control, Account Management"
         />
       </Helmet>
 
@@ -371,7 +373,8 @@ export default function UsersScreen() {
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all system users in one place.
+              Oversee all platform users including recruiters, candidates, and
+              interviewers in one centralized location.
             </p>
 
             {error && <Alert message={error.data?.message} />}

@@ -178,24 +178,30 @@ export default function JobsScreen() {
   return (
     <>
       <Helmet>
-        <title>Job Listings [Candidate] - OptaHire</title>
+        <title>Browse Jobs - OptaHire | AI-Matched Career Opportunities</title>
         <meta
           name="description"
-          content="Explore job opportunities tailored for you. Search by title, location, and more to find your perfect fit."
+          content="Discover AI-matched job opportunities on OptaHire. Find the perfect career fit with intelligent job recommendations and easy applications."
         />
         <meta
           name="keywords"
-          content="job listings, job search, career opportunities, find jobs, job openings, employment, job vacancies"
+          content="OptaHire Jobs, Job Search, AI Job Matching, Career Opportunities, Job Applications"
         />
       </Helmet>
+
       <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         <div className="mx-auto max-w-7xl animate-slideUp text-center">
-          <h1 className="mb-6 text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-            Discover Your Next{' '}
+          <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+            Discover{' '}
             <span className="text-light-primary dark:text-dark-primary">
-              Career Opportunity
+              Opportunities
             </span>
           </h1>
+          <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+            Explore job opportunities designed to advance your career and match
+            your unique skills.
+          </p>
+
           <div className="mx-auto mb-12 flex max-w-4xl flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 transform text-light-primary dark:text-dark-primary" />

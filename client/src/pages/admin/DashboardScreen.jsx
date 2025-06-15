@@ -365,14 +365,16 @@ export default function DashboardScreen() {
   return (
     <>
       <Helmet>
-        <title>Admin Dashboard - OptaHire</title>
+        <title>
+          Admin Dashboard - OptaHire | Recruitment Platform Analytics
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin Dashboard - Manage your Application efficiently with our powerful tools and insights."
+          content="OptaHire Admin Dashboard - Monitor recruitment metrics, user activity, and platform performance with comprehensive analytics and insights."
         />
         <meta
           name="keywords"
-          content="OptaHire, Admin Dashboard, Recruitment, Management"
+          content="OptaHire Admin Dashboard, Recruitment Analytics, Platform Management, Admin Panel, Hiring Metrics"
         />
       </Helmet>
 
@@ -384,14 +386,14 @@ export default function DashboardScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Welcome to the{' '}
+              Admin{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Admin Dashboard
+                Dashboard
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              Manage your application efficiently with our powerful tools and
-              insights.
+              Monitor platform performance, track key metrics, and manage your
+              recruitment ecosystem efficiently.
             </p>
 
             {(errorUsers ||

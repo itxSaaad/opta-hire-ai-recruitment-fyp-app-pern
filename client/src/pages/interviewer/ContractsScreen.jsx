@@ -424,14 +424,14 @@ export default function ContractsScreen() {
   return (
     <>
       <Helmet>
-        <title>Manage Contracts [Interviewer] - OptaHire</title>
+        <title>My Contracts - OptaHire | Manage Interview Contracts</title>
         <meta
           name="description"
-          content="OptaHire Interviewer Contracts - View and manage all your recruitment contracts, accept/reject offers, and track your earnings."
+          content="Manage your interview contracts on OptaHire. Track payments, contract status, and build long-term recruiter relationships."
         />
         <meta
           name="keywords"
-          content="contracts, earnings, accept contracts, reject contracts, interviewer dashboard"
+          content="OptaHire Interviewer Contracts, Interview Payments, Contract Management, Freelance Contracts, Interview Business"
         />
       </Helmet>
 
@@ -443,15 +443,16 @@ export default function ContractsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Manage Your{' '}
+              My{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Contracts
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all your recruitment contracts, accept or reject
-              offers, and track your earnings.
+              Manage your interview contracts, track payments, and maintain
+              professional recruiter relationships.
             </p>
+
             {/* Stripe Return Alert */}
             {stripeReturnAlert && (
               <div className="mb-6">

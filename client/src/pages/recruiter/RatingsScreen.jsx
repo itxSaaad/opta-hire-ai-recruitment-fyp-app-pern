@@ -175,7 +175,7 @@ export default function RatingsScreen() {
       label: 'Rating',
       render: (rating) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             rating.rating
               ? 'bg-blue-100 text-blue-800'
               : 'bg-gray-100 text-gray-800'
@@ -207,7 +207,7 @@ export default function RatingsScreen() {
     {
       onClick: handleDetails,
       render: () => (
-        <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded flex items-center gap-1">
+        <button className="flex items-center gap-1 rounded bg-indigo-500 px-3 py-1 text-white hover:bg-indigo-600">
           <FaStar />
           View Details
         </button>
@@ -218,37 +218,38 @@ export default function RatingsScreen() {
   return (
     <>
       <Helmet>
-        <title>Manage Interviewer Ratings [Recruiter] - OptaHire</title>
+        <title>Interviewer Ratings - OptaHire | Rate Interview Quality</title>
         <meta
           name="description"
-          content="OptaHire Recruiter Ratings - Manage and view all interviewer ratings in one place."
+          content="Rate interviewer performance on OptaHire. Provide feedback to maintain high-quality interview standards and build trust."
         />
         <meta
           name="keywords"
-          content="OptaHire, ratings, interviewer, recruiter feedback, interview ratings"
+          content="OptaHire Interviewer Ratings, Interview Quality, Performance Feedback, Professional Reviews, Quality Assurance"
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-7xl w-full mx-auto animate-slideUp">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
-              Manage{' '}
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Rate{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Interviewer Ratings
+                Interviewers
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
-              View and manage all the ratings given to interviewers in one
-              place.
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Rate interviewer performance and help maintain exceptional
+              interview quality standards on our platform.
             </p>
+
             <button
               onClick={handleCreateRating}
-              className="mb-4 px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded hover:bg-light-secondary dark:hover:bg-dark-secondary transition flex items-center gap-2"
+              className="mb-4 flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
               disabled={isCreating}
             >
               <FaPlus /> Rate Interviewer
@@ -272,9 +273,9 @@ export default function RatingsScreen() {
           >
             {selectedRating && (
               <div className="space-y-4 text-left">
-                <div className="border-b border-light-border dark:border-dark-border pb-4">
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
                   <div className="flex items-start">
-                    <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                       <FaUser
                         className="text-light-primary dark:text-dark-primary"
                         size={20}
@@ -284,20 +285,20 @@ export default function RatingsScreen() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Interviewer
                       </p>
-                      <p className="text-lg font-medium text-light-text dark:text-dark-text break-words">
+                      <p className="break-words text-lg font-medium text-light-text dark:text-dark-text">
                         {selectedRating.interviewer.firstName}{' '}
                         {selectedRating.interviewer.lastName}
                       </p>
-                      <p className="text-sm text-light-secondary dark:text-dark-secondary mt-1">
+                      <p className="mt-1 text-sm text-light-secondary dark:text-dark-secondary">
                         {selectedRating.interviewer.email}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-b border-light-border dark:border-dark-border pb-4 break-words">
+                <div className="break-words border-b border-light-border pb-4 dark:border-dark-border">
                   <div className="flex items-start">
-                    <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                       <FaBriefcase
                         className="text-light-primary dark:text-dark-primary"
                         size={20}
@@ -310,16 +311,16 @@ export default function RatingsScreen() {
                       <p className="text-lg font-medium text-light-text dark:text-dark-text">
                         {selectedRating.job.title}
                       </p>
-                      <p className="text-sm text-light-secondary dark:text-dark-secondary mt-1">
+                      <p className="mt-1 text-sm text-light-secondary dark:text-dark-secondary">
                         {selectedRating.job.company}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-b border-light-border dark:border-dark-border pb-4">
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
                   <div className="flex items-start">
-                    <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                       <FaClipboardList
                         className="text-light-primary dark:text-dark-primary"
                         size={20}
@@ -329,16 +330,16 @@ export default function RatingsScreen() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Contract ID
                       </p>
-                      <p className="text-lg font-medium text-light-text dark:text-dark-text break-words">
+                      <p className="break-words text-lg font-medium text-light-text dark:text-dark-text">
                         {selectedRating.contractId}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-b border-light-border dark:border-dark-border pb-4">
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
                   <div className="flex items-start">
-                    <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                       <FaStar
                         className="text-light-primary dark:text-dark-primary"
                         size={20}
@@ -348,16 +349,16 @@ export default function RatingsScreen() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Rating
                       </p>
-                      <span className="text-lg font-medium text-light-text dark:text-dark-text inline-block mt-1">
+                      <span className="mt-1 inline-block text-lg font-medium text-light-text dark:text-dark-text">
                         {selectedRating.rating}/5
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-b border-light-border dark:border-dark-border pb-4">
+                <div className="border-b border-light-border pb-4 dark:border-dark-border">
                   <div className="flex items-start">
-                    <div className="w-6 min-w-[24px] flex justify-center mt-1 mr-4">
+                    <div className="mr-4 mt-1 flex w-6 min-w-[24px] justify-center">
                       <FaCommentDots
                         className="text-light-primary dark:text-dark-primary"
                         size={20}
@@ -367,7 +368,7 @@ export default function RatingsScreen() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Feedback
                       </p>
-                      <p className="text-lg font-medium text-light-text dark:text-dark-text whitespace-pre-wrap break-words mt-1">
+                      <p className="mt-1 whitespace-pre-wrap break-words text-lg font-medium text-light-text dark:text-dark-text">
                         {selectedRating.feedback || 'No feedback provided.'}
                       </p>
                     </div>
@@ -375,7 +376,7 @@ export default function RatingsScreen() {
                 </div>
                 <div className="flex justify-end pt-2">
                   <button
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
+                    className="flex items-center gap-2 rounded bg-gray-200 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                     onClick={() => setShowDetails(false)}
                   >
                     <FaTimes />
@@ -422,8 +423,8 @@ export default function RatingsScreen() {
               />
 
               {selectedContract && (
-                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-4">
-                  <h3 className="font-medium mb-2">Contract Details</h3>
+                <div className="mb-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+                  <h3 className="mb-2 font-medium">Contract Details</h3>
                   <p>
                     <strong>Job:</strong> {selectedContract.job.title}
                   </p>
@@ -462,13 +463,13 @@ export default function RatingsScreen() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition"
+                  className="rounded bg-gray-300 px-4 py-2 text-gray-800 transition hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-light-primary dark:bg-dark-primary text-white rounded hover:bg-light-secondary dark:hover:bg-dark-secondary transition flex items-center gap-2"
+                  className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                   disabled={!selectedContract}
                 >
                   <FaStar /> Submit Rating

@@ -211,24 +211,30 @@ export default function JobsScreen() {
   return (
     <>
       <Helmet>
-        <title>Job Listings [Interviewer] - OptaHire</title>
+        <title>Available Jobs - OptaHire | Find Interview Opportunities</title>
         <meta
           name="description"
-          content="OptaHire Interviewer Job Listings - Explore and apply for job opportunities that match your skills and interests."
+          content="Discover interview opportunities on OptaHire. Browse jobs seeking expert interviewers and grow your freelance business."
         />
         <meta
           name="keywords"
-          content="job listings, job search, career opportunities, find jobs, job openings, employment, job vacancies"
+          content="OptaHire Interviewer Jobs, Interview Opportunities, Freelance Interviewing, Interview Gigs, Interviewer Marketplace"
         />
       </Helmet>
+
       <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         <div className="mx-auto max-w-7xl animate-slideUp text-center">
-          <h1 className="mb-6 text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-            Discover Your Next{' '}
+          <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+            Interview{' '}
             <span className="text-light-primary dark:text-dark-primary">
-              Career Opportunity
+              Opportunities
             </span>
           </h1>
+          <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+            Browse available interview opportunities and connect with recruiters
+            seeking your expertise.
+          </p>
+
           <div className="mx-auto mb-12 flex max-w-4xl flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 transform text-light-primary dark:text-dark-primary" />
@@ -252,6 +258,7 @@ export default function JobsScreen() {
             </div>
           </div>
         </div>
+
         {error ||
           (chatRoomCreationError && (
             <Alert

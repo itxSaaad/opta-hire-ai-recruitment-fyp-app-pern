@@ -173,14 +173,16 @@ export default function ApplicationsScreen() {
   return (
     <>
       <Helmet>
-        <title>Track Applications [Interviewer] - OptaHire</title>
+        <title>
+          Review Applications - OptaHire | AI-Shortlisted Candidates
+        </title>
         <meta
           name="description"
-          content="OptaHire Interviewer Applications - Track shortlisted applications in one place."
+          content="Review AI-shortlisted candidate applications on OptaHire. Access top-quality candidates for efficient interview processes."
         />
         <meta
           name="keywords"
-          content="OptaHire, Interviewer, Applications, Track, Shortlisted"
+          content="OptaHire Review Applications, AI Shortlisted Candidates, Interview Candidates, Candidate Review, Quality Candidates"
         />
       </Helmet>
 
@@ -192,13 +194,14 @@ export default function ApplicationsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Track Shortlisted{' '}
+              Review{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Applications
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all shortlisted applications in one place.
+              Review AI-shortlisted candidate applications and prepare for
+              high-quality interview sessions.
             </p>
 
             {(error || createError) && (

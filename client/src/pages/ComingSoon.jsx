@@ -45,73 +45,78 @@ export default function ComingSoon({
   return (
     <>
       <Helmet>
-        <title>Coming Soon - OptaHire</title>
+        <title>Coming Soon - OptaHire | New Features in Development</title>
         <meta
           name="description"
-          content="OptaHire is working hard to bring you an innovative recruitment platform. Stay tuned for something amazing!"
+          content="Exciting new features coming to OptaHire. Stay tuned for enhanced AI recruitment capabilities and improved user experience."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Coming Soon, New Features, AI Recruitment Updates, Platform Development"
         />
       </Helmet>
-      <main className="relative flex flex-col items-center justify-center min-h-screen text-center p-4 bg-light-background dark:bg-dark-background">
-        <h1 className="absolute leading-3 text-[20vw] font-extrabold text-light-primary dark:text-dark-primary opacity-10 flex items-center justify-center">
+      <main className="relative flex min-h-screen flex-col items-center justify-center bg-light-background p-4 text-center dark:bg-dark-background">
+        <h1 className="absolute flex items-center justify-center text-[20vw] font-extrabold leading-3 text-light-primary opacity-10 dark:text-dark-primary">
           OptaHire
         </h1>
-        <div className="relative w-full max-w-xl z-10 flex flex-col items-center justify-center">
+        <div className="relative z-10 flex w-full max-w-xl flex-col items-center justify-center">
           <img
             src={logoSrc}
             alt="Spinning Logo"
-            className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-60 lg:h-60 animate-loader"
+            className="h-40 w-40 animate-loader sm:h-48 sm:w-48 md:h-56 md:w-56 lg:h-60 lg:w-60"
           />
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-light-text dark:text-dark-text mb-4">
+          <h1 className="mb-4 text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
             {isLaunched ? "We're Live!" : 'Coming Soon!'}
           </h1>
           {!isLaunched ? (
             <>
-              <p className="text-base sm:text-lg md:text-xl text-light-text dark:text-dark-text opacity-80 mb-8">
-                We are working hard to bring you something special. Stay tuned!
+              <p className="mb-8 text-base text-light-text opacity-80 dark:text-dark-text sm:text-lg md:text-xl">
+                We&apos;re working on exciting new features to enhance your
+                recruitment experience. Stay tuned!
               </p>
-              <div className="flex flex-wrap justify-center space-x-4 sm:space-x-8 text-light-text dark:text-dark-text text-base sm:text-lg md:text-xl font-medium mb-8">
+              <div className="mb-8 flex flex-wrap justify-center space-x-4 text-base font-medium text-light-text dark:text-dark-text sm:space-x-8 sm:text-lg md:text-xl">
                 <div className="flex flex-col items-center">
-                  <p className="text-4xl sm:text-5xl font-extrabold text-light-primary dark:text-dark-primary">
+                  <p className="text-4xl font-extrabold text-light-primary dark:text-dark-primary sm:text-5xl">
                     {timeLeft.days || 0}
                   </p>
-                  <p className="text-xs sm:text-sm uppercase opacity-80">
+                  <p className="text-xs uppercase opacity-80 sm:text-sm">
                     Days
                   </p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-4xl sm:text-5xl font-extrabold text-light-primary dark:text-dark-primary">
+                  <p className="text-4xl font-extrabold text-light-primary dark:text-dark-primary sm:text-5xl">
                     {timeLeft.hours || 0}
                   </p>
-                  <p className="text-xs sm:text-sm uppercase opacity-80">
+                  <p className="text-xs uppercase opacity-80 sm:text-sm">
                     Hours
                   </p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-4xl sm:text-5xl font-extrabold text-light-primary dark:text-dark-primary">
+                  <p className="text-4xl font-extrabold text-light-primary dark:text-dark-primary sm:text-5xl">
                     {timeLeft.minutes || 0}
                   </p>
-                  <p className="text-xs sm:text-sm uppercase opacity-80">
+                  <p className="text-xs uppercase opacity-80 sm:text-sm">
                     Minutes
                   </p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <p className="text-4xl sm:text-5xl font-extrabold text-light-primary dark:text-dark-primary">
+                  <p className="text-4xl font-extrabold text-light-primary dark:text-dark-primary sm:text-5xl">
                     {timeLeft.seconds || 0}
                   </p>
-                  <p className="text-xs sm:text-sm uppercase opacity-80">
+                  <p className="text-xs uppercase opacity-80 sm:text-sm">
                     Seconds
                   </p>
                 </div>
               </div>
             </>
           ) : (
-            <p className="text-base sm:text-lg md:text-xl text-light-text dark:text-dark-text opacity-80 mb-8">
+            <p className="mb-8 text-base text-light-text opacity-80 dark:text-dark-text sm:text-lg md:text-xl">
               Our platform is now live. Check it out!
             </p>
           )}
           <Link
             to="/"
-            className="flex items-center space-x-2 text-base sm:text-lg md:text-xl font-medium text-light-secondary dark:text-dark-primary hover:underline underline-offset-4 transition duration-300 ease-in-out transform hover:scale-105"
+            className="flex transform items-center space-x-2 text-base font-medium text-light-secondary underline-offset-4 transition duration-300 ease-in-out hover:scale-105 hover:underline dark:text-dark-primary sm:text-lg md:text-xl"
             onClick={() =>
               trackEvent('ComingSoon', 'Go to Home Clicked', {
                 isLaunched,

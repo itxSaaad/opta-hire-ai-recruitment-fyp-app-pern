@@ -159,7 +159,7 @@ export default function FeedbackScreen() {
         stars.push(
           <FaStar
             key={i}
-            className="text-yellow-400 cursor-pointer text-2xl"
+            className="cursor-pointer text-2xl text-yellow-400"
             onClick={() => handleStarClick(i)}
           />
         );
@@ -167,7 +167,7 @@ export default function FeedbackScreen() {
         stars.push(
           <FaStarHalfAlt
             key={i}
-            className="text-yellow-400 cursor-pointer text-2xl"
+            className="cursor-pointer text-2xl text-yellow-400"
             onClick={() => handleStarClick(i)}
           />
         );
@@ -175,7 +175,7 @@ export default function FeedbackScreen() {
         stars.push(
           <FaStar
             key={i}
-            className="text-gray-300 dark:text-gray-600 cursor-pointer text-2xl"
+            className="cursor-pointer text-2xl text-gray-300 dark:text-gray-600"
             onClick={() => handleStarClick(i)}
           />
         );
@@ -194,38 +194,37 @@ export default function FeedbackScreen() {
   return (
     <>
       <Helmet>
-        <title>Feedback [Interviewer] - OptaHire</title>
+        <title>Interview Feedback - OptaHire | Performance Review</title>
         <meta
           name="description"
-          content="Provide feedback for the candidate after the interview."
+          content="View your interview feedback on OptaHire. Get detailed performance insights and recommendations for improvement."
         />
         <meta
           name="keywords"
-          content="feedback, interview, candidate, interviewer, OptaHire"
+          content="OptaHire Interview Feedback, Performance Review, Interview Results, Career Development, Interview Assessment"
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background">
+
+      <section className="flex min-h-screen items-center justify-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md mx-auto">
+          <div className="mx-auto w-full max-w-sm sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-5xl w-full mx-auto animate-fadeIn">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
-                Interview{' '}
-                <span className="text-light-primary dark:text-dark-primary">
-                  Feedback
-                </span>
-              </h1>
-              <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
-                Provide your assessment and feedback for the candidate
-              </p>
-            </div>
+          <div className="mx-auto w-full max-w-5xl animate-fadeIn">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Interview{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Feedback
+              </span>
+            </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Review your interview performance and get valuable insights to
+              enhance your future interviews.
+            </p>
 
             {(error || updateError || errors.form) && (
               <Alert
-                type="error"
                 message={
                   error?.data?.message ||
                   updateError?.data?.message ||
@@ -238,16 +237,16 @@ export default function FeedbackScreen() {
               <Alert isSuccess={isSuccess} message={updateData.data.message} />
             )}
 
-            <div className="bg-light-surface dark:bg-dark-surface p-8 rounded-lg shadow-lg border border-light-border dark:border-dark-border animate-slideIn">
+            <div className="animate-slideIn rounded-lg border border-light-border bg-light-surface p-8 shadow-lg dark:border-dark-border dark:bg-dark-surface">
               {interviews?.interviews && interviews.interviews.length > 0 ? (
                 <>
-                  <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg mb-8">
-                    <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
+                  <div className="mb-8 rounded-lg bg-light-background p-4 dark:bg-dark-background">
+                    <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <h3 className="text-xl font-bold text-light-text dark:text-dark-text">
                           {interviews.interviews[0].job.title}
                         </h3>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="mt-1 flex items-center gap-2">
                           <span className="font-medium text-light-secondary dark:text-dark-secondary">
                             {interviews.interviews[0].job?.company || 'Company'}
                           </span>
@@ -255,7 +254,7 @@ export default function FeedbackScreen() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div className="flex items-center gap-2">
                         <FaUser className="text-light-primary dark:text-dark-primary" />
                         <span className="text-light-text dark:text-dark-text">
@@ -296,21 +295,21 @@ export default function FeedbackScreen() {
                   </div>
 
                   {feedbackAlreadyGiven ? (
-                    <div className="text-center p-8 animate-slideIn">
+                    <div className="animate-slideIn p-8 text-center">
                       <FaClipboardList
-                        className="text-light-primary dark:text-dark-primary mx-auto mb-4"
+                        className="mx-auto mb-4 text-light-primary dark:text-dark-primary"
                         size={48}
                       />
-                      <h2 className="text-xl font-bold text-light-text dark:text-dark-text mb-2">
+                      <h2 className="mb-2 text-xl font-bold text-light-text dark:text-dark-text">
                         Feedback Already Submitted
                       </h2>
-                      <p className="text-light-text/70 dark:text-dark-text/70 mb-6">
+                      <p className="mb-6 text-light-text/70 dark:text-dark-text/70">
                         You have already provided feedback for this interview.
                         Thank you for your assessment.
                       </p>
                       <button
                         onClick={() => navigate('/interviewer/dashboard')}
-                        className="px-6 py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300"
+                        className="rounded-lg bg-light-primary px-6 py-3 text-white transition-all duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         Return to Dashboard
                       </button>
@@ -318,17 +317,17 @@ export default function FeedbackScreen() {
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="mb-6">
-                        <label className="block text-light-text dark:text-dark-text text-lg font-medium mb-2">
+                        <label className="mb-2 block text-lg font-medium text-light-text dark:text-dark-text">
                           Rating
                         </label>
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           {renderStars()}
                           <span className="ml-2 text-light-text dark:text-dark-text">
                             ({feedbackData.rating} / 5)
                           </span>
                         </div>
                         {errors.rating && (
-                          <p className="text-red-500 text-sm mt-1">
+                          <p className="mt-1 text-sm text-red-500">
                             {errors.rating}
                           </p>
                         )}
@@ -352,7 +351,7 @@ export default function FeedbackScreen() {
                         <button
                           type="button"
                           onClick={() => navigate('/interviewer/dashboard')}
-                          className="px-6 py-3 border border-light-primary dark:border-dark-primary text-light-primary dark:text-dark-primary rounded-lg hover:bg-light-primary/10 dark:hover:bg-dark-primary/10 transition-all duration-300 flex items-center gap-2"
+                          className="flex items-center gap-2 rounded-lg border border-light-primary px-6 py-3 text-light-primary transition-all duration-300 hover:bg-light-primary/10 dark:border-dark-primary dark:text-dark-primary dark:hover:bg-dark-primary/10"
                         >
                           <FaTimes size={16} />
                           Cancel
@@ -360,9 +359,9 @@ export default function FeedbackScreen() {
                         <button
                           type="submit"
                           disabled={isUpdating || !isFormValid}
-                          className={`px-6 py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 flex items-center gap-2 ${
+                          className={`flex items-center gap-2 rounded-lg bg-light-primary px-6 py-3 text-white transition-all duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary ${
                             isUpdating || !isFormValid
-                              ? 'opacity-50 cursor-not-allowed'
+                              ? 'cursor-not-allowed opacity-50'
                               : 'active:scale-98 shadow-md hover:shadow-lg'
                           }`}
                           onClick={() =>
@@ -387,21 +386,21 @@ export default function FeedbackScreen() {
                   )}
                 </>
               ) : (
-                <div className="text-center p-8 animate-slideIn">
+                <div className="animate-slideIn p-8 text-center">
                   <FaClipboardList
-                    className="text-light-primary dark:text-dark-primary mx-auto mb-4"
+                    className="mx-auto mb-4 text-light-primary dark:text-dark-primary"
                     size={48}
                   />
-                  <h2 className="text-xl font-bold text-light-text dark:text-dark-text mb-2">
+                  <h2 className="mb-2 text-xl font-bold text-light-text dark:text-dark-text">
                     No Interview Found
                   </h2>
-                  <p className="text-light-text/70 dark:text-dark-text/70 mb-6">
+                  <p className="mb-6 text-light-text/70 dark:text-dark-text/70">
                     We couldn&apos;t find an interview with the provided room
                     ID.
                   </p>
                   <button
                     onClick={() => navigate('/interviewer/dashboard')}
-                    className="px-6 py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300"
+                    className="rounded-lg bg-light-primary px-6 py-3 text-white transition-all duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                   >
                     Return to Dashboard
                   </button>

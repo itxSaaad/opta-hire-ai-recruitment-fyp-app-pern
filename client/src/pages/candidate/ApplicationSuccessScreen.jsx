@@ -35,20 +35,24 @@ export default function ApplicationSuccess() {
   return (
     <>
       <Helmet>
-        <title>Application Successful [Candidate] - OptaHire</title>
+        <title>Application Submitted - OptaHire | Success Confirmation</title>
         <meta
           name="description"
-          content="Your application has been submitted successfully."
+          content="Application successfully submitted to OptaHire. Track your application status and prepare for potential interview opportunities."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Application Success, Application Submitted, Job Application Confirmation, Application Status"
         />
       </Helmet>
 
-      <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn items-center justify-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md mx-auto">
+          <div className="mx-auto w-full max-w-sm sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-4xl w-full mx-auto text-center bg-light-surface dark:bg-dark-surface p-8 rounded-lg shadow-lg border border-light-border dark:border-dark-border transition-all duration-500 hover:shadow-xl animate-slideUp">
+          <div className="mx-auto w-full max-w-4xl animate-slideUp rounded-lg border border-light-border bg-light-surface p-8 text-center shadow-lg transition-all duration-500 hover:shadow-xl dark:border-dark-border dark:bg-dark-surface">
             {error && <Alert message={error?.data?.message} />}
 
             <div className="relative mb-8">
@@ -56,40 +60,40 @@ export default function ApplicationSuccess() {
                 <div className="h-0.5 w-full bg-green-100 dark:bg-green-900"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-green-100 dark:bg-green-900 rounded-full p-4">
-                  <FaCheckCircle className="text-green-500 mx-auto" size={64} />
+                <span className="rounded-full bg-green-100 p-4 dark:bg-green-900">
+                  <FaCheckCircle className="mx-auto text-green-500" size={64} />
                 </span>
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold text-light-text dark:text-dark-text mb-6">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Application{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Successful!
+                Submitted
               </span>
             </h1>
 
             {jobData?.job && (
-              <div className="mb-6 p-6 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
+              <div className="mb-6 rounded-lg bg-light-background p-6 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {jobData.job.title}
                     </h2>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="mt-2 flex items-center gap-2">
                       <span className="font-medium text-light-secondary dark:text-dark-secondary">
                         {jobData.job.company}
                       </span>
-                      <span className="text-light-text dark:text-dark-text opacity-60">
+                      <span className="text-light-text opacity-60 dark:text-dark-text">
                         •
                       </span>
-                      <span className="text-sm flex items-center gap-1 text-light-text dark:text-dark-text opacity-60">
+                      <span className="flex items-center gap-1 text-sm text-light-text opacity-60 dark:text-dark-text">
                         <FaMapMarkerAlt /> {jobData.job.location}
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <span className="bg-light-primary bg-opacity-10 text-light-primary dark:text-dark-primary text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                    <span className="flex items-center rounded-full bg-light-primary bg-opacity-10 px-3 py-1 text-xs font-medium text-light-primary dark:text-dark-primary">
                       <FaBriefcase className="mr-1" />{' '}
                       {jobData.job.category || 'Full-time'}
                     </span>
@@ -98,15 +102,15 @@ export default function ApplicationSuccess() {
               </div>
             )}
 
-            <p className="text-lg text-light-text dark:text-dark-text mb-8">
+            <p className="mb-8 text-lg text-light-text dark:text-dark-text">
               Thank you for applying. We have received your application and will
               be in touch soon.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md flex items-center">
+            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="flex items-center rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
                 <FaEnvelope
-                  className="text-light-primary dark:text-dark-primary mr-3"
+                  className="mr-3 text-light-primary dark:text-dark-primary"
                   size={24}
                 />
                 <div className="text-left">
@@ -118,9 +122,9 @@ export default function ApplicationSuccess() {
                   </p>
                 </div>
               </div>
-              <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md flex items-center">
+              <div className="flex items-center rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
                 <FaClipboardList
-                  className="text-light-primary dark:text-dark-primary mr-3"
+                  className="mr-3 text-light-primary dark:text-dark-primary"
                   size={24}
                 />
                 <div className="text-left">
@@ -134,7 +138,7 @@ export default function ApplicationSuccess() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link
                 to="/candidate/dashboard"
                 onClick={() =>
@@ -144,7 +148,7 @@ export default function ApplicationSuccess() {
                     'User clicked on Go to Dashboard button'
                   )
                 }
-                className="px-6 py-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 font-medium hover:shadow-lg transform hover:-translate-y-1 flex items-center justify-center gap-2"
+                className="flex transform items-center justify-center gap-2 rounded-lg bg-light-primary px-6 py-3 font-medium text-white transition-all duration-300 hover:-translate-y-1 hover:bg-light-secondary hover:shadow-lg dark:bg-dark-primary dark:hover:bg-dark-secondary"
               >
                 Go to Dashboard
               </Link>
@@ -157,7 +161,7 @@ export default function ApplicationSuccess() {
                     'User clicked on View All Applications button'
                   )
                 }
-                className="px-6 py-3 border border-light-primary dark:border-dark-primary text-light-primary dark:text-dark-primary rounded-lg hover:bg-light-primary/10 dark:hover:bg-dark-primary/10 transition-all duration-300 flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 rounded-lg border border-light-primary px-6 py-3 text-light-primary transition-all duration-300 hover:bg-light-primary/10 dark:border-dark-primary dark:text-dark-primary dark:hover:bg-dark-primary/10"
               >
                 <FaArrowLeft size={16} />
                 View All Applications

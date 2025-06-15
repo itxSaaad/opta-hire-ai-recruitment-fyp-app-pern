@@ -15,7 +15,6 @@ import { io } from 'socket.io-client';
 
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
-import Modal from '../../components/Modal';
 
 import {
   useCreateMessageMutation,
@@ -62,7 +61,6 @@ export default function InterviewerChatsScreen() {
     data: roomsData,
     isLoading: roomsLoading,
     error: roomsError,
-    refetch: refetchRooms,
   } = useGetAllChatRoomsQuery({
     role: 'interviewer', // Always interviewer for this screen
   });
@@ -322,7 +320,8 @@ export default function InterviewerChatsScreen() {
   // Filter rooms
   const rooms = roomsData?.chatRooms || [];
   const filtered = rooms.filter((r) => {
-    const name = `${r.recruiter.firstName} ${r.recruiter.lastName}`.toLowerCase();
+    const name =
+      `${r.recruiter.firstName} ${r.recruiter.lastName}`.toLowerCase();
     const title = r.job.title.toLowerCase();
     return (
       name.includes(searchTerm.toLowerCase()) ||
@@ -384,7 +383,7 @@ export default function InterviewerChatsScreen() {
 
   const handleInputChange = (e) => {
     setMessageInput(e.target.value);
-  
+
     // Handle typing indicator
     if (!isTyping && selectedRoom && socket && isConnected) {
       setIsTyping(true);
@@ -393,10 +392,10 @@ export default function InterviewerChatsScreen() {
         isTyping: true,
       });
     }
-  
+
     // Clear previous timeout
     clearTimeout(typingTimeoutRef.current);
-  
+
     // Set new timeout using ref
     typingTimeoutRef.current = setTimeout(handleTypingStop, 2000);
   };
@@ -535,7 +534,7 @@ export default function InterviewerChatsScreen() {
         </div>
 
         {/* Messages */}
-        <div 
+        <div
           ref={messagesContainerRef}
           className="flex-1 space-y-3 overflow-auto p-3"
         >
@@ -713,10 +712,14 @@ export default function InterviewerChatsScreen() {
   return (
     <>
       <Helmet>
-        <title>Chat with Recruiters | OptaHire</title>
+        <title>Messages - OptaHire | Communicate with Recruiters</title>
         <meta
           name="description"
-          content="Chat with recruiters to coordinate interviews and contracts."
+          content="Communicate with recruiters on OptaHire. Discuss interview requirements, negotiate contracts, and build professional relationships."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Interviewer Messages, Recruiter Communication, Interview Negotiations, Professional Chat, Contract Discussions"
         />
       </Helmet>
 
@@ -727,14 +730,15 @@ export default function InterviewerChatsScreen() {
           </div>
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
-            <h1 className="mb-4 text-center text-2xl font-bold text-light-text dark:text-dark-text sm:text-3xl md:mb-6 md:text-4xl lg:text-5xl">
-              Chat with{' '}
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Messages &{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Recruiters
+                Communication
               </span>
             </h1>
-            <p className="mb-6 text-center text-base text-light-text/70 dark:text-dark-text/70 md:mb-8 md:text-lg">
-              Communicate with recruiters about job opportunities and interview schedules.
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Communicate with recruiters, discuss interview requirements, and
+              negotiate contracts professionally.
             </p>
 
             {(roomsError || roomError || msgsError || error) && (

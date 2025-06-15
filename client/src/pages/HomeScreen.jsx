@@ -88,15 +88,16 @@ export default function HomeScreen() {
     <>
       <Helmet>
         <title>
-          OptaHire - Optimizing Your Recruitment Journey | AI-Powered Hiring
+          OptaHire - AI-Powered Recruitment Platform | Optimizing Your
+          Recruitment Journey
         </title>
         <meta
           name="description"
-          content="Transform your hiring process with OptaHire's AI-powered platform. Connect with expert interviewers, find top candidates, and optimize recruitment decisions. 2.5% platform fee. Join thousands of successful hires."
+          content="OptaHire: AI-powered recruitment platform connecting recruiters, candidates, and professional interviewers. Optimize your hiring with smart matching technology."
         />
         <meta
           name="keywords"
-          content="recruitment platform, AI hiring, interview services, job matching, recruiter tools, candidate screening, hiring optimization, freelance interviewers, recruitment technology, talent acquisition"
+          content="OptaHire, AI Recruitment, Smart Hiring, Professional Interviews, Candidate Matching, Recruitment Platform, Job Search"
         />
 
         {/* Open Graph / Facebook */}

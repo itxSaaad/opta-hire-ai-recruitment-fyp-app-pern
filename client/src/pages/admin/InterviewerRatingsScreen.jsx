@@ -175,12 +175,17 @@ export default function InterviewerRatingsScreen() {
   return (
     <>
       <Helmet>
-        <title>Interviewer Ratings [Admin] - OptaHire</title>
+        <title>
+          Interviewer Ratings [Admin] - OptaHire | Monitor Interview Quality
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin - Manage interviewer ratings."
+          content="OptaHire Interviewer Ratings - Monitor and manage interviewer performance ratings to maintain high-quality interview standards."
         />
-        <meta name="keywords" content="OptaHire, Ratings, Admin" />
+        <meta
+          name="keywords"
+          content="OptaHire Interviewer Ratings, Interview Quality, Performance Management, Admin Ratings"
+        />
       </Helmet>
 
       <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
@@ -191,13 +196,14 @@ export default function InterviewerRatingsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Interviewer{' '}
+              Manage{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Ratings
+                Interviewer Ratings
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all interviewer ratings in one place.
+              Monitor interviewer performance ratings and feedback to maintain
+              exceptional interview quality standards.
             </p>
 
             {(error || updateError || deleteError) && (

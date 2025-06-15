@@ -205,14 +205,16 @@ export default function JobsScreen() {
   return (
     <>
       <Helmet>
-        <title>Jobs Management [Admin] - OptaHire</title>
+        <title>
+          Job Management [Admin] - OptaHire | Monitor All Job Postings
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin Jobs Management - Manage job listings efficiently with our powerful tools."
+          content="OptaHire Job Management - Monitor and manage all job postings across the platform. Ensure quality and compliance."
         />
         <meta
           name="keywords"
-          content="OptaHire, Admin Jobs Management, Recruitment, Jobs"
+          content="OptaHire Job Management, Admin Jobs, Job Postings, Recruitment Admin, Job Monitoring"
         />
       </Helmet>
 
@@ -226,11 +228,12 @@ export default function JobsScreen() {
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Manage{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Jobs
+                Job Postings
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all job postings in one place.
+              Monitor all job postings across the platform and ensure quality
+              standards for optimal recruitment outcomes.
             </p>
 
             {(error || updateError || deleteError) && (

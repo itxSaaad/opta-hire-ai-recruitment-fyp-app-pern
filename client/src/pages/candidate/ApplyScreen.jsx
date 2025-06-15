@@ -373,7 +373,7 @@ export default function ApplyScreen() {
   const renderBulletPoints = (text) => {
     if (!text) return null;
     return (
-      <ul className="list-disc pl-5 space-y-1 text-light-text dark:text-dark-text">
+      <ul className="list-disc space-y-1 pl-5 text-light-text dark:text-dark-text">
         {text.split(',').map((item, index) => (
           <li key={index} className="text-light-text dark:text-dark-text">
             {item.trim()}
@@ -389,28 +389,33 @@ export default function ApplyScreen() {
   return (
     <>
       <Helmet>
-        <title>Apply for Job [Candidate] - OptaHire</title>
+        <title>Apply for Position - OptaHire | Submit Your Application</title>
         <meta
           name="description"
-          content="Review your resume and the job details, update if needed, and apply to the job."
+          content="Apply to exciting career opportunities on OptaHire. Submit your application with AI-powered profile matching for better results."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Apply Job, Job Application, Career Application, Submit Resume, Job Opportunity"
         />
       </Helmet>
-      <section className="min-h-screen py-24 px-4 bg-light-background dark:bg-dark-background">
+
+      <section className="min-h-screen bg-light-background px-4 py-24 dark:bg-dark-background">
         {overallLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md mx-auto">
+          <div className="mx-auto w-full max-w-sm sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-light-text dark:text-dark-text mb-6 text-center">
+          <div className="mx-auto max-w-7xl">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Apply for{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                {jobData?.job?.title || jobId}
+                Position
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
-              Review your resume and the job details, update if needed, and
-              apply to the job.
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Submit your application for this exciting opportunity and let AI
+              help match your skills with the role.
             </p>
 
             {(resumeError || updateError || jobError || applicationError) && (
@@ -438,12 +443,12 @@ export default function ApplyScreen() {
               />
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               {/* Left Column: Resume Details */}
-              <div className="space-y-6 animate-slideInLeft">
+              <div className="animate-slideInLeft space-y-6">
                 {/* Overview Section */}
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                       Overview
                     </h3>
@@ -451,7 +456,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={resetOverview}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -460,7 +465,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={() => setEditOverview(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -507,7 +512,7 @@ export default function ApplyScreen() {
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Overview
@@ -516,10 +521,10 @@ export default function ApplyScreen() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaRegAddressCard
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -532,10 +537,10 @@ export default function ApplyScreen() {
                           </div>
                         </div>
                       </div>
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaHeading
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -551,7 +556,7 @@ export default function ApplyScreen() {
                       <div className="pb-2">
                         <div className="flex items-start">
                           <FaAlignLeft
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -569,8 +574,8 @@ export default function ApplyScreen() {
                 </div>
 
                 {/* Skills Section */}
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FaToolbox
                         className="text-light-primary dark:text-dark-primary"
@@ -584,7 +589,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={resetSkills}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -593,7 +598,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={() => setEditSkills(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -602,11 +607,11 @@ export default function ApplyScreen() {
                   </div>
                   {editSkills ? (
                     <div>
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="mb-4 flex flex-wrap gap-2">
                         {skills.map((skill, index) => (
                           <div
                             key={index}
-                            className="flex items-center bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm text-light-text dark:text-dark-text"
+                            className="flex items-center rounded-full bg-gray-200 px-3 py-1 text-sm text-light-text dark:bg-gray-700 dark:text-dark-text"
                           >
                             {skill}
                             <button
@@ -641,7 +646,7 @@ export default function ApplyScreen() {
                         <button
                           type="button"
                           onClick={handleAddNewSkill}
-                          className="mt-2 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                          className="mt-2 flex items-center gap-1 rounded-lg bg-light-primary px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Add
@@ -650,18 +655,18 @@ export default function ApplyScreen() {
                           <button
                             type="button"
                             onClick={handleUndoSkill}
-                            className="mt-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                            className="mt-2 flex items-center gap-1 rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-yellow-600"
                           >
                             <FaUndo />
                             Undo
                           </button>
                         )}
                       </div>
-                      <div className="flex justify-end mt-4">
+                      <div className="mt-4 flex justify-end">
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Skills
@@ -674,7 +679,7 @@ export default function ApplyScreen() {
                         skills.map((skill, index) => (
                           <span
                             key={index}
-                            className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm"
+                            className="rounded-full bg-gray-200 px-3 py-1 text-sm dark:bg-gray-700"
                           >
                             {skill}
                           </span>
@@ -687,8 +692,8 @@ export default function ApplyScreen() {
                 </div>
 
                 {/* Experience & Education Section */}
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                       Experience & Education
                     </h3>
@@ -696,7 +701,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={resetExpEdu}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -705,7 +710,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={() => setEditExpEdu(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -742,7 +747,7 @@ export default function ApplyScreen() {
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Exp & Edu
@@ -751,10 +756,10 @@ export default function ApplyScreen() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaClipboardList
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -770,7 +775,7 @@ export default function ApplyScreen() {
                       <div className="pb-2">
                         <div className="flex items-start">
                           <FaGraduationCap
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -788,8 +793,8 @@ export default function ApplyScreen() {
                 </div>
 
                 {/* Additional Details Section */}
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                       Additional Details
                     </h3>
@@ -797,7 +802,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={resetAdditional}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -806,7 +811,7 @@ export default function ApplyScreen() {
                       <button
                         type="button"
                         onClick={() => setEditAdditional(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -869,7 +874,7 @@ export default function ApplyScreen() {
                         rows={3}
                         icon={<FaClipboardList className="text-gray-400" />}
                       />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <InputField
                           id="rating"
                           type="number"
@@ -900,7 +905,7 @@ export default function ApplyScreen() {
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Additional
@@ -909,10 +914,10 @@ export default function ApplyScreen() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaIndustry
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -925,10 +930,10 @@ export default function ApplyScreen() {
                           </div>
                         </div>
                       </div>
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaCalendarAlt
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -941,10 +946,10 @@ export default function ApplyScreen() {
                           </div>
                         </div>
                       </div>
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaBuilding
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -957,10 +962,10 @@ export default function ApplyScreen() {
                           </div>
                         </div>
                       </div>
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaClipboardList
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -973,10 +978,10 @@ export default function ApplyScreen() {
                           </div>
                         </div>
                       </div>
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaCalendarAlt
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -992,7 +997,7 @@ export default function ApplyScreen() {
                       <div className="pb-2">
                         <div className="flex items-start">
                           <FaClipboardList
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -1011,38 +1016,38 @@ export default function ApplyScreen() {
               </div>
 
               {/* Right Column: Job Details */}
-              <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 animate-slideIn">
-                <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+              <div className="animate-slideIn rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
                       {jobData.job.title}
                     </h2>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="mt-2 flex items-center gap-2">
                       <span className="font-medium text-light-secondary dark:text-dark-secondary">
                         {jobData.job.company}
                       </span>
-                      <span className="text-light-text dark:text-dark-text opacity-60">
+                      <span className="text-light-text opacity-60 dark:text-dark-text">
                         •
                       </span>
-                      <span className="text-sm flex items-center gap-1 text-light-text dark:text-dark-text opacity-60">
+                      <span className="flex items-center gap-1 text-sm text-light-text opacity-60 dark:text-dark-text">
                         <FaMapMarkerAlt /> {jobData.job.location}
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <span className="bg-light-primary bg-opacity-10 text-light-primary dark:text-dark-primary text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                    <span className="flex items-center rounded-full bg-light-primary bg-opacity-10 px-3 py-1 text-xs font-medium text-light-primary dark:text-dark-primary">
                       <FaDollarSign className="mr-1" />{' '}
                       {jobData.job.salaryRange}
                     </span>
-                    <span className="bg-light-secondary bg-opacity-10 text-light-secondary dark:text-dark-secondary text-xs font-medium px-3 py-1 rounded-full flex items-center">
+                    <span className="flex items-center rounded-full bg-light-secondary bg-opacity-10 px-3 py-1 text-xs font-medium text-light-secondary dark:text-dark-secondary">
                       <FaClock className="mr-1" /> {jobData.job.category}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-6">
-                  <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                    <h3 className="text-lg font-semibold text-light-text dark:text-dark-text flex items-center gap-2 mb-3">
+                  <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+                    <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-light-text dark:text-dark-text">
                       <FaBriefcase className="text-light-primary dark:text-dark-primary" />{' '}
                       Description
                     </h3>
@@ -1051,8 +1056,8 @@ export default function ApplyScreen() {
                     </p>
                   </div>
 
-                  <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                    <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
+                  <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+                    <h3 className="mb-3 flex items-center text-lg font-semibold text-light-text dark:text-dark-text">
                       <FaMapMarkerAlt className="mr-2 text-light-primary dark:text-dark-primary" />{' '}
                       Requirements
                     </h3>
@@ -1063,8 +1068,8 @@ export default function ApplyScreen() {
                     </div>
                   </div>
 
-                  <div className="p-4 bg-light-background dark:bg-dark-background rounded-lg transition-all duration-300 hover:shadow-md">
-                    <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center">
+                  <div className="rounded-lg bg-light-background p-4 transition-all duration-300 hover:shadow-md dark:bg-dark-background">
+                    <h3 className="mb-3 flex items-center text-lg font-semibold text-light-text dark:text-dark-text">
                       <FaDollarSign className="mr-2 text-light-primary dark:text-dark-primary" />{' '}
                       Benefits
                     </h3>
@@ -1079,8 +1084,8 @@ export default function ApplyScreen() {
             </div>
 
             {/* Agreement and Apply Button */}
-            <div className="flex items-center  mt-10 text-center">
-              <label className="inline-flex items-center space-x-2 cursor-pointer">
+            <div className="mt-10 flex items-center text-center">
+              <label className="inline-flex cursor-pointer items-center space-x-2">
                 <input
                   type="checkbox"
                   checked={agreed}
@@ -1097,10 +1102,10 @@ export default function ApplyScreen() {
                   type="button"
                   onClick={handleApply}
                   disabled={!agreed}
-                  className={`w-full md:w-auto px-6 py-3 rounded-lg font-medium transition-colors duration-300 ${
+                  className={`w-full rounded-lg px-6 py-3 font-medium transition-colors duration-300 md:w-auto ${
                     agreed
-                      ? 'bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary'
-                      : 'bg-gray-400 text-gray-800 cursor-not-allowed'
+                      ? 'bg-light-primary text-white hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary'
+                      : 'cursor-not-allowed bg-gray-400 text-gray-800'
                   }`}
                 >
                   Apply to Job

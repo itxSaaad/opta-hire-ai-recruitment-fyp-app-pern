@@ -57,8 +57,6 @@ export default function ChatsScreen() {
   const typingTimeoutRef = useRef(null);
   const prevMessagesLengthRef = useRef(0);
 
-  let typingTimeout = null;
-
   const user = useSelector((state) => state.auth.userInfo);
   const { accessToken } = useSelector((state) => state.auth);
 
@@ -67,7 +65,6 @@ export default function ChatsScreen() {
     data: roomsData,
     isLoading: roomsLoading,
     error: roomsError,
-    refetch: refetchRooms,
   } = useGetAllChatRoomsQuery({
     role: user.isRecruiter ? 'recruiter' : 'interviewer',
   });
@@ -261,13 +258,17 @@ export default function ChatsScreen() {
   // Scroll to bottom on new messages
   useEffect(() => {
     const messagesChanged = messages.length > prevMessagesLengthRef.current;
-    if (messagesEndRef.current && messages.length > 0 && (messagesChanged || selectedRoom)) {
+    if (
+      messagesEndRef.current &&
+      messages.length > 0 &&
+      (messagesChanged || selectedRoom)
+    ) {
       messagesEndRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'end',
       });
     }
-    
+
     // Update the previous messages length reference
     prevMessagesLengthRef.current = messages.length;
   }, [messages, selectedRoom]);
@@ -292,10 +293,10 @@ export default function ChatsScreen() {
   }, [selectedRoom]);
 
   useEffect(() => {
-  if (messageInputRef.current && isTyping) {
-    messageInputRef.current.focus();
-  }
-}, [isTyping, messageInput]);
+    if (messageInputRef.current && isTyping) {
+      messageInputRef.current.focus();
+    }
+  }, [isTyping, messageInput]);
 
   // Filter rooms
   const rooms = roomsData?.chatRooms || [];
@@ -363,7 +364,7 @@ export default function ChatsScreen() {
 
   const handleInputChange = (e) => {
     setMessageInput(e.target.value);
-  
+
     // Handle typing indicator
     if (!isTyping && selectedRoom && socket && isConnected) {
       setIsTyping(true);
@@ -372,26 +373,26 @@ export default function ChatsScreen() {
         isTyping: true,
       });
     }
-  
+
     // Clear previous timeout
     clearTimeout(typingTimeoutRef.current);
-  
+
     // Set new timeout using ref
     typingTimeoutRef.current = setTimeout(handleTypingStop, 2000);
   };
 
-const handleTypingStop = () => {
-  if (isTyping && selectedRoom && socket && isConnected) {
-    setIsTyping(false);
-    socket.emit('typing', {
-      roomId: selectedRoom.id,
-      isTyping: false,
-    });
-  }
+  const handleTypingStop = () => {
+    if (isTyping && selectedRoom && socket && isConnected) {
+      setIsTyping(false);
+      socket.emit('typing', {
+        roomId: selectedRoom.id,
+        isTyping: false,
+      });
+    }
 
-  clearTimeout(typingTimeoutRef.current);
-  typingTimeoutRef.current = null;
-};
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = null;
+  };
 
   const handleCreateContract = async () => {
     if (
@@ -807,13 +808,14 @@ const handleTypingStop = () => {
   return (
     <>
       <Helmet>
-        <title>
-          Chat with {user.isRecruiter ? 'Interviewers' : 'Recruiters'} |
-          OptaHire
-        </title>
+        <title>Messages - OptaHire | Connect with Top Interviewers</title>
         <meta
           name="description"
-          content={`Chat with ${user.isRecruiter ? 'interviewers' : 'recruiters'} to coordinate interviews and contracts.`}
+          content="Connect with professional interviewers on OptaHire. Discuss requirements, negotiate contracts, and streamline your hiring process."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Recruiter Messages, Interviewer Communication, Professional Interviews, Contract Negotiations, Hiring Support"
         />
       </Helmet>
 
@@ -824,16 +826,15 @@ const handleTypingStop = () => {
           </div>
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
-            <h1 className="mb-4 text-center text-2xl font-bold text-light-text dark:text-dark-text sm:text-3xl md:mb-6 md:text-4xl lg:text-5xl">
-              Chat with{' '}
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Messages &{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                {user.isRecruiter ? 'Interviewers' : 'Recruiters'}
+                Collaboration
               </span>
             </h1>
-            <p className="mb-6 text-center text-base text-light-text/70 dark:text-dark-text/70 md:mb-8 md:text-lg">
-              {user.isRecruiter
-                ? 'Connect with professional interviewers to coordinate candidate assessments and interviews.'
-                : 'Communicate with recruiters about job opportunities and interview schedules.'}
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Connect with professional interviewers and streamline your hiring
+              process through effective communication.
             </p>
 
             {(roomsError || roomError || msgsError || error) && (

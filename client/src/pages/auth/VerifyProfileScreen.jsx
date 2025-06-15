@@ -11,8 +11,9 @@ import InputField from '../../components/ui/mainLayout/InputField';
 import { trackEvent, trackPageView } from '../../utils/analytics';
 import { getExpectedRoute } from '../../utils/helpers';
 
-import { useRegenerateOTPMutation } from '../../features/auth/authApi';
 import { logoutUser, setUserInfo } from '../../features/auth/authSlice';
+
+import { useRegenerateOTPMutation } from '../../features/auth/authApi';
 import { useVerifyEmailMutation } from '../../features/user/userApi';
 
 function VerifyProfileScreen() {
@@ -105,63 +106,78 @@ function VerifyProfileScreen() {
     trackPageView(location.pathname);
   }, [location.pathname]);
 
+  const isLoading = isResendingOtp || isVerifyingEmail;
   return (
     <>
       <Helmet>
-        <title>Verify Your Profile - OptaHire</title>
+        <title>Verify Account - OptaHire | Complete Account Setup</title>
         <meta
           name="description"
-          content="Please verify your email to access your OptaHire account."
+          content="Verify your OptaHire account to unlock full platform features. Complete your secure account verification process."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Verify Account, Account Verification, Complete Setup, Secure Verification"
         />
       </Helmet>
-      <section className="min-h-screen flex flex-col items-center justify-center py-16 px-4 bg-light-background dark:bg-dark-background">
+
+      <section className="flex min-h-screen flex-col items-center justify-center bg-light-background px-4 py-16 dark:bg-dark-background">
         <button
           onClick={() => {
             dispatch(logoutUser());
             navigate('/auth/login');
           }}
-          className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
+          className="absolute left-4 top-4 text-light-text transition-all hover:text-light-primary dark:text-dark-text dark:hover:text-dark-primary"
         >
-          <FaSignOutAlt className="inline-block -mt-1 mr-2" />
+          <FaSignOutAlt className="-mt-1 mr-2 inline-block" />
           Logout
         </button>
-        <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center text-light-primary dark:text-dark-primary mb-4">
-            Verify Your Email
-          </h2>
-
-          <p className="text-center text-light-text dark:text-dark-text mb-6">
-            An OTP has been sent to <strong>{user?.email}</strong>. Please enter
-            the OTP below to verify your email.
-          </p>
-
-          {(resendError || verifyError || errorMsg) && (
-            <Alert
-              message={
-                resendError?.data?.message ||
-                verifyError?.data?.message ||
-                errorMsg
-              }
-            />
-          )}
-
-          {verifySuccess && VerifyData?.data?.message && (
-            <Alert
-              message={VerifyData?.data?.message}
-              isSuccess={verifySuccess}
-            />
-          )}
-
-          {regenerateOTPSuccess && regenerateOTPData?.data?.message && (
-            <Alert
-              message={regenerateOTPData?.data?.message}
-              isSuccess={regenerateOTPSuccess}
-            />
-          )}
-
-          {isResendingOtp || isVerifyingEmail ? (
+        {isLoading ? (
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
-          ) : (
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-lg animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Verify{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Account
+              </span>
+            </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Complete your account verification to unlock all OptaHire features
+              and start your recruitment journey.
+            </p>
+
+            <p className="mb-6 text-center text-light-text dark:text-dark-text">
+              Please enter the OTP sent to <strong>{user?.email}</strong> to
+              verify your email.
+            </p>
+
+            {(resendError || verifyError || errorMsg) && (
+              <Alert
+                message={
+                  resendError?.data?.message ||
+                  verifyError?.data?.message ||
+                  errorMsg
+                }
+              />
+            )}
+
+            {verifySuccess && VerifyData?.data?.message && (
+              <Alert
+                message={VerifyData?.data?.message}
+                isSuccess={verifySuccess}
+              />
+            )}
+
+            {regenerateOTPSuccess && regenerateOTPData?.data?.message && (
+              <Alert
+                message={regenerateOTPData?.data?.message}
+                isSuccess={regenerateOTPSuccess}
+              />
+            )}
+
             <form className="space-y-4" onSubmit={handleSubmit}>
               <InputField
                 id="otp"
@@ -176,24 +192,24 @@ function VerifyProfileScreen() {
                   otp && otp.length !== 6 ? 'OTP must be 6 digits' : ''
                 }
               />
-              <div className="flex justify-end mb-2">
+              <div className="mb-2 flex justify-end">
                 <button
                   type="button"
                   onClick={handleResendOtp}
-                  className="text-sm text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all"
+                  className="text-sm text-light-primary transition-all hover:text-light-secondary dark:text-dark-primary dark:hover:text-dark-secondary"
                 >
                   Resend OTP
                 </button>
               </div>
               <button
                 type="submit"
-                className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary transition-all duration-300 shadow-md"
+                className="w-full rounded-lg bg-light-primary py-3 text-lg font-semibold text-white shadow-md transition-all duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
               >
                 Verify Email
               </button>
             </form>
-          )}
-        </div>
+          </div>
+        )}
       </section>
     </>
   );

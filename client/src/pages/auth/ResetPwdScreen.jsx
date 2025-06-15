@@ -26,7 +26,7 @@ function ResetPwdScreen() {
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(true);
   const [errors, setErrors] = useState({
     email: '',
     otp: '',
@@ -162,13 +162,13 @@ function ResetPwdScreen() {
   }, [location.pathname]);
 
   const StepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
+    <div className="mb-8 flex items-center justify-center">
       <div className="flex items-center space-x-6">
-        <div className="flex flex-col items-center p-3 text-light-primary dark:text-dark-primary scale-110">
+        <div className="flex scale-110 flex-col items-center p-3 text-light-primary dark:text-dark-primary">
           <FaEnvelope size={28} />
         </div>
         <div
-          className={`w-20 h-1 rounded-full ${
+          className={`h-1 w-20 rounded-full ${
             isOtpSent
               ? 'bg-light-primary dark:bg-dark-primary'
               : 'bg-gray-300 dark:bg-gray-700'
@@ -177,7 +177,7 @@ function ResetPwdScreen() {
         <div
           className={`flex flex-col items-center p-3 ${
             isOtpSent
-              ? 'text-light-primary dark:text-dark-primary scale-110'
+              ? 'scale-110 text-light-primary dark:text-dark-primary'
               : 'text-gray-400 dark:text-gray-600'
           }`}
         >
@@ -187,182 +187,206 @@ function ResetPwdScreen() {
     </div>
   );
 
+  const isLoading = isSendingOtp || isResendingOtp || isChangingPwd;
+
   return (
     <>
       <Helmet>
-        <title>Reset Password - OptaHire</title>
+        <title>Reset Password - OptaHire | Secure Account Recovery</title>
         <meta
           name="description"
-          content="Forgot your password? Reset it here to access your OptaHire account."
+          content="Reset your OptaHire password securely. Regain access to your recruitment account with our secure password recovery process."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Password Reset, Account Recovery, Secure Reset, Forgot Password, Account Access"
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-16 px-4 bg-light-background dark:bg-dark-background">
+      <section className="flex min-h-screen items-center justify-center bg-light-background px-4 py-14 dark:bg-dark-background">
         <Link
           to="/auth/login"
-          className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
+          className="absolute left-4 top-4 text-light-text transition-all hover:text-light-primary dark:text-dark-text dark:hover:text-dark-primary"
         >
-          <FaArrowLeft className="inline-block -mt-1 mr-2" />
+          <FaArrowLeft className="-mt-1 mr-2 inline-block" />
           Back to Login
         </Link>
 
-        <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
-          {isSendingOtp || isResendingOtp || isChangingPwd ? (
+        {isLoading ? (
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
-          ) : (
-            <>
-              <StepIndicator />
-              <h2 className="text-3xl sm:text-4xl font-bold text-center text-light-primary dark:text-dark-primary mb-4 sm:mb-6">
-                {isOtpSent ? 'Enter OTP' : 'Forgot Password?'}
-              </h2>
-              <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
-                {isOtpSent
-                  ? 'Enter the OTP sent to your email and set your new password.'
-                  : 'Enter your email to receive an OTP and set your new password.'}
-              </p>
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-lg animate-slideUp">
+            <StepIndicator />
+            {isOtpSent ? (
+              <>
+                <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+                  Enter{' '}
+                  <span className="text-light-primary dark:text-dark-primary">
+                    OTP
+                  </span>
+                </h1>
+                <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+                  Enter the OTP sent to your email and set your new password.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+                  Reset{' '}
+                  <span className="text-light-primary dark:text-dark-primary">
+                    Password
+                  </span>
+                </h1>
+                <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+                  Securely reset your password and regain access to your
+                  OptaHire recruitment account.
+                </p>
+              </>
+            )}
 
-              {(otpError || resendError || pwdError) && (
-                <Alert
-                  message={
-                    otpError?.data?.message ||
-                    resendError?.data?.message ||
-                    pwdError?.data?.message
-                  }
-                />
-              )}
+            {(otpError || resendError || pwdError) && (
+              <Alert
+                message={
+                  otpError?.data?.message ||
+                  resendError?.data?.message ||
+                  pwdError?.data?.message
+                }
+              />
+            )}
 
-              {forgotPasswordSuccess && forgotPasswordData?.data?.message && (
-                <Alert
-                  message={forgotPasswordData?.data?.message}
-                  isSuccess={forgotPasswordSuccess}
-                />
-              )}
+            {forgotPasswordSuccess && forgotPasswordData?.data?.message && (
+              <Alert
+                message={forgotPasswordData?.data?.message}
+                isSuccess={forgotPasswordSuccess}
+              />
+            )}
 
-              {regenerateOTPSuccess && regenerateOTPData?.data?.message && (
-                <Alert
-                  message={regenerateOTPData?.data?.message}
-                  isSuccess={regenerateOTPSuccess}
-                />
-              )}
+            {regenerateOTPSuccess && regenerateOTPData?.data?.message && (
+              <Alert
+                message={regenerateOTPData?.data?.message}
+                isSuccess={regenerateOTPSuccess}
+              />
+            )}
 
-              {resetPasswordSucces && resetPasswordData?.data?.message && (
-                <Alert
-                  message={resetPasswordData?.data?.message}
-                  isSuccess={resetPasswordSucces}
-                />
-              )}
+            {resetPasswordSucces && resetPasswordData?.data?.message && (
+              <Alert
+                message={resetPasswordData?.data?.message}
+                isSuccess={resetPasswordSucces}
+              />
+            )}
 
-              <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
-                {!isOtpSent ? (
-                  <>
-                    <InputField
-                      id="email"
-                      type="email"
-                      label="Email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        setErrors((prev) => ({
-                          ...prev,
-                          email: validateEmail(e.target.value),
-                        }));
-                      }}
-                      validationMessage={errors.email}
-                    />
+            <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
+              {!isOtpSent ? (
+                <>
+                  <InputField
+                    id="email"
+                    type="email"
+                    label="Email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrors((prev) => ({
+                        ...prev,
+                        email: validateEmail(e.target.value),
+                      }));
+                    }}
+                    validationMessage={errors.email}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    className="active:scale-98 w-full rounded-lg bg-light-primary py-3 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:bg-light-secondary hover:shadow-xl dark:bg-dark-primary dark:hover:bg-dark-secondary"
+                  >
+                    Send OTP
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="mb-2 flex justify-start">
                     <button
                       type="button"
-                      onClick={handleSendOtp}
-                      className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      onClick={() => {
+                        setIsOtpSent(false);
+                        setOtp('');
+                        setNewPassword('');
+                        setConfirmPassword('');
+                        setErrors({
+                          email: '',
+                          otp: '',
+                          newPassword: '',
+                          confirmPassword: '',
+                        });
+                      }}
+                      className="flex items-center text-sm text-light-primary transition-all hover:text-light-secondary dark:text-dark-primary dark:hover:text-dark-secondary"
                     >
-                      Send OTP
+                      <FaArrowLeft className="mr-2" />
+                      Change Email
                     </button>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-start mb-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsOtpSent(false);
-                          setOtp('');
-                          setNewPassword('');
-                          setConfirmPassword('');
-                          setErrors({
-                            email: '',
-                            otp: '',
-                            newPassword: '',
-                            confirmPassword: '',
-                          });
-                        }}
-                        className="text-sm text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all flex items-center"
-                      >
-                        <FaArrowLeft className="mr-2" />
-                        Change Email
-                      </button>
-                    </div>
-                    <InputField
-                      id="otp"
-                      type="text"
-                      label="OTP"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      validationMessage={errors.otp}
-                    />
-                    <div className="flex justify-end mb-2">
-                      <button
-                        type="button"
-                        onClick={handleResendOtp}
-                        className="text-sm text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all"
-                      >
-                        Resend OTP
-                      </button>
-                    </div>
-                    <InputField
-                      id="newPassword"
-                      type="password"
-                      label="New Password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      validationMessage={errors.newPassword}
-                    />
-                    <InputField
-                      id="confirmPassword"
-                      type="password"
-                      label="Confirm New Password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      validationMessage={errors.confirmPassword}
-                    />
+                  </div>
+                  <InputField
+                    id="otp"
+                    type="text"
+                    label="OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    validationMessage={errors.otp}
+                  />
+                  <div className="mb-2 flex justify-end">
                     <button
-                      type="submit"
-                      className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      type="button"
+                      onClick={handleResendOtp}
+                      className="text-sm text-light-primary transition-all hover:text-light-secondary dark:text-dark-primary dark:hover:text-dark-secondary"
                     >
-                      Change Password
+                      Resend OTP
                     </button>
-                  </>
-                )}
-              </form>
-
-              <div className="text-center mt-4 sm:mt-6">
-                <p className="text-light-text dark:text-dark-text">
-                  Remember your password?{' '}
-                  <Link
-                    to="/auth/login"
-                    className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
-                    onClick={() => {
-                      trackEvent(
-                        'Authentication',
-                        'Login',
-                        'Clicked from Reset Password'
-                      );
-                    }}
+                  </div>
+                  <InputField
+                    id="newPassword"
+                    type="password"
+                    label="New Password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    validationMessage={errors.newPassword}
+                  />
+                  <InputField
+                    id="confirmPassword"
+                    type="password"
+                    label="Confirm New Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    validationMessage={errors.confirmPassword}
+                  />
+                  <button
+                    type="submit"
+                    className="active:scale-98 w-full rounded-lg bg-light-primary py-3 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:bg-light-secondary hover:shadow-xl dark:bg-dark-primary dark:hover:bg-dark-secondary"
                   >
-                    Login
-                  </Link>
-                </p>
-              </div>
-            </>
-          )}
-        </div>
+                    Change Password
+                  </button>
+                </>
+              )}
+            </form>
+
+            <div className="mt-4 text-center sm:mt-6">
+              <p className="text-light-text dark:text-dark-text">
+                Remember your password?{' '}
+                <Link
+                  to="/auth/login"
+                  className="text-light-primary transition-all duration-200 hover:text-light-secondary dark:text-dark-primary dark:hover:text-dark-secondary"
+                  onClick={() => {
+                    trackEvent(
+                      'Authentication',
+                      'Login',
+                      'Clicked from Reset Password'
+                    );
+                  }}
+                >
+                  Login
+                </Link>
+              </p>
+            </div>
+          </div>
+        )}
       </section>
       <ScrollRestoration />
     </>

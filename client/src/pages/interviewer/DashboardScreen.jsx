@@ -252,14 +252,16 @@ export default function DashboardScreen() {
   return (
     <>
       <Helmet>
-        <title>Interviewer Dashboard - OptaHire</title>
+        <title>
+          Interviewer Dashboard - OptaHire | Manage Your Interview Business
+        </title>
         <meta
           name="description"
-          content="OptaHire Interviewer Dashboard - Manage your Interviews and ratings efficiently with our powerful tools and insights."
+          content="OptaHire Interviewer Dashboard - Manage your interview schedule, contracts, earnings, and grow your interviewing business."
         />
         <meta
           name="keywords"
-          content="OptaHire, Interviewer Dashboard, Recruitment, Management"
+          content="OptaHire Interviewer Dashboard, Interview Business, Freelance Interviewing, Interview Contracts, Earnings"
         />
       </Helmet>
 
@@ -271,14 +273,14 @@ export default function DashboardScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Welcome to the{' '}
+              Interviewer{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Interviewer Dashboard
+                Dashboard
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              Manage your interviews and ratings efficiently with our powerful
-              tools and insights.
+              Manage your interview business, track earnings, and build
+              relationships with top recruiters.
             </p>
 
             {(errorApplications ||

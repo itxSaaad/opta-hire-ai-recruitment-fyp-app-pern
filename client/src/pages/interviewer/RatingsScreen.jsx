@@ -120,14 +120,14 @@ export default function RatingsScreen() {
   return (
     <>
       <Helmet>
-        <title>View Ratings [Interviewer] - OptaHire</title>
+        <title>My Ratings - OptaHire | Interview Performance Reviews</title>
         <meta
           name="description"
-          content="OptaHire Interviewer Ratings - View all the ratings given to you by recruiters for the interviews you conducted."
+          content="View your interview ratings and feedback on OptaHire. Track your performance and build a stellar reputation as an interviewer."
         />
         <meta
           name="keywords"
-          content="OptaHire, ratings, interviewer, recruiter feedback, interview ratings"
+          content="OptaHire Interviewer Ratings, Interview Performance, Feedback Reviews, Professional Reputation, Interview Quality"
         />
       </Helmet>
 
@@ -139,14 +139,14 @@ export default function RatingsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              View Your{' '}
+              My{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Ratings
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              Here you can view all the ratings given to you by recruiters for
-              the interviews you conducted.
+              Track your interview performance ratings and build your reputation
+              as a professional interviewer.
             </p>
 
             {error && <Alert message={error?.data?.message} />}

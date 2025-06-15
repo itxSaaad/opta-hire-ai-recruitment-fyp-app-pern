@@ -203,14 +203,16 @@ export default function InterviewsScreen() {
   return (
     <>
       <Helmet>
-        <title>Interviews Management [Admin] - OptaHire</title>
+        <title>
+          Interview Management [Admin] - OptaHire | Monitor All Interviews
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin Interviews Management - Manage and monitor interviews efficiently."
+          content="OptaHire Interview Management - Track all scheduled interviews, monitor progress, and ensure quality interview experiences."
         />
         <meta
           name="keywords"
-          content="OptaHire, Interviews, Recruitment, Administration"
+          content="OptaHire Interview Management, Admin Interviews, Interview Tracking, Recruitment Interviews"
         />
       </Helmet>
 
@@ -228,7 +230,8 @@ export default function InterviewsScreen() {
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all interview sessions in one place.
+              Oversee all interviews across the platform and ensure high-quality
+              interview experiences for all participants.
             </p>
 
             {(error || updateError || deleteError) && (

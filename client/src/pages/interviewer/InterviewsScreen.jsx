@@ -255,14 +255,14 @@ export default function InterviewsScreen() {
   return (
     <>
       <Helmet>
-        <title>Track Interviews [Interviewer] - OptaHire</title>
+        <title>My Interviews - OptaHire | Interview Schedule Management</title>
         <meta
           name="description"
-          content="OptaHire Interviewer Interviews - Track and manage your interviews efficiently."
+          content="Manage your interview schedule on OptaHire. Track upcoming interviews, completed sessions, and optimize your interview business."
         />
         <meta
           name="keywords"
-          content="interviews, interview tracking, interview management, job interviews, candidate interviews, interview details, interview status, interview rating"
+          content="OptaHire My Interviews, Interview Schedule, Interview Management, Interview Business, Professional Interviews"
         />
       </Helmet>
 
@@ -274,14 +274,14 @@ export default function InterviewsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Track Your{' '}
+              My{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Interviews
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              Manage and monitor your interviews efficiently. View, edit, and
-              delete interviews as needed.
+              Manage your interview schedule and track your professional
+              interview sessions efficiently.
             </p>
 
             {(error || updateError) && (

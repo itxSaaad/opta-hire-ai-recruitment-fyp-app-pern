@@ -192,14 +192,16 @@ export default function ApplicationsScreen() {
   return (
     <>
       <Helmet>
-        <title>Applications Management [Admin] - OptaHire</title>
+        <title>
+          Applications Management [Admin] - OptaHire | Monitor All Applications
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin Applications Management - Manage all candidate applications efficiently."
+          content="OptaHire Admin Applications Management - Track and monitor all candidate applications across the platform efficiently."
         />
         <meta
           name="keywords"
-          content="OptaHire, Admin Applications, Recruitment, Applications"
+          content="OptaHire Admin Applications, Application Management, Recruitment Tracking, Candidate Applications"
         />
       </Helmet>
 
@@ -217,7 +219,8 @@ export default function ApplicationsScreen() {
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all candidate applications in one place.
+              View and manage all candidate applications across the platform
+              with comprehensive tracking and analytics.
             </p>
 
             {(error || updateError || deleteError) && (

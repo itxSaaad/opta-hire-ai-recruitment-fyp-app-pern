@@ -360,14 +360,16 @@ export default function DashboardScreen() {
   return (
     <>
       <Helmet>
-        <title>Recruiter Dashboard - OptaHire</title>
+        <title>
+          Recruiter Dashboard - OptaHire | AI-Powered Recruitment Hub
+        </title>
         <meta
           name="description"
-          content="OptaHire Recruiter Dashboard - Manage your recruitment process efficiently with our powerful tools and insights."
+          content="OptaHire Recruiter Dashboard - Manage your hiring pipeline with AI-powered candidate matching and professional interview services."
         />
         <meta
           name="keywords"
-          content="OptaHire, Recruiter Dashboard, Recruitment, Management"
+          content="OptaHire Recruiter Dashboard, AI Recruitment, Hiring Pipeline, Candidate Matching, Professional Interviews"
         />
       </Helmet>
 
@@ -379,14 +381,14 @@ export default function DashboardScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Welcome to the{' '}
+              Recruitment{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Recruiter Dashboard
+                Dashboard
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              Manage your recruitment process efficiently with our powerful
-              tools and insights.
+              Optimize your hiring process with AI-powered candidate matching
+              and access to professional interviewers.
             </p>
 
             {(errorJobs ||

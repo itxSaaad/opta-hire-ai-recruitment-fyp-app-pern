@@ -44,6 +44,8 @@ import Alert from '../../components/Alert';
 import Table from '../../components/ui/dashboardLayout/Table';
 import InputField from '../../components/ui/mainLayout/InputField';
 
+import Loader from '../../components/Loader';
+
 import { trackEvent, trackPageView } from '../../utils/analytics';
 
 import Logo from '../../assets/images/logo.png';
@@ -55,7 +57,6 @@ import {
   useLazyGetJobPerformanceReportQuery,
   useLazyGetUserActivityReportQuery,
 } from '../../features/report/reportApi';
-import Loader from '../../components/Loader';
 
 // Custom tooltip component matching Dashboard
 const CustomTooltip = ({ active, payload, label }) => {
@@ -1696,29 +1697,30 @@ export default function ReportsScreen() {
   return (
     <>
       <Helmet>
-        <title>Admin Reports - OptaHire</title>
+        <title>
+          Analytics & Reports [Admin] - OptaHire | Platform Insights
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin Generate Reports - Create comprehensive business analytics reports with insights into platform performance."
+          content="OptaHire Analytics & Reports - Generate comprehensive reports and insights on platform performance, user activity, and recruitment metrics."
         />
         <meta
           name="keywords"
-          content="OptaHire, Admin Reports, Analytics, Business Intelligence, Recruitment Analytics"
+          content="OptaHire Reports, Recruitment Analytics, Platform Insights, Performance Reports, Admin Analytics"
         />
       </Helmet>
 
       <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         <div className="mx-auto w-full max-w-7xl">
-          {/* Header */}
           <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-            Generate{' '}
+            Analytics &{' '}
             <span className="text-light-primary dark:text-dark-primary">
               Reports
             </span>
           </h1>
           <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-            Create comprehensive business analytics reports to gain insights
-            into your platform&apos;s performance
+            Generate comprehensive insights and reports on platform performance,
+            user engagement, and recruitment success.
           </p>
 
           {/* Error Handling */}

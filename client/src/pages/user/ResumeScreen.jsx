@@ -339,23 +339,35 @@ function ResumeScreen() {
   return (
     <>
       <Helmet>
-        <title>Resume - OptaHire</title>
+        <title>My Resume - OptaHire | Professional Resume Builder</title>
         <meta
           name="description"
-          content="View and manage your resume details."
+          content="Create and manage your professional resume on OptaHire. Optimize your profile for AI-powered job matching and better opportunities."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Resume, Professional Resume, Resume Builder, Career Profile, Skills Profile, AI Matching"
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background">
+      <section className="flex min-h-screen items-center justify-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {overallLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="w-full max-w-7xl relative animate-fadeIn">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl sm:text-4xl font-bold text-light-primary dark:text-dark-primary mb-2">
-                Your Resume
-              </h2>
+          <div className="relative w-full max-w-7xl animate-fadeIn">
+            <div className="mb-8 text-center">
+              <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+                My{' '}
+                <span className="text-light-primary dark:text-dark-primary">
+                  Resume
+                </span>
+              </h1>
+              <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+                Create and optimize your professional resume for better
+                AI-powered job matching and career opportunities.
+              </p>
+
               {(resumeError || updateError || deleteError) && (
                 <Alert
                   message={
@@ -371,10 +383,10 @@ function ResumeScreen() {
                   : 'Review your resume details below.'}
               </p>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-6 animate-slideInLeft">
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="animate-slideInLeft space-y-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                       Overview
                     </h3>
@@ -382,7 +394,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={resetOverview}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -391,7 +403,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={() => setEditOverview(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -440,7 +452,7 @@ function ResumeScreen() {
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Overview
@@ -450,10 +462,10 @@ function ResumeScreen() {
                   ) : (
                     <div className="space-y-6">
                       {/* Title */}
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaRegAddressCard
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -467,10 +479,10 @@ function ResumeScreen() {
                         </div>
                       </div>
 
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaHeading
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -487,7 +499,7 @@ function ResumeScreen() {
                       <div className="pb-2">
                         <div className="flex items-start">
                           <FaAlignLeft
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -504,8 +516,8 @@ function ResumeScreen() {
                   )}
                 </div>
 
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FaToolbox
                         className="text-light-primary dark:text-dark-primary"
@@ -519,7 +531,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={resetSkills}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -528,7 +540,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={() => setEditSkills(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -537,11 +549,11 @@ function ResumeScreen() {
                   </div>
                   {editSkills ? (
                     <div>
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="mb-4 flex flex-wrap gap-2">
                         {skills.map((skill, index) => (
                           <div
                             key={index}
-                            className="flex items-center bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm text-light-text dark:text-dark-text"
+                            className="flex items-center rounded-full bg-gray-200 px-3 py-1 text-sm text-light-text dark:bg-gray-700 dark:text-dark-text"
                           >
                             {skill}
                             <button
@@ -576,7 +588,7 @@ function ResumeScreen() {
                         <button
                           type="button"
                           onClick={handleAddNewSkill}
-                          className="mt-2 px-4 py-2 bg-light-primary dark:bg-dark-primary hover:bg-light-secondary dark:hover:bg-dark-secondary text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                          className="mt-2 flex items-center gap-1 rounded-lg bg-light-primary px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Add
@@ -586,7 +598,7 @@ function ResumeScreen() {
                           <button
                             type="button"
                             onClick={handleUndoSkill}
-                            className="mt-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold transition-all duration-200 flex items-center gap-1"
+                            className="mt-2 flex items-center gap-1 rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-white transition-all duration-200 hover:bg-yellow-600"
                           >
                             <FaUndo />
                             Undo
@@ -594,11 +606,11 @@ function ResumeScreen() {
                         )}
                       </div>
 
-                      <div className="flex justify-end mt-4">
+                      <div className="mt-4 flex justify-end">
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Skills
@@ -611,7 +623,7 @@ function ResumeScreen() {
                         skills.map((skill, index) => (
                           <span
                             key={index}
-                            className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm"
+                            className="rounded-full bg-gray-200 px-3 py-1 text-sm dark:bg-gray-700"
                           >
                             {skill}
                           </span>
@@ -623,8 +635,8 @@ function ResumeScreen() {
                   )}
                 </div>
 
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                       Experience & Education
                     </h3>
@@ -632,7 +644,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={resetExpEdu}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -641,7 +653,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={() => setEditExpEdu(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -678,7 +690,7 @@ function ResumeScreen() {
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Exp & Edu
@@ -687,10 +699,10 @@ function ResumeScreen() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaClipboardList
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -708,7 +720,7 @@ function ResumeScreen() {
                       <div className="pb-2">
                         <div className="flex items-start">
                           <FaGraduationCap
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -726,9 +738,9 @@ function ResumeScreen() {
                 </div>
               </div>
 
-              <div className="space-y-6 animate-slideIn">
-                <div className="bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6">
-                  <div className="flex justify-between items-center mb-6">
+              <div className="animate-slideIn space-y-6">
+                <div className="rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+                  <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-xl font-semibold text-light-primary dark:text-dark-primary">
                       Additional Details
                     </h3>
@@ -736,7 +748,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={resetAdditional}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-gray-500"
                       >
                         <FaTimes />
                         Cancel
@@ -745,7 +757,7 @@ function ResumeScreen() {
                       <button
                         type="button"
                         onClick={() => setEditAdditional(true)}
-                        className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-light-primary dark:bg-dark-primary text-white hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                        className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-medium text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                       >
                         <FaEdit />
                         Edit
@@ -808,7 +820,7 @@ function ResumeScreen() {
                         rows={3}
                         icon={<FaClipboardList className="text-gray-400" />}
                       />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <InputField
                           id="portfolio"
                           type="text"
@@ -825,7 +837,7 @@ function ResumeScreen() {
                         <button
                           type="button"
                           onClick={saveSection}
-                          className="flex items-center gap-2 bg-light-primary dark:bg-dark-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-300"
+                          className="flex items-center gap-2 rounded-lg bg-light-primary px-4 py-2 text-sm font-semibold text-white transition duration-300 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
                         >
                           <FaSave />
                           Save Additional
@@ -834,10 +846,10 @@ function ResumeScreen() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaIndustry
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -851,10 +863,10 @@ function ResumeScreen() {
                         </div>
                       </div>
 
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaCalendarAlt
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -868,10 +880,10 @@ function ResumeScreen() {
                         </div>
                       </div>
 
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaBuilding
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -885,10 +897,10 @@ function ResumeScreen() {
                         </div>
                       </div>
 
-                      <div className="border-b border-light-border dark:border-dark-border pb-4">
+                      <div className="border-b border-light-border pb-4 dark:border-dark-border">
                         <div className="flex items-start">
                           <FaClipboardList
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -905,7 +917,7 @@ function ResumeScreen() {
                       <div className="pb-2">
                         <div className="flex items-start">
                           <FaClipboardList
-                            className="text-light-primary dark:text-dark-primary mt-1 mr-4"
+                            className="mr-4 mt-1 text-light-primary dark:text-dark-primary"
                             size={20}
                           />
                           <div>
@@ -923,18 +935,18 @@ function ResumeScreen() {
                 </div>
               </div>
             </div>
-            <div className="animate-slideIn bg-light-surface dark:bg-dark-surface rounded-lg shadow-lg p-6 mt-6">
-              <h3 className="text-xl font-semibold text-red-600 dark:text-red-500 mb-4">
+            <div className="mt-6 animate-slideIn rounded-lg bg-light-surface p-6 shadow-lg dark:bg-dark-surface">
+              <h3 className="mb-4 text-xl font-semibold text-red-600 dark:text-red-500">
                 Delete Resume
               </h3>
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-gray-600 dark:text-gray-400">
                   Once you delete your resume, it cannot be recovered.
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(true)}
-                  className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg font-semibold text-md transition-all duration-300 shadow-md hover:shadow-lg ml-auto sm:ml-0"
+                  className="text-md ml-auto flex items-center justify-center rounded-lg bg-red-600 px-6 py-2 font-semibold text-white shadow-md transition-all duration-300 hover:bg-red-700 hover:shadow-lg sm:ml-0"
                   disabled={deletingResume}
                 >
                   <FaTrash className="mr-2" />
@@ -957,13 +969,13 @@ function ResumeScreen() {
             </p>
             <div className="flex justify-end space-x-2">
               <button
-                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-all duration-200"
+                className="rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 onClick={() => setShowDeleteModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all duration-200"
+                className="rounded bg-red-600 px-4 py-2 text-white transition-all duration-200 hover:bg-red-700"
                 onClick={() => {
                   confirmDeleteResume();
                   setShowDeleteModal(false);

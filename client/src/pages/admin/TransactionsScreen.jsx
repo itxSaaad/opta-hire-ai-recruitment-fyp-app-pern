@@ -240,14 +240,16 @@ export default function TransactionsScreen() {
   return (
     <>
       <Helmet>
-        <title>Transactions Management [Admin] - OptaHire</title>
+        <title>
+          Transaction Management [Admin] - OptaHire | Monitor All Payments
+        </title>
         <meta
           name="description"
-          content="OptaHire Admin - Manage transactions between recruiters and interviewers."
+          content="OptaHire Transaction Management - Monitor all platform transactions, payments, and financial activities with detailed analytics."
         />
         <meta
           name="keywords"
-          content="OptaHire, Transactions, Admin, Dashboard"
+          content="OptaHire Transaction Management, Payment Monitoring, Financial Analytics, Admin Transactions"
         />
       </Helmet>
 
@@ -265,7 +267,8 @@ export default function TransactionsScreen() {
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View and manage all financial transactions in one place.
+              Monitor all platform transactions, payments, and financial
+              activities with comprehensive security and analytics.
             </p>
 
             {(error || updateError || deleteError) && (

@@ -10,6 +10,7 @@ import {
   FaExclamationTriangle,
   FaMapMarkerAlt,
   FaPencilAlt,
+  FaPlus,
   FaSave,
   FaTimes,
 } from 'react-icons/fa';
@@ -28,11 +29,13 @@ import {
   useShortlistCandidatesMutation,
 } from '../../features/ai/aiApi';
 import {
+  useCreateJobMutation,
   useGetAllJobsQuery,
   useUpdateJobByIdMutation,
 } from '../../features/job/jobApi';
 
 export default function JobsScreen() {
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
@@ -61,6 +64,16 @@ export default function JobsScreen() {
     error: aiServiceError,
     refetch: refetchAiServiceStatus,
   } = useCheckAiServiceStatusQuery();
+
+  const [
+    createJob,
+    {
+      isLoading: isCreating,
+      error: createError,
+      isSuccess: createSuccess,
+      data: createData,
+    },
+  ] = useCreateJobMutation();
 
   const [
     updateJob,
@@ -104,6 +117,54 @@ export default function JobsScreen() {
     setSelectedJob(job);
     setShowEditModal(true);
     trackEvent('Edit Job', 'User Action', 'User clicked on edit job button');
+  };
+
+  const handleCreateJob = () => {
+    setShowCreateModal(true);
+    setSelectedJob(null);
+    setTitle('');
+    setDescription('');
+    setCompany('');
+    setRequirements('');
+    setBenefits('');
+    setSalaryRange('');
+    setCategory('');
+    setLocation('');
+    setIsClosed(false);
+    trackEvent(
+      'Create Job',
+      'User Action',
+      'User clicked on create job button'
+    );
+  };
+
+  const createNewJob = async () => {
+    try {
+      await createJob({
+        jobData: {
+          title,
+          description,
+          company,
+          requirements,
+          benefits,
+          salaryRange,
+          category,
+          location,
+          isClosed,
+        },
+      }).unwrap();
+      setShowCreateModal(false);
+      refetch();
+      refetchAiServiceStatus();
+      trackEvent('Create Job', 'User Action', `User created job ${title}`);
+    } catch (err) {
+      console.error('Create failed:', err);
+      trackEvent(
+        'Create Job Failed',
+        'User Action',
+        `User failed to create job ${title}`
+      );
+    }
   };
 
   const saveJobChanges = async () => {
@@ -277,14 +338,14 @@ export default function JobsScreen() {
   return (
     <>
       <Helmet>
-        <title>Job Listings [Recruiter] - OptaHire</title>
+        <title>Manage Jobs - OptaHire | Post & Track Job Openings</title>
         <meta
           name="description"
-          content="OptaHire Recruiter Job Listings - Manage and edit job listings."
+          content="Manage your job postings on OptaHire. Create compelling job descriptions and attract top talent with AI-powered visibility."
         />
         <meta
           name="keywords"
-          content="job listings, job search, career opportunities, find jobs, job openings, employment, job vacancies"
+          content="OptaHire Manage Jobs, Job Postings, Recruiter Jobs, Hiring Positions, Job Creation"
         />
       </Helmet>
 
@@ -296,13 +357,14 @@ export default function JobsScreen() {
         ) : (
           <div className="mx-auto w-full max-w-7xl animate-slideUp">
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
-              Manage Your{' '}
+              Manage{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Job Listings
+                Job Postings
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              View, edit, and manage all your job listings in one place.
+              Create and manage your job postings to attract the best talent
+              with AI-enhanced visibility.
             </p>
 
             {/* Simplified AI Service Status Card */}
@@ -368,15 +430,24 @@ export default function JobsScreen() {
               </div>
             )}
 
-            {(error || aiServiceError || updateError || shortlistError) && (
+            {(error ||
+              aiServiceError ||
+              updateError ||
+              shortlistError ||
+              createError) && (
               <Alert
                 message={
                   error?.data?.message ||
                   aiServiceError?.data?.message ||
                   updateError?.data?.message ||
-                  shortlistError?.data?.message
+                  shortlistError?.data?.message ||
+                  createError?.data?.message
                 }
               />
+            )}
+
+            {createSuccess && createData?.data?.message && (
+              <Alert message={createData?.data?.message} isSuccess={true} />
             )}
 
             {updateSuccess && updateData?.data?.message && (
@@ -387,6 +458,14 @@ export default function JobsScreen() {
               <Alert message={shortlistData?.data?.message} isSuccess={true} />
             )}
 
+            <button
+              onClick={handleCreateJob}
+              className="mb-4 flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
+              disabled={isCreating}
+            >
+              <FaPlus /> Create Job
+            </button>
+
             <Table
               columns={columns}
               data={jobs?.jobs || []}
@@ -395,6 +474,107 @@ export default function JobsScreen() {
           </div>
         )}
       </section>
+
+      {/* Create Modal */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Job"
+      >
+        {isCreating ? (
+          <Loader />
+        ) : (
+          <div className="space-y-4">
+            {createError && <Alert message={createError.data.message} />}
+            {!aiServiceStatus?.data?.model_trained && (
+              <Alert message="Warning: The AI service is not ready. Closing a job now will not automatically shortlist candidates." />
+            )}
+            <InputField
+              id="title"
+              type="text"
+              label="Job Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <InputField
+              id="company"
+              type="text"
+              label="Company"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+            />
+            <InputField
+              id="description"
+              type="textarea"
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <InputField
+              id="requirements"
+              type="textarea"
+              label="Requirements"
+              value={requirements}
+              onChange={(e) => setRequirements(e.target.value)}
+            />
+            <InputField
+              id="benefits"
+              type="textarea"
+              label="Benefits"
+              value={benefits}
+              onChange={(e) => setBenefits(e.target.value)}
+            />
+            <InputField
+              id="salaryRange"
+              type="text"
+              label="Salary Range"
+              placeholder="$30k - $50k"
+              value={salaryRange}
+              onChange={(e) => setSalaryRange(e.target.value)}
+            />
+            <InputField
+              id="category"
+              type="select"
+              label="Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              options={[
+                { value: 'IT', label: 'IT' },
+                { value: 'Engineering', label: 'Engineering' },
+                { value: 'Sales', label: 'Sales' },
+                { value: 'Marketing', label: 'Marketing' },
+                { value: 'Finance', label: 'Finance' },
+                { value: 'Other', label: 'Other' },
+              ]}
+            />
+            <InputField
+              id="location"
+              type="text"
+              label="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+            <div className="flex justify-end space-x-2 pt-4">
+              <button
+                className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                onClick={() => setShowEditModal(false)}
+                disabled={isUpdating}
+              >
+                <FaTimes />
+                Cancel
+              </button>
+              <button
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
+                onClick={createNewJob}
+                disabled={isCreating}
+              >
+                <FaPlus />
+                Create Job
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Edit Modal */}
       <Modal

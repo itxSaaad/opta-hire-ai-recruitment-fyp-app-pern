@@ -79,94 +79,102 @@ function LoginScreen() {
   return (
     <>
       <Helmet>
-        <title>Login - OptaHire</title>
+        <title>Login - OptaHire | Access Your Recruitment Account</title>
         <meta
           name="description"
-          content="Login to your OptaHire account to access your job applications, interviews, and more."
+          content="Login to OptaHire - Access your recruitment dashboard as a recruiter, candidate, or interviewer. Secure authentication for all users."
+        />
+        <meta
+          name="keywords"
+          content="OptaHire Login, Recruitment Login, Secure Access, User Authentication, Account Access"
         />
       </Helmet>
-      <section className="min-h-screen flex items-center justify-center py-14 px-4 bg-light-background dark:bg-dark-background">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-14 dark:bg-dark-background">
         <Link
           to="/"
-          className="absolute top-4 left-4 text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-all"
+          className="absolute left-4 top-4 text-light-text transition-all hover:text-light-primary dark:text-dark-text dark:hover:text-dark-primary"
         >
-          <FaArrowLeft className="inline-block -mt-1 mr-2" />
+          <FaArrowLeft className="-mt-1 mr-2 inline-block" />
           Back to Home
         </Link>
 
-        <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
-          {isLoading ? (
+        {isLoading ? (
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
-          ) : (
-            <>
-              <h2 className="text-3xl sm:text-4xl font-bold text-center text-light-primary dark:text-dark-primary mb-4 sm:mb-6">
-                Welcome Back!
-              </h2>
-              <p className="text-center text-light-text dark:text-dark-text mb-6 sm:mb-8">
-                Please login to continue to your account.
-              </p>
+          </div>
+        ) : (
+          <div className="mx-auto w-full max-w-lg animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Welcome{' '}
+              <span className="text-light-primary dark:text-dark-primary">
+                Back
+              </span>
+            </h1>
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Sign in to your account and continue optimizing your recruitment
+              journey with OptaHire.
+            </p>
 
-              {error && <Alert message={error.data.message} />}
+            {error && <Alert message={error.data.message} />}
 
-              <form
-                className="space-y-4 sm:space-y-6"
-                onSubmit={handleSubmit}
-                noValidate
-              >
-                <InputField
-                  id="email"
-                  type="email"
-                  label="Email"
-                  value={email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  validationMessage={errors.email}
-                />
-                <InputField
-                  id="password"
-                  type="password"
-                  label="Password"
-                  value={password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  validationMessage={errors.password}
-                />
-                <div className="flex items-center justify-end">
-                  <Link
-                    to="/auth/reset-password"
-                    className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-light-primary dark:bg-dark-primary text-white py-3 rounded-lg font-semibold text-lg hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-98 transition-all duration-300 shadow-lg hover:shadow-xl"
+            <form
+              className="space-y-4 sm:space-y-6"
+              onSubmit={handleSubmit}
+              noValidate
+            >
+              <InputField
+                id="email"
+                type="email"
+                label="Email"
+                value={email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                validationMessage={errors.email}
+              />
+              <InputField
+                id="password"
+                type="password"
+                label="Password"
+                value={password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                validationMessage={errors.password}
+              />
+              <div className="flex items-center justify-end">
+                <Link
+                  to="/auth/reset-password"
+                  className="text-light-primary transition-all duration-200 hover:text-light-secondary dark:text-dark-primary dark:hover:text-dark-secondary"
                 >
-                  Login
-                </button>
-              </form>
-
-              <div className="text-center mt-4 sm:mt-6">
-                <p className="text-light-text dark:text-dark-text">
-                  Don&apos;t have an account?{' '}
-                  <Link
-                    to="/auth/register"
-                    className="text-light-primary dark:text-dark-primary hover:text-light-secondary dark:hover:text-dark-secondary transition-all duration-200"
-                    onClick={() =>
-                      trackEvent(
-                        'Authentication',
-                        'Register',
-                        'Clicked Register Link'
-                      )
-                    }
-                  >
-                    Register
-                  </Link>
-                </p>
+                  Forgot your password?
+                </Link>
               </div>
-            </>
-          )}
-        </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="active:scale-98 w-full rounded-lg bg-light-primary py-3 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:bg-light-secondary hover:shadow-xl dark:bg-dark-primary dark:hover:bg-dark-secondary"
+              >
+                Login
+              </button>
+            </form>
+
+            <div className="mt-4 text-center sm:mt-6">
+              <p className="text-light-text dark:text-dark-text">
+                Don&apos;t have an account?{' '}
+                <Link
+                  to="/auth/register"
+                  className="text-light-primary transition-all duration-200 hover:text-light-secondary dark:text-dark-primary dark:hover:text-dark-secondary"
+                  onClick={() =>
+                    trackEvent(
+                      'Authentication',
+                      'Register',
+                      'Clicked Register Link'
+                    )
+                  }
+                >
+                  Register
+                </Link>
+              </p>
+            </div>
+          </div>
+        )}
       </section>
       <ScrollRestoration />
     </>

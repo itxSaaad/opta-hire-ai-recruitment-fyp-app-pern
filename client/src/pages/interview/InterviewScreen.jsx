@@ -298,71 +298,77 @@ const InterviewScreen = () => {
   const leaveRoom = () => {
     if (socket) {
       socket.emit(userInfo.isInterviewer ? 'end-call' : 'leave-room', roomId);
-      navigate(
-        userInfo.isInterviewer
-          ? '/interviewer/feedbacks'
-          : '/candidate/interviews'
-      );
+
+      if (userInfo.isInterviewer) {
+        navigate(`/interview/${roomId}/feedback`);
+      } else {
+        navigate('/candidate/interviews');
+      }
     }
   };
 
   return (
     <>
       <Helmet>
-        <title>Interview Room - OptaHire</title>
+        <title>Live Interview - OptaHire | Video Interview Platform</title>
         <meta
           name="description"
-          content="OptaHire Interview Room - Participate in your scheduled interview session."
+          content="Join your live video interview on OptaHire. Professional interview experience with real-time communication and feedback tools."
         />
         <meta
           name="keywords"
-          content="OptaHire, Interview, Video Call, Recruitment"
+          content="OptaHire Live Interview, Video Interview, Online Interview, Interview Platform, Remote Interview"
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center p-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background p-4 dark:bg-dark-background">
         {!isConnected ? (
-          <div className="w-full max-w-sm sm:max-w-md flex flex-col items-center justify-center animate-fadeIn">
+          <div className="flex w-full max-w-sm animate-fadeIn flex-col items-center justify-center sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="mx-auto flex flex-col max-w-7xl w-full">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-light-text dark:text-dark-text">
-                Interview
-                <span className="text-light-primary dark:text-dark-primary">
-                  {' '}
-                  Room
-                </span>
-              </h1>
-              <p className="text-sm font-medium text-light-primary dark:text-dark-primary px-4 py-2 bg-light-primary/10 dark:bg-dark-primary/20 rounded-lg shadow-sm backdrop-blur-sm border border-light-primary/20 dark:border-dark-primary/30">
+          <div className="mx-auto flex w-full max-w-7xl flex-col">
+            <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
+              <div className="flex flex-col items-center md:items-start">
+                <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+                  Live{' '}
+                  <span className="text-light-primary dark:text-dark-primary">
+                    Interview
+                  </span>
+                </h1>
+                <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+                  Welcome to your professional video interview experience. Good
+                  luck with your session!
+                </p>
+              </div>
+              <p className="rounded-lg border border-light-primary/20 bg-light-primary/10 px-4 py-2 text-sm font-medium text-light-primary shadow-sm backdrop-blur-sm dark:border-dark-primary/30 dark:bg-dark-primary/20 dark:text-dark-primary">
                 Room ID: {roomId}
               </p>
             </div>
 
             {error && <Alert message={error} isSuccess={false} />}
 
-            <div className="relative w-full h-full aspect-video md:aspect-[16/9] grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 p-4 md:p-6 bg-light-surface/90 dark:bg-dark-surface/90 backdrop-blur-sm rounded-2xl border border-light-border dark:border-dark-border/40 shadow-md animate-slideUp overflow-hidden">
-              <div className="bg-light-primary/20 dark:bg-dark-primary/20 flex items-center justify-center shadow-lg relative overflow-hidden rounded-xl">
+            <div className="relative mb-5 grid aspect-video h-full w-full animate-slideUp grid-cols-1 gap-5 overflow-hidden rounded-2xl border border-light-border bg-light-surface/90 p-4 shadow-md backdrop-blur-sm dark:border-dark-border/40 dark:bg-dark-surface/90 md:aspect-[16/9] md:grid-cols-2 md:p-6">
+              <div className="relative flex items-center justify-center overflow-hidden rounded-xl bg-light-primary/20 shadow-lg dark:bg-dark-primary/20">
                 <video
                   ref={localVideoRef}
                   autoPlay
                   muted
                   playsInline
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-light-background/70 dark:from-dark-background/70 to-transparent">
+                <div className="absolute left-0 right-0 top-0 bg-gradient-to-b from-light-background/70 to-transparent p-4 dark:from-dark-background/70">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-light-primary/20 dark:bg-dark-primary/30 flex items-center justify-center border-2 border-light-primary dark:border-dark-primary">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-light-primary bg-light-primary/20 dark:border-dark-primary dark:bg-dark-primary/30">
                       <span className="text-sm font-bold text-light-primary dark:text-dark-primary">
                         {userInfo?.isInterviewer ? 'I' : 'C'}
                       </span>
                     </div>
                     <div>
-                      <p className="text-light-text dark:text-dark-text text-sm font-medium">
+                      <p className="text-sm font-medium text-light-text dark:text-dark-text">
                         {userInfo?.firstName} {userInfo?.lastName} (You)
                       </p>
-                      <p className="text-light-text/70 dark:text-dark-text/70 text-xs">
+                      <p className="text-xs text-light-text/70 dark:text-dark-text/70">
                         {userInfo?.isInterviewer ? 'Interviewer' : 'Candidate'}
                       </p>
                     </div>
@@ -370,18 +376,18 @@ const InterviewScreen = () => {
                 </div>
               </div>
 
-              <div className="bg-light-primary/20 dark:bg-dark-primary/20 flex items-center justify-center shadow-lg relative overflow-hidden rounded-xl">
+              <div className="relative flex items-center justify-center overflow-hidden rounded-xl bg-light-primary/20 shadow-lg dark:bg-dark-primary/20">
                 <video
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-light-background/70 dark:from-dark-background/70 to-transparent">
+                <div className="absolute left-0 right-0 top-0 bg-gradient-to-b from-light-background/70 to-transparent p-4 dark:from-dark-background/70">
                   <div className="flex items-center gap-3">
                     {participants.find((p) => p.socketId !== socket?.id) && (
                       <>
-                        <div className="h-10 w-10 rounded-full bg-light-primary/20 dark:bg-dark-primary/30 flex items-center justify-center border-2 border-light-primary dark:border-dark-primary">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-light-primary bg-light-primary/20 dark:border-dark-primary dark:bg-dark-primary/30">
                           <span className="text-sm font-bold text-light-primary dark:text-dark-primary">
                             {participants.find((p) => p.socketId !== socket?.id)
                               ?.isInterviewer
@@ -390,7 +396,7 @@ const InterviewScreen = () => {
                           </span>
                         </div>
                         <div>
-                          <p className="text-light-text dark:text-dark-text text-sm font-medium">
+                          <p className="text-sm font-medium text-light-text dark:text-dark-text">
                             {
                               participants.find(
                                 (p) => p.socketId !== socket?.id
@@ -402,7 +408,7 @@ const InterviewScreen = () => {
                               )?.lastName
                             }
                           </p>
-                          <p className="text-light-text/70 dark:text-dark-text/70 text-xs">
+                          <p className="text-xs text-light-text/70 dark:text-dark-text/70">
                             {participants.find((p) => p.socketId !== socket?.id)
                               ?.isInterviewer
                               ? 'Interviewer'
@@ -412,7 +418,7 @@ const InterviewScreen = () => {
                       </>
                     )}
                     {!participants.find((p) => p.socketId !== socket?.id) && (
-                      <p className="text-light-text dark:text-dark-text text-sm font-medium">
+                      <p className="text-sm font-medium text-light-text dark:text-dark-text">
                         Waiting for participant...
                       </p>
                     )}
@@ -421,14 +427,14 @@ const InterviewScreen = () => {
               </div>
             </div>
 
-            <div className="p-4 md:p-6 mb-6 bg-light-surface/90 dark:bg-dark-surface/90 backdrop-blur-sm rounded-2xl border border-light-border dark:border-dark-border/40 shadow-md animate-slideUp">
-              <div className="flex flex-wrap justify-center items-center gap-5 md:gap-8">
+            <div className="mb-6 animate-slideUp rounded-2xl border border-light-border bg-light-surface/90 p-4 shadow-md backdrop-blur-sm dark:border-dark-border/40 dark:bg-dark-surface/90 md:p-6">
+              <div className="flex flex-wrap items-center justify-center gap-5 md:gap-8">
                 <button
                   onClick={toggleAudio}
-                  className={`p-4 md:p-5 rounded-full transition-all duration-300 hover:scale-105 shadow-md flex items-center justify-center ${
+                  className={`flex items-center justify-center rounded-full p-4 shadow-md transition-all duration-300 hover:scale-105 md:p-5 ${
                     !isAudioEnabled
-                      ? 'bg-red-500 dark:bg-red-600 text-white'
-                      : 'bg-light-primary dark:bg-dark-primary text-white'
+                      ? 'bg-red-500 text-white dark:bg-red-600'
+                      : 'bg-light-primary text-white dark:bg-dark-primary'
                   }`}
                   aria-label={
                     !isAudioEnabled ? 'Unmute microphone' : 'Mute microphone'
@@ -443,7 +449,7 @@ const InterviewScreen = () => {
 
                 <button
                   onClick={leaveRoom}
-                  className="p-5 md:p-6 rounded-full bg-red-600 dark:bg-red-700 text-white transition-all duration-300 hover:bg-red-700 dark:hover:bg-red-800 hover:scale-105 shadow-lg"
+                  className="rounded-full bg-red-600 p-5 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 md:p-6"
                   aria-label="Leave call"
                 >
                   <FaPhoneSlash size={24} />
@@ -451,10 +457,10 @@ const InterviewScreen = () => {
 
                 <button
                   onClick={toggleVideo}
-                  className={`p-4 md:p-5 rounded-full transition-all duration-300 hover:scale-105 shadow-md flex items-center justify-center ${
+                  className={`flex items-center justify-center rounded-full p-4 shadow-md transition-all duration-300 hover:scale-105 md:p-5 ${
                     !isVideoEnabled
-                      ? 'bg-red-500 dark:bg-red-600 text-white'
-                      : 'bg-light-primary dark:bg-dark-primary text-white'
+                      ? 'bg-red-500 text-white dark:bg-red-600'
+                      : 'bg-light-primary text-white dark:bg-dark-primary'
                   }`}
                   aria-label={
                     !isVideoEnabled ? 'Turn on camera' : 'Turn off camera'
@@ -470,7 +476,7 @@ const InterviewScreen = () => {
 
               {userInfo?.isInterviewer && (
                 <div className="mt-4 text-center">
-                  <p className="text-xs text-light-primary dark:text-dark-primary bg-light-primary/10 dark:bg-dark-primary/20 px-3 py-2 rounded-full inline-block">
+                  <p className="inline-block rounded-full bg-light-primary/10 px-3 py-2 text-xs text-light-primary dark:bg-dark-primary/20 dark:text-dark-primary">
                     As an interviewer, ending the call will end it for all
                     participants
                   </p>
@@ -478,23 +484,23 @@ const InterviewScreen = () => {
               )}
 
               <div className="mt-4 text-center md:hidden">
-                <p className="text-xs text-light-text/60 dark:text-dark-text/60 bg-light-surface dark:bg-dark-surface px-3 py-2 rounded-full inline-block">
+                <p className="inline-block rounded-full bg-light-surface px-3 py-2 text-xs text-light-text/60 dark:bg-dark-surface dark:text-dark-text/60">
                   Rotate your device horizontally for better view
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
               {interviewDetails && (
-                <div className="md:col-span-2 p-5 bg-light-surface/80 dark:bg-dark-surface/80 backdrop-blur-md rounded-xl border border-light-border dark:border-dark-border/40 shadow-sm">
-                  <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center gap-2">
-                    <span className="h-5 w-1 bg-light-primary dark:bg-dark-primary rounded-full"></span>
+                <div className="rounded-xl border border-light-border bg-light-surface/80 p-5 shadow-sm backdrop-blur-md dark:border-dark-border/40 dark:bg-dark-surface/80 md:col-span-2">
+                  <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-light-text dark:text-dark-text">
+                    <span className="h-5 w-1 rounded-full bg-light-primary dark:bg-dark-primary"></span>
                     Interview Details
                   </h3>
                   <div className="space-y-2">
-                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                    <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
                       <div className="flex items-center gap-2">
-                        <FaBriefcase className="w-4 h-4 text-light-primary dark:text-dark-primary" />
+                        <FaBriefcase className="h-4 w-4 text-light-primary dark:text-dark-primary" />
                         <span className="text-sm font-medium text-light-text dark:text-dark-text">
                           Position:
                         </span>
@@ -505,9 +511,9 @@ const InterviewScreen = () => {
                     </div>
 
                     {interviewDetails.job?.company && (
-                      <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                      <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
                         <div className="flex items-center gap-2">
-                          <FaBuilding className="w-4 h-4 text-light-primary dark:text-dark-primary" />
+                          <FaBuilding className="h-4 w-4 text-light-primary dark:text-dark-primary" />
                           <span className="text-sm font-medium text-light-text dark:text-dark-text">
                             Company:
                           </span>
@@ -519,9 +525,9 @@ const InterviewScreen = () => {
                     )}
 
                     {interviewDetails.scheduledTime && (
-                      <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                      <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
                         <div className="flex items-center gap-2">
-                          <FaCalendarAlt className="w-4 h-4 text-light-primary dark:text-dark-primary" />
+                          <FaCalendarAlt className="h-4 w-4 text-light-primary dark:text-dark-primary" />
                           <span className="text-sm font-medium text-light-text dark:text-dark-text">
                             Scheduled:
                           </span>
@@ -535,9 +541,9 @@ const InterviewScreen = () => {
                     )}
 
                     {interviewDetails.callStartedAt && (
-                      <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+                      <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
                         <div className="flex items-center gap-2">
-                          <FaClock className="w-4 h-4 text-light-primary dark:text-dark-primary" />
+                          <FaClock className="h-4 w-4 text-light-primary dark:text-dark-primary" />
                           <span className="text-sm font-medium text-light-text dark:text-dark-text">
                             Started:
                           </span>
@@ -553,9 +559,9 @@ const InterviewScreen = () => {
                 </div>
               )}
 
-              <div className="md:col-span-1 p-5 bg-light-surface/80 dark:bg-dark-surface/80 backdrop-blur-md rounded-xl border border-light-border dark:border-dark-border/40 shadow-sm">
-                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3 flex items-center gap-2">
-                  <span className="h-5 w-1 bg-light-primary dark:bg-dark-primary rounded-full"></span>
+              <div className="rounded-xl border border-light-border bg-light-surface/80 p-5 shadow-sm backdrop-blur-md dark:border-dark-border/40 dark:bg-dark-surface/80 md:col-span-1">
+                <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold text-light-text dark:text-dark-text">
+                  <span className="h-5 w-1 rounded-full bg-light-primary dark:bg-dark-primary"></span>
                   Participants{' '}
                   <span className="text-sm text-light-text/60 dark:text-dark-text/60">
                     ({participants.length}/2)
@@ -565,28 +571,28 @@ const InterviewScreen = () => {
                   {participants.map((p) => (
                     <li
                       key={p.id}
-                      className="px-4 py-3 bg-light-background/50 dark:bg-dark-background/50 rounded-lg border border-light-border/30 dark:border-dark-border/20 flex items-center justify-between"
+                      className="flex items-center justify-between rounded-lg border border-light-border/30 bg-light-background/50 px-4 py-3 dark:border-dark-border/20 dark:bg-dark-background/50"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-light-primary/10 dark:bg-dark-primary/10 flex items-center justify-center border border-light-primary/30 dark:border-dark-primary/30">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-light-primary/30 bg-light-primary/10 dark:border-dark-primary/30 dark:bg-dark-primary/10">
                           <span className="text-xs font-bold text-light-primary dark:text-dark-primary">
                             {p.firstName?.charAt(0) || ''}
                             {p.lastName?.charAt(0) || ''}
                           </span>
                         </div>
-                        <span className="font-medium text-sm text-light-text dark:text-dark-text">
+                        <span className="text-sm font-medium text-light-text dark:text-dark-text">
                           {p.firstName} {p.lastName}
                           {p.socketId === socket?.id ? ' (You)' : ''}
                         </span>
                       </div>
                       <div>
                         {p.isInterviewer && (
-                          <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-100 rounded-full">
+                          <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900/40 dark:text-blue-100">
                             Interviewer
                           </span>
                         )}
                         {p.isCandidate && (
-                          <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-100 rounded-full">
+                          <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-800 dark:bg-green-900/40 dark:text-green-100">
                             Candidate
                           </span>
                         )}

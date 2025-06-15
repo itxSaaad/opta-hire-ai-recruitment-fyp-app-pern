@@ -59,7 +59,7 @@ export default function CandidateApplicationsScreen() {
       label: 'Status',
       render: (application) => (
         <span
-          className={`text-xs font-medium px-2.5 py-0.5 rounded ${
+          className={`rounded px-2.5 py-0.5 text-xs font-medium ${
             application.status === 'applied'
               ? 'bg-blue-100 text-blue-800'
               : application.status === 'shortlisted'
@@ -90,32 +90,33 @@ export default function CandidateApplicationsScreen() {
   return (
     <>
       <Helmet>
-        <title>Track Your Applications [Candidate] - OptaHire</title>
+        <title>My Applications - OptaHire | Track Application Status</title>
         <meta
           name="description"
-          content="Track your job applications and stay updated on your application status."
+          content="Track all your job applications on OptaHire. Monitor application status, interview schedules, and hiring progress in real-time."
         />
         <meta
           name="keywords"
-          content="job applications, application tracking, job status, candidate dashboard"
+          content="OptaHire My Applications, Application Status, Job Tracking, Application History, Interview Status"
         />
       </Helmet>
 
-      <section className="min-h-screen flex flex-col items-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
+      <section className="flex min-h-screen animate-fadeIn flex-col items-center bg-light-background px-4 py-24 dark:bg-dark-background">
         {isLoading ? (
-          <div className="w-full max-w-sm sm:max-w-md relative animate-fadeIn">
+          <div className="relative w-full max-w-sm animate-fadeIn sm:max-w-md">
             <Loader />
           </div>
         ) : (
-          <div className="max-w-7xl w-full mx-auto animate-slideUp">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center text-light-text dark:text-dark-text mb-6">
-              Track Your{' '}
+          <div className="mx-auto w-full max-w-7xl animate-slideUp">
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              My{' '}
               <span className="text-light-primary dark:text-dark-primary">
                 Applications
               </span>
             </h1>
-            <p className="text-lg text-light-text/70 dark:text-dark-text/70 text-center mb-8">
-              Keep track of your job applications and their status.
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Track the status of all your job applications and stay updated on
+              your hiring progress.
             </p>
 
             {error && <Alert message={error.data?.message} />}

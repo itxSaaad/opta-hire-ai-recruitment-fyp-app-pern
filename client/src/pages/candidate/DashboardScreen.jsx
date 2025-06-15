@@ -15,33 +15,36 @@ export default function DashboardScreen() {
   return (
     <>
       <Helmet>
-        <title>Candidate Dashboard - OptaHire</title>
+        <title>Candidate Dashboard - OptaHire | Your Job Search Hub</title>
         <meta
           name="description"
-          content="OptaHire Candidate Dashboard - Manage your recruitment process efficiently with our powerful tools and insights."
+          content="OptaHire Candidate Dashboard - Track your applications, upcoming interviews, and discover new opportunities with AI-powered matching."
         />
         <meta
           name="keywords"
-          content="OptaHire, Candidate Dashboard, Recruitment, Management"
+          content="OptaHire Candidate Dashboard, Job Search, Application Tracking, Interview Schedule, Career Opportunities"
         />
       </Helmet>
 
-      <section className="min-h-screen flex items-center justify-center py-24 px-4 bg-light-background dark:bg-dark-background animate-fadeIn">
-        <div className="max-w-4xl w-full mx-auto text-center bg-light-surface dark:bg-dark-surface p-8 rounded-xl shadow-lg animate-slideUp">
+      <section className="flex min-h-screen animate-fadeIn items-center justify-center bg-light-background px-4 py-24 dark:bg-dark-background">
+        <div className="mx-auto w-full max-w-4xl animate-slideUp rounded-xl bg-light-surface p-8 text-center shadow-lg dark:bg-dark-surface">
           <img
             src={Logo}
             alt="OptaHire Logo"
-            className="w-24 h-24 mx-auto mb-6 animate-loader"
+            className="mx-auto mb-6 h-24 w-24 animate-loader"
           />
-          <h1 className="text-4xl font-bold text-light-text dark:text-dark-text mb-6">
-            Welcome to the Candidate Dashboard
+          <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+            Your Career{' '}
+            <span className="text-light-primary dark:text-dark-primary">
+              Dashboard
+            </span>
           </h1>
-          <p className="text-xl text-light-text dark:text-dark-text mb-8">
-            Manage your recruitment process efficiently with our powerful tools
-            and insights.
+          <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+            Track your applications, monitor interview schedules, and discover
+            new career opportunities tailored for you.
           </p>
-          <div className="border-t border-light-border dark:border-dark-border pt-6 mt-6">
-            <p className="text-lg text-light-text dark:text-dark-text mb-6">
+          <div className="mt-6 border-t border-light-border pt-6 dark:border-dark-border">
+            <p className="mb-6 text-lg text-light-text dark:text-dark-text">
               Please select an option from the menu to get started.
             </p>
           </div>

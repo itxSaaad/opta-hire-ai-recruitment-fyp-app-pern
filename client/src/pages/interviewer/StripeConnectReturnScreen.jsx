@@ -121,14 +121,16 @@ export default function StripeConnectReturn() {
   return (
     <>
       <Helmet>
-        <title>Payment Setup Complete - OptaHire</title>
+        <title>
+          Payment Setup Complete - OptaHire | Stripe Connect Success
+        </title>
         <meta
           name="description"
-          content="OptaHire - Your Stripe Connect payment account setup status and next steps."
+          content="Payment setup completed successfully on OptaHire. Your Stripe Connect account is ready to receive payments for interview services."
         />
         <meta
           name="keywords"
-          content="payment setup, stripe connect, interviewer payments, account verification"
+          content="OptaHire Payment Success, Stripe Connect Complete, Interviewer Payments Ready, Payment Configuration Success"
         />
       </Helmet>
 

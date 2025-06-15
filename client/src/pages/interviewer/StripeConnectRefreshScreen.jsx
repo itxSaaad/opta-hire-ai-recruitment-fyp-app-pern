@@ -71,14 +71,16 @@ export default function StripeConnectRefresh() {
   return (
     <>
       <Helmet>
-        <title>Refreshing Payment Setup - OptaHire</title>
+        <title>
+          Payment Setup Refresh - OptaHire | Complete Stripe Connect Setup
+        </title>
         <meta
           name="description"
-          content="OptaHire - Refreshing your Stripe Connect setup link for payment account configuration."
+          content="Refresh your Stripe Connect setup on OptaHire. Complete your payment configuration to start receiving payments for interview services."
         />
         <meta
           name="keywords"
-          content="payment setup, stripe connect, refresh setup, interviewer payments"
+          content="OptaHire Stripe Setup, Payment Configuration, Interviewer Payments, Stripe Connect, Payment Refresh"
         />
       </Helmet>
 
@@ -109,16 +111,15 @@ export default function StripeConnectRefresh() {
               </div>
             </div>
 
-            <h1 className="mb-6 text-3xl font-bold text-light-text dark:text-dark-text">
-              Refreshing{' '}
+            <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
+              Complete Payment{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Setup Link
+                Setup
               </span>
             </h1>
-
-            <p className="mb-8 text-lg text-light-text dark:text-dark-text">
-              Please wait while we prepare your Stripe Connect setup. You will
-              be redirected to complete your payment account configuration.
+            <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
+              Finish setting up your payment account to start receiving payments
+              for your professional interview services.
             </p>
 
             <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
