@@ -107,10 +107,11 @@ export default function HeroSection() {
   }, []);
 
   const heroTexts = [
-    'Smarter Hiring',
-    'Better Matches',
-    'Faster Results',
-    'Expert Interviews',
+    'AI Recruitment',
+    'Perfect Matches',
+    'Smart Interviews',
+    'Fair Decisions',
+    'Top Talent',
   ];
 
   return (
@@ -157,7 +158,7 @@ export default function HeroSection() {
           {/* Main headline */}
           <h1 className="mb-6 px-4 text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
             <span className="text-light-text dark:text-dark-text">
-              Transform Your
+              Optimize Your
               <br />
               Hiring with{' '}
             </span>
