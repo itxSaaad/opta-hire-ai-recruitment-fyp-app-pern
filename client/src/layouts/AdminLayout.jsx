@@ -5,6 +5,7 @@ import {
   FaDollarSign,
   FaEnvelopeOpenText,
   FaFileContract,
+  FaRobot,
   FaStar,
   FaTachometerAlt,
   FaUsers,
@@ -38,7 +39,16 @@ const AdminLayout = () => {
       path: '/admin/interviewer-ratings',
       icon: <FaStar />,
     },
-    { label: 'Reports', path: '/admin/reports', icon: <FaChartBar /> },
+    {
+      label: 'AI Configuration',
+      path: '/admin/ai-configuration',
+      icon: <FaRobot />,
+    },
+    {
+      label: 'Reports and Analytics',
+      path: '/admin/reports',
+      icon: <FaChartBar />,
+    },
   ];
 
   return (

@@ -12,6 +12,7 @@ import InterviewLayout from './layouts/InterviewLayout.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
 import RecruiterLayout from './layouts/RecruiterLayout.jsx';
 
+import AdminAIConfigurationScreen from './pages/admin/AIConfigurationScreen.jsx';
 import AdminApplicationsScreen from './pages/admin/ApplicationsScreen.jsx';
 import AdminContractsScreen from './pages/admin/ContractsScreen.jsx';
 import AdminDashboardScreen from './pages/admin/DashboardScreen.jsx';
@@ -90,6 +91,10 @@ const router = createBrowserRouter(
         <Route
           path="interviewer-ratings"
           element={<AdminInterviewerRatingsScreen />}
+        />
+        <Route
+          path="ai-configuration"
+          element={<AdminAIConfigurationScreen />}
         />
         <Route path="reports" element={<AdminReportsScreen />} />
       </Route>
