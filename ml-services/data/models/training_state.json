@@ -1,0 +1,25 @@
+{
+  "is_trained": true,
+  "training_metadata": {
+    "model_version": "1.0.0",
+    "training_samples": 500,
+    "valid_samples": 500,
+    "vocabulary_size": 1000,
+    "skills_vocabulary_size": 500,
+    "training_timestamp": "2025-05-25T07:55:34.833414+00:00",
+    "weights": {
+      "skills_match": 0.4,
+      "experience_relevance": 0.3,
+      "education_alignment": 0.15,
+      "industry_experience": 0.1,
+      "text_similarity": 0.05
+    },
+    "status": "training_completed"
+  },
+  "model_files": {
+    "text_vectorizer": "text_vectorizer.pkl",
+    "skills_vectorizer": "skills_vectorizer.pkl"
+  },
+  "saved_timestamp": "2025-05-25T07:55:34.864413+00:00",
+  "model_version": "1.0.0"
+}

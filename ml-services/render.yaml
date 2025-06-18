@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: optahire-ai-service
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DEBUG
+        value: 'false'
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: MODEL_VERSION
+        value: 1.0.0
+      - key: MAX_CANDIDATES
+        value: 5
+      - key: MIN_SIMILARITY
+        value: 0.3
+      - key: MODEL_STORAGE_PATH
+        value: data/models
+      - key: WEIGHT_SKILLS
+        value: 0.40
+      - key: WEIGHT_EXPERIENCE
+        value: 0.30
+      - key: WEIGHT_EDUCATION
+        value: 0.15
+      - key: WEIGHT_INDUSTRY
+        value: 0.10
+      - key: WEIGHT_TEXT
+        value: 0.05
+      - key: ENABLE_CACHING
+        value: 'false'
+      - key: RATE_LIMIT_PER_MINUTE
+        value: 100
+      - key: RATE_LIMIT_STORAGE
+        value: memory://
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_TO_FILE
+        value: 'false'
+      - key: ENABLE_COLOR_LOGS
+        value: 'false'

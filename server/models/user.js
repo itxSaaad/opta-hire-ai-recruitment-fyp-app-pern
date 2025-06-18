@@ -6,23 +6,24 @@ const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      User.hasOne(models.Resume, {
+        foreignKey: 'userId',
+        as: 'resume',
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      });
     }
   }
 
   User.init(
     {
       id: {
-        allowNull: false,
-        autoIncrement: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-        type: DataTypes.INTEGER,
+        allowNull: false,
+        unique: true,
       },
       firstName: {
         type: DataTypes.STRING,
@@ -48,6 +49,15 @@ module.exports = (sequelize, DataTypes) => {
           isAlpha: { msg: 'Last name must contain only letters' },
         },
       },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: { msg: 'Email already exists' },
+        validate: {
+          isEmail: { msg: 'Please enter a valid email address' },
+          notEmpty: { msg: 'Email is required' },
+        },
+      },
       phone: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -64,15 +74,6 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: { msg: 'Email already exists' },
-        validate: {
-          isEmail: { msg: 'Please enter a valid email address' },
-          notEmpty: { msg: 'Email is required' },
-        },
-      },
       password: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -84,14 +85,87 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
-      role: {
-        type: DataTypes.ENUM('admin', 'recruiter', 'interviewer', 'candidate'),
-        allowNull: false,
-        defaultValue: 'candidate',
+      otp: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          is: {
+            args: /^\d{6}$/,
+            msg: 'OTP must be exactly 6 digits',
+          },
+        },
+      },
+      otpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isLinkedinVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isAdmin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isRecruiter: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isInterviewer: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isCandidate: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      isTopRated: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      // Stripe Connect Fields (for Interviewers)
+      stripeAccountId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          len: {
+            args: [0, 255],
+            msg: 'Stripe account ID must not exceed 255 characters',
+          },
+        },
+      }, // Stripe Customer ID (for Recruiters)
+      stripeCustomerId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        validate: {
+          len: {
+            args: [0, 255],
+            msg: 'Stripe customer ID must not exceed 255 characters',
+          },
+        },
+      },
+      stripeAccountStatus: {
+        type: DataTypes.ENUM('pending', 'verified', 'restricted', 'rejected'),
+        allowNull: true,
         validate: {
           isIn: {
-            args: [['admin', 'recruiter', 'interviewer', 'candidate']],
-            msg: 'Invalid role specified',
+            args: [['pending', 'verified', 'restricted', 'rejected']],
+            msg: 'Invalid Stripe account status',
+          },
+        },
+      },
+      payoutEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        validate: {
+          isBoolean(value) {
+            if (typeof value !== 'boolean') {
+              throw new Error('Payout enabled must be a boolean value');
+            }
           },
         },
       },
@@ -112,20 +186,86 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  /**
+   * Generates an access token for the user using the
+   * provided JWT secret and expiration time.
+   *
+   * @returns {string} The generated access token.
+   */
   User.prototype.generateAccessToken = function () {
     return jwt.sign({ id: this.id }, process.env.JWT_ACCESS_TOKEN_SECRET, {
       expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
     });
   };
 
+  /**
+   * Generates a refresh token for the user using the
+   * provided JWT secret and expiration time.
+   *
+   * @returns {string} The generated refresh token.
+   */
   User.prototype.generateRefreshToken = function () {
     return jwt.sign({ id: this.id }, process.env.JWT_REFRESH_TOKEN_SECRET, {
       expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
     });
   };
 
+  /**
+   * Validates a user's password by comparing it with the stored hashed password using bcrypt.
+   *
+   * @param {string} password The password to validate.
+   *
+   * @returns {Promise<boolean>} A promise that resolves to `true` if the password is valid, or `false` otherwise.
+   */
   User.prototype.validatePassword = async function (password) {
     return bcrypt.compare(password, this.password);
+  };
+
+  /**
+   * Generates a unique one-time password (OTP) for the user by randomly
+   * generating a number of a specified length and checking if it already exists
+   * in the database. If the generated OTP already exists, it will be
+   * re-generated until a unique one is found.
+   *
+   * @returns {string} The generated OTP.
+   */
+  User.prototype.generateOTP = async function () {
+    const OTP_LENGTH = 6;
+
+    do {
+      const otp = Array.from({ length: OTP_LENGTH }, () =>
+        Math.floor(Math.random() * 10)
+      ).join('');
+
+      const existingUser = await User.findOne({ where: { otp } });
+
+      if (!existingUser) {
+        return otp;
+      }
+    } while (true);
+  };
+
+  /**
+   * Check if user has completed Stripe Connect setup
+   *
+   * @returns {boolean} Whether the user can receive payouts
+   */
+  User.prototype.canReceivePayouts = function () {
+    return (
+      this.isInterviewer &&
+      this.stripeAccountId &&
+      this.stripeAccountStatus === 'verified' &&
+      this.payoutEnabled
+    );
+  };
+
+  /**
+   * Check if user can make payments
+   *
+   * @returns {boolean} Whether the user can make payments
+   */
+  User.prototype.canMakePayments = function () {
+    return this.isRecruiter;
   };
 
   return User;

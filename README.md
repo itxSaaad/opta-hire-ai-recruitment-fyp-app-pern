@@ -1,28 +1,28 @@
 # OptaHire - Optimizing Your Recruitment Journey
 
-> This project is part of our Final Year Project (FYP) for the Bachelor's in Computer Science program at the University of the Punjab Gujranwala Campus (PUGC). The project aims to develop a web application that leverages AI and Machine Learning technologies to optimize the recruitment process for businesses and professionals. The project is developed using the MERN stack (MongoDB, Express.js, React.js, Node.js) and various other technologies and tools. The project is open-source and welcomes contributions from the community.
+> This project is part of our Final Year Project (FYP) for the Bachelor's in Computer Science program at the University of the Punjab Gujranwala Campus (PUGC). The project aims to develop a comprehensive web application that leverages AI and Machine Learning technologies to optimize the recruitment process for businesses and professionals. The project is developed using the PERN stack (PostgreSQL, Express.js, React.js, Node.js) with Python-based AI services and various other modern technologies.
 
 <br/>
 <div align="center">
-  <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern">
-    <img src="/client/src/assets/images/logo.png" alt="Logo" width="100" height="100">
-  </a>
+   <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern">
+      <img src="./client/src/assets/images/logo.png" alt="Logo" width="100" height="100">
+   </a>
 
-  <h3 align="center">OptaHire</h3>
+   <h3 align="center">OptaHire</h3>
 
-  <p align="center">
-    Optimizing Your Recruitment Journey
-    <br/>
-    <br/>
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern"><strong>Explore the docs »</strong></a>
-    <br/>
-    <br/>
-    <a href="https://opta-hire-fyp-app-client.vercel.app/">View Demo</a>
-    .
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues">Report Bug</a>
-    .
-    <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues">Request Feature</a>
-  </p>
+   <p align="center">
+      AI-Powered Recruitment Platform with Intelligent Candidate Matching
+      <br/>
+      <br/>
+      <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern"><strong>Explore the docs »</strong></a>
+      <br/>
+      <br/>
+      <a href="https://opta-hire-fyp-app-client.vercel.app/">View Demo</a>
+      .
+      <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues">Report Bug</a>
+      .
+      <a href="https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/issues">Request Feature</a>
+   </p>
 </div>
 
 [![Contributors][contributors-shield]][contributors-url]
@@ -38,221 +38,510 @@
   - [About The Project](#about-the-project)
     - [Production URLs](#production-urls)
     - [Development URLs](#development-urls)
-  - [Features](#features)
-    - [1. User \& Authentication Management](#1-user--authentication-management)
-    - [2. Job Posting \& Management](#2-job-posting--management)
-    - [3. Application Processing](#3-application-processing)
-    - [4. Resume Management](#4-resume-management)
-    - [5. Interview Coordination](#5-interview-coordination)
-    - [6. Communication System](#6-communication-system)
-    - [7. Interviewer Marketplace](#7-interviewer-marketplace)
-    - [8. Contract \& Payment Processing](#8-contract--payment-processing)
-    - [9. System Security \& Performance](#9-system-security--performance)
-  - [Built With](#built-with)
+    - [Project Modules](#project-modules)
+  - [Technology Stack](#technology-stack)
+    - [Frontend (Client)](#frontend-client)
+    - [Backend (Server)](#backend-server)
+    - [AI/ML Services](#aiml-services)
+    - [Infrastructure \& Deployment](#infrastructure--deployment)
+  - [Key Features](#key-features)
+    - [1. AI-Powered Candidate Matching](#1-ai-powered-candidate-matching)
+    - [2. Comprehensive User Management](#2-comprehensive-user-management)
+    - [3. Advanced Job \& Application Processing](#3-advanced-job--application-processing)
+    - [4. Real-time Communication System](#4-real-time-communication-system)
+    - [5. Integrated Video Interview Platform](#5-integrated-video-interview-platform)
+    - [6. Recruiter \& Interviewer Management](#6-recruiter--interviewer-management)
+    - [7. Secure Payment Processing](#7-secure-payment-processing)
+    - [8. Modern React Frontend](#8-modern-react-frontend)
+    - [9. Enterprise-Level Security](#9-enterprise-level-security)
+  - [Project Structure](#project-structure)
+  - [Module Documentation](#module-documentation)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-  - [Roadmap](#roadmap)
+    - [Full Stack Installation](#full-stack-installation)
+    - [Environment Configuration](#environment-configuration)
+    - [Database Setup](#database-setup)
+    - [AI Model Training](#ai-model-training)
+    - [Running the Application](#running-the-application)
+  - [API Documentation](#api-documentation)
+  - [Deployment](#deployment)
+    - [Production Environment](#production-environment)
+    - [Deployment Platforms](#deployment-platforms)
+  - [Performance \& Monitoring](#performance--monitoring)
+  - [Security Features](#security-features)
   - [Contributing](#contributing)
+    - [Contributing Guidelines](#contributing-guidelines)
   - [Authors](#authors)
   - [License](#license)
   - [Support](#support)
 
 ## About The Project
 
-OptaHire is an AI-powered recruitment platform that aims to optimize the recruitment process for businesses and professionals. The platform offers a range of features such as job posting, resume filtering, interviewer marketplace, video interviews, secure payment processing, and communication tools. The platform leverages AI and Machine Learning technologies to automate and streamline the recruitment process, making it faster, more efficient, and cost-effective. The platform is designed to be user-friendly, secure, and scalable, catering to the needs of recruiters, candidates, and interviewers.
+OptaHire is a cutting-edge, AI-powered recruitment platform designed to revolutionize the hiring process for modern businesses. Built as a comprehensive full-stack application, it combines the power of artificial intelligence with intuitive user interfaces to create an efficient, scalable, and intelligent recruitment ecosystem.
+
+The platform addresses key challenges in traditional recruitment by leveraging machine learning algorithms for intelligent candidate-job matching, automated resume screening, and comprehensive application processing. With support for multiple user roles including candidates, recruiters, interviewers, and administrators, OptaHire provides tailored experiences that streamline the entire recruitment lifecycle.
 
 ### Production URLs
 
-- **Client URL:** [https://opta-hire-fyp-app-client.vercel.app](https://opta-hire-fyp-app-client.vercel.app/)
-- **Server URL:** [https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com](https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com)
+- **Client Application:** [https://opta-hire-fyp-app-client.vercel.app](https://opta-hire-fyp-app-client.vercel.app/)
+- **Backend API Server:** [https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com](https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com)
+- **AI/ML Services:** [https://opta-hire-fyp-app-ml-services.onrender.com](https://opta-hire-fyp-app-ml-services.onrender.com)
 
 ### Development URLs
 
-- **Client URL:** [https://opta-hire-develop-client.vercel.app](https://opta-hire-develop-client.vercel.app)
-- **Server URL:** [https://opta-hire-develop-server.vercel.app](https://opta-hire-develop-server.vercel.app)
+- **Client Development:** [https://opta-hire-develop-client.vercel.app](https://opta-hire-develop-client.vercel.app)
+- **Server Development:** [https://opta-hire-develop-server.vercel.app](https://opta-hire-develop-server.vercel.app)
 
-## Features
+### Project Modules
 
-### 1. User & Authentication Management
+1. **[Client Application](/client)** - Modern React frontend with Redux state management
+2. **[Server Backend](/server)** - RESTful API built with Node.js and Express.js
+3. **[AI/ML Services](/ml-services)** - Python-based machine learning services for intelligent matching
 
-- **User Profiles:** Create and manage user profiles with different roles (Candidate, Recruiter, Interviewer, Admin).
-- **Authentication:** Secure login, logout, and token refresh with JWT authentication.
-- **Security Features:** Rate limiting, protected routes, and role-based authorization.
-- **Password Management:** Update passwords, reset forgotten passwords, and verify email addresses.
-- **Profile Operations:** View, update, and delete user profiles with admin capabilities for user management.
+## Technology Stack
 
-### 2. Job Posting & Management
+### Frontend (Client)
 
-- **Job Listings:** Post job openings with comprehensive details via recruiter accounts.
-- **Job Operations:** Create, view, update, and delete job postings with role-based permissions.
-- **Job Accessibility:** Public job search and viewing with protected management functions.
-- **Application Tracking:** View all job applications associated with specific job postings.
+- React 18 with Vite for modern development
+- Redux Toolkit Query for state management
+- Tailwind CSS for responsive design
+- Socket.io Client for real-time communication
+- WebRTC for video interviews
 
-### 3. Application Processing
+### Backend (Server)
 
-- **Application Submission:** Submit job applications as candidates with resume attachments.
-- **Application Management:** View, update, and manage applications with role-based permissions.
-- **Application Filtering:** Get applications by job ID for efficient management.
-- **Status Tracking:** Update and monitor application status through the hiring process.
+- Node.js with Express.js framework
+- PostgreSQL with Sequelize ORM
+- JWT authentication with refresh tokens
+- Socket.io for real-time features
+- Stripe integration for payments
 
-### 4. Resume Management
+### AI/ML Services
 
-- **Resume Creation:** Upload and create professional resumes with detailed information.
-- **Resume Operations:** View, update, and delete personal resumes.
-- **Admin Controls:** Administrative capabilities for resume management across the platform.
+- Python with Flask framework
+- Scikit-learn for machine learning
+- TF-IDF vectorization for text analysis
+- Synthetic data generation for training
+- RESTful API for model inference
 
-### 5. Interview Coordination
+### Infrastructure & Deployment
 
-- **Interview Management:** Schedule, update, and manage interviews between candidates and interviewers.
-- **Job-Specific Interviews:** Associate interviews with specific job postings.
-- **Role-Based Controls:** Different permissions for interviewers, recruiters, and admins.
+- Vercel for frontend hosting
+- Heroku for backend and database
+- Render for AI/ML services
+- GitHub for version control
 
-### 6. Communication System
+## Key Features
 
-- **Chat Rooms:** Create and manage chat rooms for secure communication.
-- **Message History:** Access complete history of communications within chat rooms.
-- **Controlled Access:** Role-based permissions for chat room creation and access.
+### 1. AI-Powered Candidate Matching
 
-### 7. Interviewer Marketplace
+- **Intelligent Scoring Algorithm**: Multi-factor scoring system analyzing skills, experience, education, and industry fit
+- **TF-IDF Vectorization**: Advanced text analysis for semantic matching between job requirements and candidate profiles
+- **Automated Shortlisting**: AI automatically identifies top 5 candidates from application pools
+- **Configurable Weights**: Customizable scoring parameters for different recruitment priorities
+- **Match Explanations**: Detailed scoring breakdowns helping recruiters understand AI recommendations
 
-- **Interviewer Ratings:** Rate and review interviewers based on performance.
-- **Rating Management:** Create, view, update, and delete ratings with appropriate permissions.
-- **Job & Contract Association:** Associate ratings with specific jobs and contracts.
+### 2. Comprehensive User Management
 
-### 8. Contract & Payment Processing
+- **Multi-Role Support**: Candidate, Recruiter, Interviewer, and Admin role management
+- **Secure Authentication**: JWT-based authentication with refresh token capabilities
+- **Profile Management**: Comprehensive user profiles with role-specific information
+- **Email Verification**: Secure account activation and password reset functionality
+- **Role-Based Authorization**: Granular permissions controlling feature access
 
-- **Contract Management:** Create and manage contracts between recruiters and interviewers.
-- **Payment Processing:** Secure payment processing with Stripe integration.
-- **Transaction Tracking:** Record and monitor all financial transactions within the platform.
-- **Payment Workflow:** Structured checkout, capture, and completion process for payments.
+### 3. Advanced Job & Application Processing
 
-### 9. System Security & Performance
+- **Dynamic Job Posting**: Rich job creation with detailed requirements and company information
+- **Application Tracking**: Complete application lifecycle management with status updates
+- **Resume Management**: Multiple resume support with version control
+- **Bulk Operations**: Efficient handling of multiple applications and candidates
+- **Search & Filtering**: Advanced search capabilities with multiple filter criteria
 
-- **Rate Limiting:** Prevent abuse with intelligent request rate limiting.
-- **Role Authorization:** Comprehensive role-based access control for all system functions.
-- **API Protection:** Secure API endpoints with authentication middleware.
-- **Transaction Security:** Secure payment processing and financial transaction management.
+### 4. Real-time Communication System
 
-## Built With
+- **Live Chat Rooms**: Secure messaging between recruiters, candidates, and interviewers
+- **Instant Notifications**: Real-time updates for application status changes and system events
+- **Socket.io Integration**: Bidirectional communication for immediate updates
+- **Message History**: Persistent chat history with searchable archives
+- **Typing Indicators**: Real-time typing notifications for better user experience
 
-- **Frontend:** React.js (Vite.js), Tailwind CSS, React Router, Redux Toolkit Query, React Redux, React Helmet, React Icons, Axios, Socket.io Client
-- **Backend:** Node.js, Express.js, bcryptjs, cors, dotenv, express-async-handler, jsonwebtoken, helmet, morgan, express-rate-limit, xss-clean, cookie-parser, Swagger UI
-- **Database:** PostgreSQL, Sequelize ORM
-- **Real-time Communication:** Socket.io, WebRTC
-- **Documentation:** Swagger JSDoc
-- **Authentication:** JSON Web Tokens (JWT)
-- **Payment Processing:** Stripe
-- **Version Control:** Git and GitHub
-- **Deployment:** Vercel (Frontend), Heroku (Backend, PostrgeSQL)
+### 5. Integrated Video Interview Platform
+
+- **WebRTC Video Calls**: Browser-based video interviews without additional software
+- **Interview Scheduling**: Flexible scheduling system with calendar integration
+- **Recording Capabilities**: Optional interview recording for review purposes
+- **Screen Sharing**: Built-in screen sharing for technical assessments
+- **Call Quality Monitoring**: Network quality indicators and adaptive bitrate
+
+### 6. Recruiter & Interviewer Management
+
+- **Rating & Review System**: Comprehensive feedback system for interviewer performance
+- **Contract Management**: Formal agreements between recruiters and interviewers
+
+### 7. Secure Payment Processing
+
+- **Stripe Integration**: Secure payment processing for interviewer services
+- **Automated Invoicing**: Automatic invoice generation and payment tracking
+- **Transaction History**: Detailed financial records and reporting
+- **Multiple Payment Methods**: Support for various payment options
+- **Webhook Security**: Secure payment confirmation with signature verification
+
+### 8. Modern React Frontend
+
+- **Responsive Design**: Mobile-first design optimized for all devices
+- **Redux State Management**: Efficient state management with RTK Query
+- **Component Library**: Reusable UI components for consistent user experience
+- **Dark/Light Themes**: User preference-based theme switching
+- **Progressive Web App**: Offline capabilities and app-like experience
+
+### 9. Enterprise-Level Security
+
+- **Rate Limiting**: API protection against abuse and DDoS attacks
+- **XSS Protection**: Input sanitization and cross-site scripting prevention
+- **CORS Configuration**: Secure cross-origin resource sharing
+- **SQL Injection Prevention**: Parameterized queries and ORM protection
+- **Data Encryption**: Secure data transmission and storage
+
+## Project Structure
+
+```
+opta-hire-ai-recruitment-fyp-app-pern/
+├── client/                     # React frontend application
+│   ├── src/
+│   │   ├── api/               # API configuration and utilities
+│   │   ├── components/        # Reusable UI components
+│   │   ├── features/          # Feature-based modules with RTK Query
+│   │   ├── pages/             # Page components
+│   │   ├── layouts/           # Layout components
+│   │   └── utils/             # Utility functions
+│   ├── public/                # Static assets
+│   └── package.json           # Frontend dependencies
+├── server/                     # Node.js backend application
+│   ├── controllers/           # Request handlers and business logic
+│   ├── models/                # Sequelize database models
+│   ├── routes/                # API route definitions
+│   ├── middlewares/           # Express middleware functions
+│   ├── migrations/            # Database schema migrations
+│   ├── seeders/               # Database seed data
+│   ├── sockets/               # Real-time communication
+│   ├── utils/                 # Utility functions
+│   └── app.js                 # Main application entry point
+├── ml-services/               # Python AI/ML services
+│   ├── controllers/           # API endpoint controllers
+│   ├── models/                # AI models and algorithms
+│   ├── data_generation/       # Synthetic data generation
+│   ├── utils/                 # Utility functions
+│   ├── config/                # Configuration management
+│   └── app.py                 # Flask application entry point
+├── docs/                      # Project documentation
+├── .github/                   # GitHub workflows and templates
+├── README.md                  # Main project documentation
+└── LICENSE                    # Project license
+```
+
+## Module Documentation
+
+Each module contains comprehensive documentation:
+
+- **[Client Documentation](/client/README.md)** - Frontend architecture, components, and development guidelines
+- **[Server Documentation](/server/README.md)** - Backend API endpoints, database schema, and deployment
+- **[AI/ML Services Documentation](/ml-services/README.md)** - Machine learning models, training pipeline, and AI endpoints
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) - JavaScript runtime built on Chrome's V8 JavaScript engine
-- [NPM](https://www.npmjs.com/) - Node Package Manager
+- **Node.js** (v18.x or higher) - JavaScript runtime environment
+- **npm** (v9.x or higher) - Node package manager
+- **Python** (v3.8 or higher) - For AI/ML services
+- **PostgreSQL** (v13.x or higher) - Database server
+- **Git** - Version control system
 
-### Installation
+### Full Stack Installation
 
-1. Clone the repository
+1. **Clone the repository**
 
-   ```sh
-     git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-pern.git
-     cd opta-hire-ai-recruitment-fyp-app-pern
+   ```bash
+   git clone https://github.com/itxSaaad/opta-hire-ai-recruitment-fyp-app-pern.git
+
+   cd opta-hire-ai-recruitment-fyp-app-pern
    ```
 
-2. Install dependencies for both client and server
+2. **Install backend dependencies**
 
-   ```sh
-      # Install server dependencies
-      cd server
-      npm install
+   ```bash
+   cd server
 
-      # Install client dependencies
-      cd ../client
-      npm install
+   npm install
+
+   cd ..
    ```
 
-3. Configure environment variables
+3. **Install frontend dependencies**
 
-   **For the server (.env in server directory):**
+   ```bash
+   cd client
 
-   ```
-      # Server Configuration
-      NODE_ENV=development
-      PORT=5000
-      SERVER_URL=http://localhost:5000
-      CLIENT_URL=http://localhost:5173
-      CORS_ORIGIN=http://localhost:5173
+   npm install
 
-      # Database Configuration
-      DATABASE_URL=postgresql://username:password@localhost:5432/optahire
-      DB_USERNAME=postgres
-      DB_PASSWORD=your_password
-      DB_DATABASE=optahire
-      DB_HOST=localhost
-      DB_PORT=5432
-
-      # Authentication
-      JWT_ACCESS_TOKEN_SECRET=your_access_token_secret
-      JWT_REFRESH_TOKEN_SECRET=your_refresh_token_secret
-      JWT_ACCESS_TOKEN_EXPIRY=15m
-      JWT_REFRESH_TOKEN_EXPIRY=7d
-
-      # Email Configuration
-      NODEMAILER_SMTP_SERVICE=gmail
-      NODEMAILER_SMTP_HOST=smtp.gmail.com
-      NODEMAILER_SMTP_PORT=587
-      NODEMAILER_SMTP_EMAIL=your-email@gmail.com
-      NODEMAILER_SMTP_PASSWORD=your_app_password
-
-      # Payments
-      STRIPE_SECRET_KEY=your_stripe_secret_key
+   cd ..
    ```
 
-   **For the client (.env in client directory):**
+4. **Setup AI/ML services**
 
-   ```
-    VITE_SERVER_URL=http://localhost:5000
-    VITE_CLIENT_URL=http://localhost:5173
-   ```
+   ```bash
+   cd ml-services
 
-4. Set up the database
+   python -m venv venv # On Windows:
+   venv\Scripts\activate # On macOS/Linux:
 
-   ```sh
-     # Navigate to server directory
-     cd ../server
+   source venv/bin/activate
 
-     # Create database tables with Sequelize migrations
-     npx sequelize-cli db:migrate
+   pip install -r requirements.txt
 
-     # Populate database with initial data
-     npx sequelize-cli db:seed:all
+   cd ..
    ```
 
-5. Start the development servers
+### Environment Configuration
 
-   ```sh
-      # Start the backend server (from server directory)
-      npm run dev
+Create `.env` files in each module directory:
 
-      # In a new terminal, start the frontend
-      cd ../client
-      npm run dev
+**Server (.env in server directory):**
+
+```env
+# Environment Configuration
+NODE_ENV=development
+PORT=5000
+
+# URLs Configuration
+SERVER_URL=http://localhost:5000
+CLIENT_URL=http://localhost:5173
+AI_SERVER_URL=http://localhost:5001
+
+# CORS Configuration
+CORS_ORIGIN=<your_client_url>
+
+# Database Configuration
+DATABASE_URL=postgresql://username:password@localhost:5432/optahire
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+DB_DATABASE=optahire
+DB_HOST=localhost
+DB_PORT=5432
+
+# Authentication
+JWT_ACCESS_TOKEN_SECRET=your_access_token_secret_minimum_32_characters
+JWT_REFRESH_TOKEN_SECRET=your_refresh_token_secret_minimum_32_characters
+JWT_ACCESS_TOKEN_EXPIRES_IN=15m
+JWT_REFRESH_TOKEN_EXPIRES_IN=30d
+
+# Email Configuration
+NODEMAILER_SMTP_SERVICE=gmail
+NODEMAILER_SMTP_HOST=smtp.gmail.com
+NODEMAILER_SMTP_PORT=465
+NODEMAILER_SMTP_EMAIL=your-email@gmail.com
+NODEMAILER_SMTP_PASSWORD=your_app_password
+
+# Stripe Configuration
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+```
+
+**Client (.env in client directory):**
+
+```env
+# URLs Configuration
+VITE_CLIENT_URL=http://localhost:5173
+VITE_SERVER_URL=http://localhost:5000
+
+# Stripe Configuration
+VITE_STRIPE_SECRET_KEY=your_stripe_secret_key
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+
+# Analytics Configuration
+VITE_GA_TRACKING_ID=your_google_analytics_tracking_id
+```
+
+**AI/ML Services (.env in ml-services directory):**
+
+```env
+# Environment Configuration
+FLASK_ENV=development
+DEBUG=true
+
+# Server Configuration
+HOST=127.0.0.1
+PORT=5001
+
+# External Services URLs
+CLIENT_URL=http://localhost:5173
+NODE_SERVER_URL=http://localhost:5000
+
+# CORS Configuration
+CORS_ORIGIN=<your_client_url>
+
+# Production URLs (set in production environment)
+PROD_CLIENT_URL=<your_production_client_url>
+PROD_NODE_SERVER_URL=<your_production_node_server_url>
+
+# AI Model Configuration
+MODEL_VERSION=1.0.0
+MAX_CANDIDATES=5
+MIN_SIMILARITY=0.3
+MODEL_STORAGE_PATH=data/models
+
+# Scoring Weights (must sum to 1.0)
+WEIGHT_SKILLS=0.40
+WEIGHT_EXPERIENCE=0.30
+WEIGHT_EDUCATION=0.15
+WEIGHT_INDUSTRY=0.10
+WEIGHT_TEXT=0.05
+
+# Performance Settings
+ENABLE_CACHING=false
+RATE_LIMIT_PER_MINUTE=100
+RATE_LIMIT_STORAGE=memory://
+
+# Logging Configuration
+LOG_LEVEL=DEBUG
+LOG_TO_FILE=false
+ENABLE_COLOR_LOGS=true
+```
+
+### Database Setup
+
+1. **Create PostgreSQL database**
+
+   ```bash
+   createdb optahire
    ```
 
-6. Access the application
+2. **Run migrations and seeders**
 
-- Frontend: [http://localhost:5173](http://localhost:5173)
-- Backend API: [http://localhost:5000](http://localhost:5000)
-- API Documentation: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+   ```bash
+   cd server
+   npx sequelize-cli db:migrate
+   npx sequelize-cli db:seed:all
+   cd ..
+   ```
 
-> **Note:** For production deployment, ensure you set appropriate environment variables with secure values and proper production configurations.
+### AI Model Training
 
-## Roadmap
+```bash
+cd ml-services
 
-See the [open issues](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern) for a list of proposed features (and known issues).
+# Activate virtual environment
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+
+# Train the AI model with synthetic data
+python train_model.py
+
+# Or generate more training examples for better accuracy
+python train_model.py --examples 500
+
+cd ..
+```
+
+### Running the Application
+
+Start all services in separate terminals:
+
+1. **Start the backend server**
+
+   ```bash
+   cd server
+
+   npm run dev # Server runs on http://localhost:5000
+   ```
+
+2. **Start the AI/ML services**
+
+   ```bash
+   cd ml-services
+
+   source venv/bin/activate  # or venv\Scripts\activate on Windows
+
+   python app.py # AI services run on http://localhost:5001
+   ```
+
+3. **Start the frontend client**
+
+   ```bash
+   cd client
+
+   npm run dev # Client runs on http://localhost:5173
+   ```
+
+4. **Access the application**
+
+   - **Frontend:** [http://localhost:5173](http://localhost:5173)
+   - **Backend API:** [http://localhost:5000](http://localhost:5000)
+   - **API Documentation:** [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+   - **AI Services:** [http://localhost:5001](http://localhost:5001)
+
+## API Documentation
+
+Comprehensive API documentation is available via Swagger UI:
+
+- **Development:** [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+- **Production:** [https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com/api-docs](https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com/api-docs)
+
+The documentation includes:
+
+- Complete endpoint descriptions and examples
+- Authentication requirements and token management
+- Request/response schemas with validation rules
+- Interactive testing interface for all endpoints
+
+## Deployment
+
+### Production Environment
+
+The application is deployed across multiple platforms for optimal performance:
+
+- **Frontend**: Vercel for fast global CDN delivery
+- **Backend**: Heroku with PostgreSQL database
+- **AI Services**: Render for reliable Python hosting
+- **Monitoring**: Integrated health checks and error tracking
+
+### Deployment Platforms
+
+1. **Vercel (Frontend)**
+
+   - Automatic deployments from GitHub
+   - Edge network optimization
+   - Environment variable management
+
+2. **Heroku (Backend & Database)**
+
+   - Managed PostgreSQL database
+   - Automatic SSL certificates
+   - Horizontal scaling capabilities
+
+3. **Render (AI/ML Services)**
+   - Python runtime optimization
+   - Persistent storage for trained models
+   - Auto-scaling based on demand
+
+## Performance & Monitoring
+
+- **Performance Metrics**: Core Web Vitals tracking
+- **Error Monitoring**: Sentry integration for error tracking
+- **Analytics**: Google Analytics 4 for user behavior
+- **Health Checks**: Comprehensive system health monitoring
+- **Load Testing**: Performance testing with multiple user scenarios
+
+## Security Features
+
+- **Authentication Security**: JWT with refresh tokens and secure storage
+- **Input Validation**: Comprehensive request validation and sanitization
+- **SQL Injection Prevention**: Parameterized queries and ORM protection
+- **XSS Protection**: Content Security Policy and input sanitization
+- **Rate Limiting**: API endpoint protection against abuse
+- **HTTPS Enforcement**: SSL/TLS encryption for all communications
+- **CORS Configuration**: Secure cross-origin resource sharing
+- **Environment Security**: Secure environment variable management
 
 ## Contributing
 
@@ -263,22 +552,25 @@ Contributions are what make the open-source community such an amazing place to l
 - Create individual PR for each suggestion.
 - Please also read through the [Code Of Conduct](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/blob/master/CODE_OF_CONDUCT.md) before posting your first idea as well.
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Don't forget to give the project a star! Thanks again!
+### Contributing Guidelines
 
-1. Fork the repo
-2. Clone the project
-3. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-4. Commit your changes (`git commit -m "Add some AmazingFeature"`)
-5. Push to the branch (`git push origin feature/AmazingFeature`)
-6. Open a pull request
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Follow the code style guidelines for each module
+4. Write tests for new functionality
+5. Ensure all tests pass
+6. Update documentation as needed
+7. Commit your changes (`git commit -m "Add some AmazingFeature"`)
+8. Push to the branch (`git push origin feature/AmazingFeature`)
+9. Open a pull request
 
 ## Authors
 
-- **Muhammad Saad** - Full Stack Developer - [itxsaaad](https://github.com/itxsaaad) - _Project Lead_ - _Handling Frontend, Backend, and Deployment_
-- **Mirza Moiz** - Full Stack Developer - [mirza-moiz](https://github.com/mirza-moiz) - _Handling Backend and Database_ - _Documentation_
-- **Hassnain Raza** - Front End Developer - [hassnain512](https://github.com/hassnain512) - _Handling Frontend and Deployment_ - _Documentation_
+- **Muhammad Saad** - Full Stack Developer & Project Lead - [itxsaaad](https://github.com/itxsaaad) - _Frontend, Backend, AI/ML, and Deployment_
+- **Mirza Moiz** - Full Stack Developer - [mirza-moiz](https://github.com/mirza-moiz) - _Backend Development, Database Design, and Documentation_
+- **Hassnain Raza** - Frontend Developer - [hassnain512](https://github.com/hassnain512) - _Frontend Development, Testing, and Documentation_
 
-See also the list of [contributors](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/graphs/contributors)
+See also the list of [contributors](https://github.com/itxsaaad/opta-hire-ai-recruitment-fyp-app-pern/graphs/contributors) who participated in this project.
 
 ## License
 

@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const { User } = require('../models');
 
-const protect = asyncHandler(async (req, res, next) => {
+const protectServer = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -12,7 +12,7 @@ const protect = asyncHandler(async (req, res, next) => {
 
     if (!token) {
       res.status(StatusCodes.UNAUTHORIZED);
-      throw new Error('Not Authorized, No Token!');
+      throw new Error('Authentication token is missing. Please log in again.');
     }
 
     try {
@@ -27,32 +27,90 @@ const protect = asyncHandler(async (req, res, next) => {
 
       if (!req.user) {
         res.status(StatusCodes.UNAUTHORIZED);
-        throw new Error('Not Authorized, User Not Found!');
+        throw new Error(
+          'User account not found. Please log in with a valid account.'
+        );
       }
 
       next();
     } catch (error) {
       res.status(StatusCodes.UNAUTHORIZED);
-      throw new Error('Not Authorized, Token Failed!');
+      throw new Error('Session expired. Please sign in again.');
     }
   } else {
     res.status(StatusCodes.UNAUTHORIZED);
-    throw new Error('Not Authorized, No Token Provided');
+    throw new Error('Authentication token is missing. Please log in again.');
   }
 });
 
-const authorizeRoles = (...roles) => {
+const protectSocket = async (socket, next) => {
+  const token = socket.handshake.auth.token;
+
+  if (!token) {
+    return next(
+      new Error('Authentication token is missing. Please log in again.')
+    );
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_ACCESS_TOKEN_SECRET || 'your-secret-key'
+    );
+
+    const user = await User.findByPk(decoded.id, {
+      attributes: { exclude: ['password'] },
+    });
+
+    if (!user) {
+      return next(
+        new Error('User account not found. Please log in with a valid account.')
+      );
+    }
+
+    socket.user = user.toJSON();
+
+    next();
+  } catch (error) {
+    return next(new Error('Session expired. Please sign in again.'));
+  }
+};
+
+const authorizeServerRoles = (...flags) => {
   return asyncHandler(async (req, res, next) => {
-    if (roles.includes(req.user.role)) {
+    const user = req.user;
+    const hasRequiredFlag = flags.some((flag) => user[flag] === true);
+
+    if (hasRequiredFlag) {
       next();
     } else {
       return res.status(StatusCodes.FORBIDDEN).json({
         success: false,
-        message: 'Forbidden to access this route',
+        message: 'You do not have permission to access this resource.',
         timestamp: new Date().toISOString(),
       });
     }
   });
 };
 
-module.exports = { protect, authorizeRoles };
+const authorizeSocketRoles = (...flags) => {
+  return (socket, next) => {
+    const user = socket.user;
+    const hasRequiredFlag = flags.some((flag) => user[flag] === true);
+
+    if (hasRequiredFlag) {
+      next();
+    } else {
+      return next(
+        new Error('You do not have permission to access this resource.')
+      );
+    }
+  };
+};
+
+module.exports = {
+  protectServer,
+  protectSocket,
+  authorizeServerRoles,
+  authorizeSocketRoles,
+};

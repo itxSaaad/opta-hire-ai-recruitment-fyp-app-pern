@@ -5,10 +5,13 @@ const dotenv = require('dotenv');
 const express = require('express');
 const rateLimiter = require('express-rate-limit');
 const helmet = require('helmet');
+const http = require('http');
 const morgan = require('morgan');
+const path = require('path');
 const { StatusCodes } = require('http-status-codes');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { Server } = require('socket.io');
 const xss = require('xss-clean');
 
 const db = require('./models');
@@ -17,14 +20,32 @@ const {
   errorHandler,
   notFoundHandler,
 } = require('./middlewares/error.middleware');
+const rawBodyMiddleware = require('./middlewares/webhook.middleware');
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
+const resumeRoutes = require('./routes/resume.routes');
+const jobRoutes = require('./routes/job.routes');
+const applicationRoutes = require('./routes/application.routes');
+const chatRoomRoutes = require('./routes/chatRoom.routes');
+const contractRoutes = require('./routes/contract.routes');
+const transactionRoutes = require('./routes/transaction.routes');
+const interviewRoutes = require('./routes/interview.routes');
+const interviewerRating = require('./routes/interviewerRating.routes');
+const paymentRoutes = require('./routes/payment.routes');
+const aiRoutes = require('./routes/ai.routes.js');
+const reportRoutes = require('./routes/report.routes');
+
+const setupChatSocket = require('./sockets/chat.socket');
+const setupVideoCallSocket = require('./sockets/webrtc.socket');
+
+const swaggerOptions = require('./docs/swaggerOptions');
 
 dotenv.config();
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = process.env.PORT || 5000;
+const SERVER_URL = process.env.SERVER_URL || 'http://localhost:5000';
 
 const app = express();
 
@@ -49,16 +70,18 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(helmet());
 
-const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
+const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
   'http://localhost:5173',
+  'http://localhost:5000',
 ];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -82,118 +105,88 @@ if (NODE_ENV === 'production') {
   app.use(morgan('combined'));
 }
 
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'OptaHire API',
-      version: '1.0.0',
-      description:
-        'The OptaHire API is a RESTful API that provides access to a wide range of services and resources tailored for optimizing talent acquisition. It is designed to be fast, reliable, and easy to use. Built using Node.js, Express.js, and MongoDB, the API is hosted on Vercel and fully documented using Swagger. It includes detailed information about each endpoint, such as request and response formats, authentication requirements, and example responses. The API aims to provide an intuitive interface, enabling developers to get started quickly. It is scalable, supporting high traffic levels and numerous users, and secure, featuring authentication and authorization mechanisms along with rate limiting and input validation to protect against common security threats. Additionally, the API ensures reliability through monitoring and logging, maintaining high availability and performance.',
-      contact: {
-        name: 'OptaHire Team',
-        url: 'https://opta-hire-fyp-app-client.vercel.app',
-      },
-    },
-    servers: [
-      {
-        url: 'http://localhost:5000',
-        description: 'Local Development server',
-      },
-      {
-        url: 'https://develop-opta-hire-fyp-app-server.vercel.app',
-        description: 'Vercel Development Server',
-      },
-      {
-        url: 'https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com',
-        description: 'Heroku Production Server',
-      },
-    ],
-  },
-  apis: ['./routes/*.js'],
-};
+app.use(rawBodyMiddleware);
+
+app.get('/', (req, res) => {
+  res
+    .status(StatusCodes.OK)
+    .sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/api/v1/test', (req, res) => {
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'API health check successful. System is operational.',
+    timestamp: new Date().toISOString(),
+  });
+});
 
 if (NODE_ENV === 'development') {
   const swaggerDocs = swaggerJsdoc(swaggerOptions);
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 }
 
-app.get('/', (req, res) => {
-  res.status(StatusCodes.OK).send(
-    `<section style="font-family: 'Hanken-Grotesk', sans-serif; text-align: center; padding: 40px; background-color: white;">
-      <h1 style="color: #1d509a; font-size: 3em;">Welcome to <a href="https://opta-hire-fyp-app-client.vercel.app">OptaHire</a>!</h1>
-      <h3 style="color: #05baf0;">Optimizing Talent for a Brighter Future</h3>
-      <p style="font-size: 1.2em; color: #1d509a;">Your API is up and running smoothly, ready to transform hiring and talent acquisition!</p>
-      <div style="margin-top: 40px;">
-        <p style="font-size: 1.7em; font-weight: bold; color: #05baf0;">Everything is running seamlessly!</p>
-      </div>
-      <footer style="margin-top: 50px; font-size: 0.9em; color: #1d509a;">
-        <p>Need assistance? Dive into the code and unlock endless possibilities with OptaHire!</p>
-        <p>Happy coding from the OptaHire Team! 🌐✨</p>
-      </footer>
-    </section>`
-  );
-});
-
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
-
-// app.all('*', (req, res) => {
-//   res.status(StatusCodes.NOT_FOUND);
-//   if (req.accepts('html')) {
-//     res.send(`
-//     <section style="font-family: 'Hanken-Grotesk', sans-serif; text-align: center; padding: 40px; background-color: white;">
-//     <h1 style="color: #ff0000; font-size: 3em;">404 - Page Not Found</h1>
-//     <h3 style="color: #ff6347;">Oops! The page you are looking for does not exist.</h3>
-//     <p style="font-size: 1.2em; color: #333;">It seems we can't find what you're looking for. Try going back to the homepage or contact support if the problem persists.</p>
-//     <div style="margin-top: 40px;">
-//       <a href="/" style="font-size: 1.5em; font-weight: bold; color: #05baf0;">Go to Homepage</a>
-//     </div>
-//     <footer style="margin-top: 50px; font-size: 0.9em; color: #1d509a;">
-//       <p>Need assistance? Reach out to our support team for help.</p>
-//       <p>Happy coding from the OptaHire Team! 🌐✨</p>
-//     </footer>
-//     </section>
-//   `);
-//   } else if (req.accepts('json')) {
-//     notFoundHandler(req, res);
-//   } else {
-//     notFoundHandler(req, res);
-//   }
-// });
+app.use('/api/v1/resumes', resumeRoutes);
+app.use('/api/v1/jobs', jobRoutes);
+app.use('/api/v1/applications', applicationRoutes);
+app.use('/api/v1/chat-rooms', chatRoomRoutes);
+app.use('/api/v1/contracts', contractRoutes);
+app.use('/api/v1/transactions', transactionRoutes);
+app.use('/api/v1/interviews', interviewRoutes);
+app.use('/api/v1/interviewer-ratings', interviewerRating);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/reports', reportRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
+setupChatSocket(io);
+setupVideoCallSocket(io);
+
 const startServer = async () => {
   try {
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log('\n' + '='.repeat(86).yellow);
       console.log(`🚀 SERVER STATUS`.bold.yellow);
       console.log('='.repeat(86).yellow);
-      console.log(`✅ Status:     Server is running`.green);
+      console.log(
+        `✅ Status:     Server is running and listening for requests.`.green
+      );
       console.log(`🔗 Port:       ${PORT}`.cyan);
       console.log(`🌍 Node ENV:   ${NODE_ENV}`.yellow);
       console.log(`⏰ Timestamp:  ${new Date().toLocaleString()}`.magenta);
-      console.log(`📍 Local URL:  http://localhost:${PORT}`.cyan);
-      console.log(`📘 API Docs:   http://localhost:${PORT}/api-docs`.magenta);
       console.log('-'.repeat(86).yellow);
-      console.log(
-        `💡 Tips:       Clean code is the foundation of solid projects`.green
-      );
-      console.log(
-        `👥 Support:    Reach out to the team or check documentation`.cyan
-      );
+      console.log(`📍 Local URL:  ${SERVER_URL}`.cyan);
+      console.log(`📘 API Docs:   ${SERVER_URL}/api-docs`.magenta);
       console.log('='.repeat(86).yellow);
     });
   } catch (error) {
     console.error('\n' + '='.repeat(86).red);
     console.error(`❌ SERVER STARTUP ERROR`.red.bold);
     console.error('='.repeat(86).red);
-    console.error(`📌 Error Type: ${error.name}`.red);
-    console.error(`💬 Message:    ${error.message}`.red);
+    console.error(`📌 Error Type: ${error.name || 'Unknown Error'}`.red);
+    console.error(
+      `💬 Message:    ${
+        error.message || 'Server failed to start due to an unexpected error.'
+      }`.red
+    );
+    console.error(`🕒 Time:       ${new Date().toLocaleString()}`.red);
     console.error('='.repeat(86).red);
     db.close();
+    io.close();
     process.exit(1);
   }
 };

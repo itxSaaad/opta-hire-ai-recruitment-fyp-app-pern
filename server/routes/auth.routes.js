@@ -1,20 +1,17 @@
 const { Router } = require('express');
 const rateLimiter = require('express-rate-limit');
 
+const { protectServer } = require('../middlewares/auth.middleware');
+
 const {
   loginUser,
   logoutUser,
   refreshToken,
   registerUser,
+  forgotPassword,
   resetPassword,
-} = require('../controllers/auth.controllers');
-
-/**
- * @swagger
- * tags:
- *   name: Authorization
- *   description: User authorization operations
- */
+  regenerateOTP,
+} = require('../controllers/auth.controller');
 
 const router = Router();
 
@@ -32,14 +29,18 @@ const limiter = rateLimiter({
   legacyHeaders: true,
 });
 
-router.route('/logout').get(logoutUser);
-
 router.route('/login').post(limiter, loginUser);
+
+router.route('/logout').post(protectServer, logoutUser);
 
 router.route('/refresh-token').post(refreshToken);
 
 router.route('/register').post(registerUser);
 
-router.route('/reset-password').post(limiter, resetPassword);
+router.route('/forgot-password').post(limiter, forgotPassword);
+
+router.route('/reset-password').patch(limiter, resetPassword);
+
+router.route('/regenerate-otp').post(limiter, regenerateOTP);
 
 module.exports = router;
