@@ -14,8 +14,4 @@ export const trackEvent = (category, action, label = null) => {
     action,
     label,
   });
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> origin/develop
