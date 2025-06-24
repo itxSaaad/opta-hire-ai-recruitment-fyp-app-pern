@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Public Pages - These are accessible to everyone and should be indexed -->
+  <url>
+    <loc>https://opta-hire-fyp-app-client.vercel.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <lastmod>2025-06-24T00:00:00Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opta-hire-fyp-app-client.vercel.app/jobs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2025-06-24T00:00:00Z</lastmod>
+  </url>
+  
+  <!-- Authentication Pages - Public but lower priority -->
+  <url>
+    <loc>https://opta-hire-fyp-app-client.vercel.app/auth/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2025-06-24T00:00:00Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opta-hire-fyp-app-client.vercel.app/auth/register</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <lastmod>2025-06-24T00:00:00Z</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://opta-hire-fyp-app-client.vercel.app/auth/reset-password</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+    <lastmod>2025-06-24T00:00:00Z</lastmod>
+  </url>
+  
+  <!-- Static Pages -->
+  <url>
+    <loc>https://opta-hire-fyp-app-client.vercel.app/coming-soon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.3</priority>
+    <lastmod>2025-06-24T00:00:00Z</lastmod>
+  </url>
+  
+  <!-- Note: Private dashboard routes for admin, candidate, interviewer, and recruiter
+       are intentionally excluded as they require authentication and should not be indexed -->
+</urlset>

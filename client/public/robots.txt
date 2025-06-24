@@ -1,0 +1,33 @@
+# Allow all well-behaved web crawlers to access public content
+User-agent: *
+
+# Block access to private/sensitive areas
+# Authentication routes - while public, we don't want these heavily crawled
+Disallow: /auth/verify
+Disallow: /auth/reset-password
+
+# Block all dashboard and admin areas - these require authentication
+Disallow: /admin/
+Disallow: /candidate/
+Disallow: /interviewer/
+Disallow: /recruiter/
+Disallow: /interview/
+Disallow: /user/
+
+# Block any potential API endpoints or private directories
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow public pages
+Allow: /
+Allow: /jobs
+Allow: /auth/login
+Allow: /auth/register
+Allow: /coming-soon
+
+# Sitemap location - helps search engines find your sitemap
+Sitemap: https://opta-hire-fyp-app-client.vercel.app/sitemap.xml
+
+# Crawl delay - be respectful to your server (1 second between requests)
+Crawl-delay: 1
