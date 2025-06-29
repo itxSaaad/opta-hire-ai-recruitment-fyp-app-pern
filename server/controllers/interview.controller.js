@@ -503,7 +503,7 @@ const updateInterview = asyncHandler(async (req, res) => {
   const { scheduledTime, summary, status, rating } = req.body;
 
   if (status) {
-    validateString(status, 'Status', 2, 50);
+    validateString(res, status, 'Status', 2, 50);
 
     if (!['scheduled', 'ongoing', 'completed', 'cancelled'].includes(status)) {
       res.status(StatusCodes.BAD_REQUEST);
@@ -533,7 +533,7 @@ const updateInterview = asyncHandler(async (req, res) => {
   }
 
   if (summary) {
-    validateString(summary, 'Summary', 2, 2000);
+    validateString(res, summary, 'Summary', 2, 2000);
   }
 
   const remarksContent = generateRemarks(

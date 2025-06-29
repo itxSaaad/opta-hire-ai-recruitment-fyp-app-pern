@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
+const { StatusCodes } = require('http-status-codes');
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ const sendEmail = asyncHandler(async (options) => {
     return response;
   } catch (error) {
     console.error(`Error Sending Email: ${error}`);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
       'Unable to send email notification. Please check your network connection and try again later.'
     );

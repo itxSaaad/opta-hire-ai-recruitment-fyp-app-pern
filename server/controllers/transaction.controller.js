@@ -25,7 +25,7 @@ const { validateString } = require('../utils/validation.utils');
 const createTransaction = asyncHandler(async (req, res) => {
   const { contractId, amount, status } = req.body;
 
-  if (!validateString(contractId)) {
+  if (!validateString(res, contractId)) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Please provide a valid Contract ID.');
   }
@@ -338,7 +338,7 @@ const updateTransactionById = asyncHandler(async (req, res) => {
   const transactionId = req.params.id;
   const { amount, status } = req.body;
 
-  if (!validateString(transactionId)) {
+  if (!validateString(res, transactionId)) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error(
       'Invalid transaction ID. Please provide a valid identifier.'
@@ -524,7 +524,7 @@ const updateTransactionById = asyncHandler(async (req, res) => {
 const deleteTransactionById = asyncHandler(async (req, res) => {
   const transactionId = req.params.id;
 
-  if (!validateString(transactionId)) {
+  if (!validateString(res, transactionId)) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error(
       'Invalid transaction ID. Please provide a valid identifier.'
@@ -683,7 +683,7 @@ const deleteTransactionById = asyncHandler(async (req, res) => {
 const getTransactionsByContract = asyncHandler(async (req, res) => {
   const contractId = req.params.contractId;
 
-  if (!validateString(contractId)) {
+  if (!validateString(res, contractId)) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Invalid contract ID. Please provide a valid identifier.');
   }

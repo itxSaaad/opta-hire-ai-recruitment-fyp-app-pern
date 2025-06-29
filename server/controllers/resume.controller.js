@@ -47,26 +47,30 @@ const createResume = asyncHandler(async (req, res) => {
   }
 
   const validatedData = {
-    title: title ? validateString(title, 'Title', 3, 100) : null,
-    summary: summary ? validateString(summary, 'Summary', 10, 1000) : null,
-    headline: headline ? validateString(headline, 'Headline', 3, 200) : null,
-    skills: skills ? validateArray(skills, 'Skills', 1, 20) : null,
+    title: title ? validateString(res, title, 'Title', 3, 100) : null,
+    summary: summary ? validateString(res, summary, 'Summary', 10, 1000) : null,
+    headline: headline
+      ? validateString(res, headline, 'Headline', 3, 200)
+      : null,
+    skills: skills ? validateArray(res, skills, 'Skills', 1, 20) : null,
     experience: experience
-      ? validateString(experience, 'Experience', 10, 5000)
+      ? validateString(res, experience, 'Experience', 10, 5000)
       : null,
     education: education
-      ? validateString(education, 'Education', 10, 2000)
+      ? validateString(res, education, 'Education', 10, 2000)
       : null,
-    industry: industry ? validateString(industry, 'Industry', 2, 100) : null,
+    industry: industry
+      ? validateString(res, industry, 'Industry', 2, 100)
+      : null,
     availability: availability
-      ? validateString(availability, 'Availability', 2, 50)
+      ? validateString(res, availability, 'Availability', 2, 50)
       : null,
-    company: company ? validateString(company, 'Company', 2, 100) : null,
+    company: company ? validateString(res, company, 'Company', 2, 100) : null,
     achievements: achievements
-      ? validateString(achievements, 'Achievements', 0, 1000)
+      ? validateString(res, achievements, 'Achievements', 0, 1000)
       : null,
     portfolio: portfolio
-      ? validateString(portfolio, 'Portfolio', 0, 255)
+      ? validateString(res, portfolio, 'Portfolio', 0, 255)
       : null,
     userId,
   };
@@ -269,26 +273,30 @@ const updateResume = asyncHandler(async (req, res) => {
   }
 
   const validatedData = {
-    title: title ? validateString(title, 'Title', 3, 100) : null,
-    summary: summary ? validateString(summary, 'Summary', 10, 1000) : null,
-    headline: headline ? validateString(headline, 'Headline', 3, 200) : null,
-    skills: skills ? validateArray(skills, 'Skills', 1, 20) : null,
+    title: title ? validateString(res, title, 'Title', 3, 100) : null,
+    summary: summary ? validateString(res, summary, 'Summary', 10, 1000) : null,
+    headline: headline
+      ? validateString(res, headline, 'Headline', 3, 200)
+      : null,
+    skills: skills ? validateArray(res, skills, 'Skills', 1, 20) : null,
     experience: experience
-      ? validateString(experience, 'Experience', 10, 5000)
+      ? validateString(res, experience, 'Experience', 10, 5000)
       : null,
     education: education
-      ? validateString(education, 'Education', 10, 2000)
+      ? validateString(res, education, 'Education', 10, 2000)
       : null,
-    industry: industry ? validateString(industry, 'Industry', 2, 100) : null,
+    industry: industry
+      ? validateString(res, industry, 'Industry', 2, 100)
+      : null,
     availability: availability
-      ? validateString(availability, 'Availability', 2, 50)
+      ? validateString(res, availability, 'Availability', 2, 50)
       : null,
-    company: company ? validateString(company, 'Company', 2, 100) : null,
+    company: company ? validateString(res, company, 'Company', 2, 100) : null,
     achievements: achievements
-      ? validateString(achievements, 'Achievements', 0, 1000)
+      ? validateString(res, achievements, 'Achievements', 0, 1000)
       : null,
     portfolio: portfolio
-      ? validateString(portfolio, 'Portfolio', 0, 255)
+      ? validateString(res, portfolio, 'Portfolio', 0, 255)
       : null,
     userId,
   };
@@ -396,26 +404,30 @@ const updateResumeById = asyncHandler(async (req, res) => {
   } = req.body;
 
   const validatedData = {
-    title: title ? validateString(title, 'Title', 3, 100) : null,
-    summary: summary ? validateString(summary, 'Summary', 10, 1000) : null,
-    headline: headline ? validateString(headline, 'Headline', 3, 200) : null,
-    skills: skills ? validateArray(skills, 'Skills', 1, 20) : null,
+    title: title ? validateString(res, title, 'Title', 3, 100) : null,
+    summary: summary ? validateString(res, summary, 'Summary', 10, 1000) : null,
+    headline: headline
+      ? validateString(res, headline, 'Headline', 3, 200)
+      : null,
+    skills: skills ? validateArray(res, skills, 'Skills', 1, 20) : null,
     experience: experience
-      ? validateString(experience, 'Experience', 10, 5000)
+      ? validateString(res, experience, 'Experience', 10, 5000)
       : null,
     education: education
-      ? validateString(education, 'Education', 10, 2000)
+      ? validateString(res, education, 'Education', 10, 2000)
       : null,
-    industry: industry ? validateString(industry, 'Industry', 2, 100) : null,
+    industry: industry
+      ? validateString(res, industry, 'Industry', 2, 100)
+      : null,
     availability: availability
-      ? validateString(availability, 'Availability', 2, 50)
+      ? validateString(res, availability, 'Availability', 2, 50)
       : null,
-    company: company ? validateString(company, 'Company', 2, 100) : null,
+    company: company ? validateString(res, company, 'Company', 2, 100) : null,
     achievements: achievements
-      ? validateString(achievements, 'Achievements', 0, 1000)
+      ? validateString(res, achievements, 'Achievements', 0, 1000)
       : null,
     portfolio: portfolio
-      ? validateString(portfolio, 'Portfolio', 0, 255)
+      ? validateString(res, portfolio, 'Portfolio', 0, 255)
       : null,
   };
 

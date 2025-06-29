@@ -219,12 +219,16 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const validatedData = {
     firstName: firstName
-      ? validateString(firstName, 'First Name', 2, 50)
+      ? validateString(res, firstName, 'First Name', 2, 50)
       : null,
-    lastName: lastName ? validateString(lastName, 'Last Name', 2, 50) : null,
-    email: email ? validateString(email, 'Email', 5, 255) : null,
-    phone: phone ? validateString(phone, 'Phone', 10, 15) : null,
-    password: password ? validateString(password, 'Password', 6, 100) : null,
+    lastName: lastName
+      ? validateString(res, lastName, 'Last Name', 2, 50)
+      : null,
+    email: email ? validateString(res, email, 'Email', 5, 255) : null,
+    phone: phone ? validateString(res, phone, 'Phone', 10, 15) : null,
+    password: password
+      ? validateString(res, password, 'Password', 6, 100)
+      : null,
   };
 
   const user = await User.create({

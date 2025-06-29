@@ -151,7 +151,7 @@ const getAllChatRooms = asyncHandler(async (req, res) => {
 const getChatRoomById = asyncHandler(async (req, res) => {
   const chatRoomId = req.params.id;
 
-  if (!validateString(chatRoomId)) {
+  if (!validateString(res, chatRoomId)) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Invalid chat room ID provided. Please try again.');
   }
@@ -369,7 +369,7 @@ const createMessage = asyncHandler(async (req, res) => {
 const getAllMessagesFromChatRoom = asyncHandler(async (req, res) => {
   const chatRoomId = req.params.id;
 
-  if (!validateString(chatRoomId)) {
+  if (!validateString(res, chatRoomId)) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Please provide a valid chat room ID to load messages.');
   }

@@ -44,7 +44,7 @@ const createInterviewerRating = asyncHandler(async (req, res) => {
   }
 
   if (feedback) {
-    validateString(feedback, 'Feedback', 2, 500);
+    validateString(res, feedback, 'Feedback', 2, 500);
   }
 
   const [interviewer, recruiter, job, contract] = await Promise.all([
@@ -317,7 +317,7 @@ const updateInterviewerRating = asyncHandler(async (req, res) => {
   }
 
   if (feedback) {
-    validateString(feedback, 'Feedback', 10, 1000);
+    validateString(res, feedback, 'Feedback', 10, 1000);
   }
 
   const interviewerRating = await InterviewerRating.findByPk(req.params.id, {
