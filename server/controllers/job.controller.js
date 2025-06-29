@@ -10,6 +10,19 @@ const {
   generateEmailTemplate,
 } = require('../utils/nodemailer.utils');
 
+const convertToArray = (value) => {
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  return [];
+};
+
 /**
  * @desc Creates a new job.
  *
@@ -57,25 +70,37 @@ const createJob = asyncHandler(async (req, res) => {
   }
 
   const validatedData = {
-    title: title ? validateString(title, 'Title', 5, 100) : job.title,
+    title: title ? validateString(res, title, 'Title', 5, 100) : job.title,
     description: description
-      ? validateString(description, 'Description', 10, 5000)
+      ? validateString(res, description, 'Description', 10, 5000)
       : job.description,
     requirements: requirements
-      ? JSON.stringify(validateArray(requirements, 'Requirements', 1, 20))
-      : job.requirements,
+      ? JSON.stringify(
+          validateArray(
+            res,
+            convertToArray(requirements),
+            'Requirements',
+            1,
+            20
+          )
+        )
+      : null,
     benefits: benefits
-      ? JSON.stringify(validateArray(benefits, 'Benefits', 10, 2000))
-      : job.benefits,
-    company: company ? validateString(company, 'Company', 2, 100) : job.company,
+      ? JSON.stringify(
+          validateArray(res, convertToArray(benefits), 'Benefits', 1, 20)
+        )
+      : null,
+    company: company
+      ? validateString(res, company, 'Company', 2, 100)
+      : job.company,
     salaryRange: salaryRange
-      ? validateString(salaryRange, 'Salary Range', 2, 100)
+      ? validateString(res, salaryRange, 'Salary Range', 2, 100)
       : job.salaryRange,
     category: category
-      ? validateString(category, 'Category', 2, 100)
+      ? validateString(res, category, 'Category', 2, 100)
       : job.category,
     location: location
-      ? validateString(location, 'Location', 2, 100)
+      ? validateString(res, location, 'Location', 2, 100)
       : job.location,
     isClosed: false,
   };
@@ -404,25 +429,37 @@ const updateJobById = asyncHandler(async (req, res) => {
   }
 
   const validatedData = {
-    title: title ? validateString(title, 'Title', 5, 100) : job.title,
+    title: title ? validateString(res, title, 'Title', 5, 100) : job.title,
     description: description
-      ? validateString(description, 'Description', 10, 5000)
+      ? validateString(res, description, 'Description', 10, 5000)
       : job.description,
     requirements: requirements
-      ? JSON.stringify(validateArray(requirements, 'Requirements', 1, 20))
-      : job.requirements,
+      ? JSON.stringify(
+          validateArray(
+            res,
+            convertToArray(requirements),
+            'Requirements',
+            1,
+            20
+          )
+        )
+      : null,
     benefits: benefits
-      ? JSON.stringify(validateArray(benefits, 'Benefits', 10, 2000))
-      : job.benefits,
-    company: company ? validateString(company, 'Company', 2, 100) : job.company,
+      ? JSON.stringify(
+          validateArray(res, convertToArray(benefits), 'Benefits', 1, 20)
+        )
+      : null,
+    company: company
+      ? validateString(res, company, 'Company', 2, 100)
+      : job.company,
     salaryRange: salaryRange
-      ? validateString(salaryRange, 'Salary Range', 2, 100)
+      ? validateString(res, salaryRange, 'Salary Range', 2, 100)
       : job.salaryRange,
     category: category
-      ? validateString(category, 'Category', 2, 100)
+      ? validateString(res, category, 'Category', 2, 100)
       : job.category,
     location: location
-      ? validateString(location, 'Location', 2, 100)
+      ? validateString(res, location, 'Location', 2, 100)
       : job.location,
     isClosed: typeof isClosed !== 'undefined' ? isClosed : job.isClosed,
   };
@@ -434,8 +471,8 @@ const updateJobById = asyncHandler(async (req, res) => {
     throw new Error('Unable to update job posting. Please try again.');
   }
 
-  if (isClosed && updateJobById.isClosed) {
-    const shortlist = axios
+  if (isClosed && updateJobById.isClosed && req.user.isRecruiter) {
+    axios
       .post(
         `${process.env.SERVER_URL || 'http://localhost:5000'}/api/v1/ai/shortlist/${jobId}`,
         {},
