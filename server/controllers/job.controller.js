@@ -471,7 +471,7 @@ const updateJobById = asyncHandler(async (req, res) => {
     throw new Error('Unable to update job posting. Please try again.');
   }
 
-  if (isClosed && updateJobById.isClosed && req.user.isRecruiter) {
+  if (!job.isClosed && updatedJob.isClosed === true && req.user.isRecruiter) {
     axios
       .post(
         `${process.env.SERVER_URL || 'http://localhost:5000'}/api/v1/ai/shortlist/${jobId}`,
