@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import {
   FaArrowLeft,
   FaBriefcase,
+  FaComments,
   FaDollarSign,
   FaEllipsisV,
   FaMapMarkerAlt,
@@ -19,13 +20,10 @@ import Loader from '../../components/Loader';
 import Modal from '../../components/Modal';
 
 import {
-  useCreateMessageMutation,
   useGetAllChatRoomsQuery,
   useGetAllMessagesFromChatRoomQuery,
   useGetChatRoomByIdQuery,
 } from '../../features/chat/chatApi';
-
-import { useCreateContractMutation } from '../../features/contract/contractApi';
 
 // Helper function to format time
 const formatTime = (ts) =>
@@ -56,6 +54,7 @@ export default function ChatsScreen() {
   const messageInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const prevMessagesLengthRef = useRef(0);
+  const prevParticipantsRef = useRef([]);
 
   const user = useSelector((state) => state.auth.userInfo);
   const { accessToken } = useSelector((state) => state.auth);
@@ -66,7 +65,7 @@ export default function ChatsScreen() {
     isLoading: roomsLoading,
     error: roomsError,
   } = useGetAllChatRoomsQuery({
-    role: user.isRecruiter ? 'recruiter' : 'interviewer',
+    role: 'recruiter',
   });
 
   const {
@@ -83,12 +82,8 @@ export default function ChatsScreen() {
     error: roomError,
   } = useGetChatRoomByIdQuery(selectedRoom?.id, { skip: !selectedRoom });
 
-  // Mutations
-  const [createMessage] = useCreateMessageMutation();
-  const [createContract, { isLoading: contractLoading }] =
-    useCreateContractMutation();
-
-  // Initialize socket connection
+  // 1. Infrastructure Setup (First)
+  // Socket connection - should be first
   useEffect(() => {
     const token = accessToken;
 
@@ -97,23 +92,21 @@ export default function ChatsScreen() {
       return;
     }
 
+    // Prevent multiple socket connections
+    if (socket) {
+      return;
+    }
+
     const newSocket = io(`${SERVER_URL}/chat`, {
       auth: { token },
     });
 
     newSocket.on('connect', () => {
-      console.log('Connected to chat socket');
       setSocket(newSocket);
       setIsConnected(true);
-
-      // Join room if one is selected
-      if (selectedRoom) {
-        newSocket.emit('join-room', selectedRoom.id);
-      }
     });
 
     newSocket.on('connect_error', (err) => {
-      console.error('Connection error:', err.message);
       setError(`Connection error: ${err.message}`);
     });
 
@@ -122,24 +115,41 @@ export default function ChatsScreen() {
         newSocket.emit('leave-room', selectedRoom.id);
       }
       newSocket.disconnect();
+      setSocket(null);
+      setIsConnected(false);
     };
-  }, [accessToken, selectedRoom]);
+  }, [accessToken]);
 
-  // Set up socket event listeners
+  // Responsive handling - independent of other state
+  useEffect(() => {
+    const onResize = () => {
+      const newIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
+      setIsMobile(newIsMobile);
+      if (!newIsMobile) setShowChat(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // 2. Socket Event Listeners (Second)
   useEffect(() => {
     if (!socket) return;
 
     // Socket event handlers
     socket.on('room-joined', (data) => {
-      console.log('Room joined successfully:', data);
-      if (data.success) {
-        setParticipants(data.data.participants);
+      if (data.success && data.data) {
+        // Ensure participants are unique and filter out duplicates
+        const uniqueParticipants =
+          data.data.participants?.filter(
+            (participant, index, self) =>
+              index === self.findIndex((p) => p.userId === participant.userId)
+          ) || [];
+        setParticipants(uniqueParticipants);
       }
     });
 
     socket.on('new-message', (data) => {
       if (data.success && data.data) {
-        console.log('New message received:', data.data);
         setMessages((prev) => [...prev, data.data]);
       }
     });
@@ -158,14 +168,17 @@ export default function ChatsScreen() {
 
     socket.on('user-joined', (data) => {
       if (data.success && data.data) {
-        console.log('User joined:', data.data);
-        setParticipants((prev) => [...prev, data.data]);
+        setParticipants((prev) => {
+          // Check if user already exists to prevent duplicates
+          const exists = prev.some((p) => p.userId === data.data.userId);
+          if (exists) return prev;
+          return [...prev, data.data];
+        });
       }
     });
 
     socket.on('user-left', (data) => {
       if (data.success && data.data) {
-        console.log('User left:', data.data);
         setParticipants((prev) =>
           prev.filter((p) => p.userId !== data.data.userId)
         );
@@ -181,7 +194,6 @@ export default function ChatsScreen() {
 
     socket.on('messages-read', (data) => {
       if (data.success && data.data) {
-        console.log('Messages read by:', data.data.userId);
         // Mark messages as read
         setMessages((prev) =>
           prev.map((msg) =>
@@ -193,14 +205,13 @@ export default function ChatsScreen() {
       }
     });
 
-    socket.on('contract-created', (data) => {
-      if (data.success && data.data) {
-        console.log('Contract created:', data.data.contract);
-      }
-    });
+    // socket.on('contract-created', (data) => {
+    //   if (data.success && data.data) {
+    //     console.log('Contract created:', data.data.contract);
+    //   }
+    // });
 
     socket.on('error', (data) => {
-      console.error('Socket error:', data);
       setError(data.message || 'An error occurred');
     });
 
@@ -216,46 +227,66 @@ export default function ChatsScreen() {
     };
   }, [socket, user.id]);
 
-  // Join room when selected room changes
+  // 3. Room Management (Third) - SINGLE consolidated room switching effect
   useEffect(() => {
-    if (socket && isConnected && selectedRoom) {
-      // Leave previous room if any
+    if (!selectedRoom) {
+      setMessages([]);
+      setParticipants([]);
+      return;
+    }
+
+    // Clear state immediately for new room
+    setMessages([]);
+    setParticipants([]);
+    setMessageInput('');
+
+    // Socket operations
+    if (socket && isConnected) {
       if (selectedRoom.previousId) {
         socket.emit('leave-room', selectedRoom.previousId);
       }
-
-      // Join new room
       socket.emit('join-room', selectedRoom.id);
-
-      // Clear messages when switching rooms
-      setMessages([]);
     }
-  }, [socket, isConnected, selectedRoom]);
 
-  // Update messages when fetched from API
+    // Mobile navigation
+    if (isMobile) {
+      setShowChat(true);
+    }
+
+    // Focus input with slight delay
+    if (!isMobile && messageInputRef.current) {
+      setTimeout(() => messageInputRef.current?.focus(), 100);
+    }
+  }, [selectedRoom, socket, isConnected, isMobile]);
+
+  // 4. API Data Handling (Fourth)
   useEffect(() => {
-    if (messagesData?.messages && selectedRoom) {
-      setMessages(messagesData.messages);
+    if (messagesData?.messages && selectedRoom?.id) {
+      // Only update if we have messages and a valid room ID
+      if (messagesData.messages.length > 0) {
+        setMessages(messagesData.messages);
+      }
+      // If no messages, keep the empty array
 
       // Mark messages as read
       if (socket && isConnected) {
         socket.emit('mark-read', { roomId: selectedRoom.id });
       }
     }
-  }, [messagesData, selectedRoom, socket, isConnected]);
+  }, [messagesData, selectedRoom?.id, socket, isConnected]);
 
-  // Responsive handling
+  // 5. UI Updates (Last)
+  // Participants logging - for debugging only
   useEffect(() => {
-    const onResize = () => {
-      const newIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
-      setIsMobile(newIsMobile);
-      if (!newIsMobile) setShowChat(false);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+    if (
+      JSON.stringify(participants) !==
+      JSON.stringify(prevParticipantsRef.current)
+    ) {
+      prevParticipantsRef.current = participants;
+    }
+  }, [participants]);
 
-  // Scroll to bottom on new messages
+  // Auto-scroll - should be last
   useEffect(() => {
     const messagesChanged = messages.length > prevMessagesLengthRef.current;
     if (
@@ -268,30 +299,10 @@ export default function ChatsScreen() {
         block: 'end',
       });
     }
-
-    // Update the previous messages length reference
     prevMessagesLengthRef.current = messages.length;
-  }, [messages, selectedRoom]);
+  }, [messages, selectedRoom?.id]);
 
-  // Focus input when selecting a chat
-  useEffect(() => {
-    if (selectedRoom && !isMobile) {
-      messageInputRef.current?.focus();
-    }
-  }, [selectedRoom, isMobile]);
-
-  // Set mobile view when selecting a room
-  useEffect(() => {
-    if (selectedRoom && isMobile) {
-      setShowChat(true);
-    }
-  }, [selectedRoom, isMobile]);
-
-  // Reset message input when changing rooms
-  useEffect(() => {
-    setMessageInput('');
-  }, [selectedRoom]);
-
+  // Typing indicator focus
   useEffect(() => {
     if (messageInputRef.current && isTyping) {
       messageInputRef.current.focus();
@@ -314,30 +325,24 @@ export default function ChatsScreen() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     const trimmedMessage = messageInput.trim();
-    if (!trimmedMessage || !selectedRoom || !socket || !isConnected) return;
+    if (!trimmedMessage || !selectedRoom?.id || !socket || !isConnected) return;
+
+    console.log('Selected Room:', selectedRoom);
+    // Store the room ID to ensure it doesn't change during execution
+    const roomId = selectedRoom.id;
 
     try {
       // Clear typing indicator
       handleTypingStop();
 
-      // Send via socket
+      // Send via socket first
       socket.emit('send-message', {
-        roomId: selectedRoom.id,
+        roomId: roomId,
         content: trimmedMessage,
       });
 
-      // Clear input
+      // Clear input after socket emit
       setMessageInput('');
-
-      // Fallback: API call if socket fails or is slow
-      try {
-        await createMessage({
-          chatRoomId: selectedRoom.id,
-          content: trimmedMessage,
-        }).unwrap();
-      } catch (error) {
-        console.error('API fallback for message creation failed:', error);
-      }
     } catch (error) {
       console.error('Failed to send message:', error);
       setError('Failed to send message. Please try again.');
@@ -345,8 +350,11 @@ export default function ChatsScreen() {
   };
 
   const handleSelectRoom = (room) => {
-    // If selecting a different room, update the selection with previous id
+    // If selecting a different room, clear messages immediately and update selection
     if (selectedRoom?.id !== room.id) {
+      setMessages([]); // Clear messages immediately on room switch
+      setParticipants([]); // Clear participants too
+      setMessageInput(''); // Clear input
       setSelectedRoom({
         ...room,
         previousId: selectedRoom?.id,
@@ -415,27 +423,12 @@ export default function ChatsScreen() {
 
       setShowContractModal(false);
       setAgreedPrice('');
-
-      // Fallback API call
-      try {
-        await createContract({
-          jobId: selectedRoom.jobId,
-          interviewerId: selectedRoom.interviewerId,
-          recruiterId: selectedRoom.recruiterId,
-          agreedPrice: parseFloat(agreedPrice),
-          roomId: selectedRoom.id,
-        }).unwrap();
-      } catch (error) {
-        // API fallback failed, but socket might have succeeded
-        console.error('API fallback for contract creation failed:', error);
-      }
     } catch (error) {
       console.error('Failed to create contract:', error);
       setError('Failed to create contract. Please try again.');
     }
   };
 
-  // === Sub‑components ===
   const RoomList = () => (
     <div className="flex h-full flex-col">
       <div className="border-b border-light-border p-3 dark:border-dark-border">
@@ -494,8 +487,16 @@ export default function ChatsScreen() {
   const MessagesPane = () => {
     if (!selectedRoom) {
       return (
-        <div className="flex h-full items-center justify-center text-light-text opacity-50 dark:text-dark-text">
-          Select a chat to start messaging.
+        <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-light-primary bg-opacity-10 dark:bg-dark-primary dark:bg-opacity-10">
+            <FaComments className="h-8 w-8 text-light-primary dark:text-dark-primary" />
+          </div>
+          <h3 className="mb-2 text-lg font-medium text-light-text dark:text-dark-text">
+            Select a chat to start messaging
+          </h3>
+          <p className="text-sm text-light-text/60 dark:text-dark-text/60">
+            Choose a conversation from the left to begin communicating
+          </p>
         </div>
       );
     }
@@ -568,46 +569,64 @@ export default function ChatsScreen() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 space-y-3 overflow-auto p-3">
+        <div className="flex-1 space-y-3 overflow-auto">
           {messages.length > 0 ? (
-            messages.map((m) => {
-              const me = m.senderId === user.id;
-              return (
-                <div
-                  key={m.id}
-                  className={`flex ${me ? 'justify-end' : 'justify-start'}`}
-                >
+            <div className="space-y-3 p-3">
+              {messages.map((m) => {
+                const me = m.senderId === user.id;
+                return (
                   <div
-                    className={`max-w-[75%] p-3 ${
-                      me
-                        ? 'rounded-b-lg rounded-tl-lg bg-light-primary text-dark-text dark:bg-dark-primary'
-                        : 'rounded-b-lg rounded-tr-lg bg-light-secondary text-dark-text dark:bg-dark-secondary'
-                    } ${m.messageType === 'contract' ? 'border-2 border-green-500' : ''}`}
+                    key={m.id}
+                    className={`flex ${me ? 'justify-end' : 'justify-start'}`}
                   >
-                    <p className="break-words">{m.content}</p>
                     <div
-                      className={`mt-1 flex justify-end text-xs ${
-                        me ? 'text-dark-text/70' : 'text-dark-text/60'
-                      }`}
+                      className={`max-w-[75%] p-3 ${
+                        me
+                          ? 'rounded-b-lg rounded-tl-lg bg-light-primary text-dark-text dark:bg-dark-primary'
+                          : 'rounded-b-lg rounded-tr-lg bg-light-secondary text-dark-text dark:bg-dark-secondary'
+                      } ${m.messageType === 'contract' ? 'border-2 border-green-500' : ''}`}
                     >
-                      {formatTime(m.createdAt)}
-                      {m.isRead && me && <span className="ml-1">✓</span>}
+                      <p className="break-words">{m.content}</p>
+                      <div
+                        className={`mt-1 flex justify-end text-xs ${
+                          me ? 'text-dark-text/70' : 'text-dark-text/60'
+                        }`}
+                      >
+                        {formatTime(m.createdAt)}
+                        {m.isRead && me && <span className="ml-1">✓</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="flex h-full items-center justify-center text-light-text opacity-50 dark:text-dark-text">
-              No messages found. Start a conversation!
-            </div>
-          )}
+                );
+              })}
 
-          {/* Typing indicator */}
-          {typingUserNames.length > 0 && (
-            <div className="flex items-center text-xs italic text-light-text/70 dark:text-dark-text/70">
-              {typingUserNames.join(', ')}{' '}
-              {typingUserNames.length === 1 ? 'is' : 'are'} typing...
+              {/* Typing indicator */}
+              {typingUserNames.length > 0 && (
+                <div className="flex items-center px-3 text-xs italic text-light-text/70 dark:text-dark-text/70">
+                  {typingUserNames.join(', ')}{' '}
+                  {typingUserNames.length === 1 ? 'is' : 'are'} typing...
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-light-primary bg-opacity-10 dark:bg-dark-primary dark:bg-opacity-10">
+                <FaComments className="h-10 w-10 text-light-primary dark:text-dark-primary" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-light-text dark:text-dark-text">
+                Let&apos;s Start the Conversation!
+              </h3>
+              <p className="mb-4 max-w-sm text-sm text-light-text/70 dark:text-dark-text/70">
+                Send your first message to{' '}
+                {user.isRecruiter
+                  ? `${roomDetails?.chatRoom?.interviewer?.firstName || ''} ${roomDetails?.chatRoom?.interviewer?.lastName || ''}`
+                  : `${roomDetails?.chatRoom?.recruiter?.firstName || ''} ${roomDetails?.chatRoom?.recruiter?.lastName || ''}`}{' '}
+                and start collaborating on the job opportunity.
+              </p>
+              <div className="flex items-center gap-2 text-xs text-light-text/50 dark:text-dark-text/50">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-light-primary dark:bg-dark-primary"></div>
+                <span>Type your message below to begin</span>
+              </div>
             </div>
           )}
 
@@ -652,7 +671,7 @@ export default function ChatsScreen() {
     const { job, interviewer } = roomDetails.chatRoom;
 
     return (
-      <div className="h-full overflow-y-auto p-3">
+      <div className="h-full space-y-4 overflow-y-auto p-4">
         {/* Job Info */}
         <div className="rounded-lg bg-light-background p-4 dark:bg-dark-background">
           <h3 className="mb-2 flex items-center gap-2 font-semibold text-light-primary dark:text-dark-primary">
@@ -785,7 +804,6 @@ export default function ChatsScreen() {
               !agreedPrice ||
               isNaN(parseFloat(agreedPrice)) ||
               parseFloat(agreedPrice) <= 0 ||
-              contractLoading ||
               !isConnected
             }
             className={`rounded-md px-4 py-2 text-white ${
@@ -797,7 +815,7 @@ export default function ChatsScreen() {
                 : 'bg-light-primary transition-opacity hover:opacity-90 dark:bg-dark-primary'
             }`}
           >
-            {contractLoading ? 'Creating...' : 'Create Contract'}
+            Create Contract
           </button>
         </div>
       </div>

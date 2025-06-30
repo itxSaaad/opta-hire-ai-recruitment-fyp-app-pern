@@ -29,10 +29,10 @@ export const chatApi = createApi({
       providesTags: ['ChatRooms'],
     }),
     createMessage: builder.mutation({
-      query: ({ id, message }) => ({
+      query: ({ id, content }) => ({
         url: ENDPOINTS.CHAT_ROOM_MESSAGES(id),
         method: 'POST',
-        data: message,
+        data: { content },
       }),
       invalidatesTags: ['Messages'],
     }),

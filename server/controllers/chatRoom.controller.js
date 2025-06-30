@@ -291,11 +291,12 @@ const deleteChatRoom = asyncHandler(async (req, res) => {
 
 /**
  * @desc    Create a new message
- * @route   POST /api/v1/messages
+ * @route   POST /api/v1/chat-rooms/:id/messages
  * @access  Private (Recruiters, Interviewers)
  */
 const createMessage = asyncHandler(async (req, res) => {
-  const { chatRoomId, content } = req.body;
+  const chatRoomId = req.params.id;
+  const { content } = req.body;
 
   const senderId = req.user.id;
 

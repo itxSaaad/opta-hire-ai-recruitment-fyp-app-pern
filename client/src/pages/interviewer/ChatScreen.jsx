@@ -3,10 +3,12 @@ import { Helmet } from 'react-helmet-async';
 import {
   FaArrowLeft,
   FaBriefcase,
+  FaComments,
   FaDollarSign,
   FaEllipsisV,
   FaMapMarkerAlt,
   FaPaperPlane,
+  FaPlus,
   FaSearch,
   FaUser,
 } from 'react-icons/fa';
@@ -15,9 +17,9 @@ import { io } from 'socket.io-client';
 
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
+import Modal from '../../components/Modal';
 
 import {
-  useCreateMessageMutation,
   useGetAllChatRoomsQuery,
   useGetAllMessagesFromChatRoomQuery,
   useGetChatRoomByIdQuery,
@@ -30,7 +32,7 @@ const formatTime = (ts) =>
 const MOBILE_BREAKPOINT = 768;
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
 
-export default function InterviewerChatsScreen() {
+export default function ChatsScreen() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [messageInput, setMessageInput] = useState('');
@@ -40,18 +42,19 @@ export default function InterviewerChatsScreen() {
     window.innerWidth < MOBILE_BREAKPOINT
   );
   const [showChat, setShowChat] = useState(false); // For mobile navigation
+  const [showContractModal, setShowContractModal] = useState(false);
+  const [agreedPrice, setAgreedPrice] = useState('');
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [participants, setParticipants] = useState([]);
-  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  const messagesContainerRef = useRef(null);
   const prevMessagesLengthRef = useRef(0);
+  const prevParticipantsRef = useRef([]);
 
   const user = useSelector((state) => state.auth.userInfo);
   const { accessToken } = useSelector((state) => state.auth);
@@ -62,7 +65,7 @@ export default function InterviewerChatsScreen() {
     isLoading: roomsLoading,
     error: roomsError,
   } = useGetAllChatRoomsQuery({
-    role: 'interviewer', // Always interviewer for this screen
+    role: 'interviewer',
   });
 
   const {
@@ -79,10 +82,8 @@ export default function InterviewerChatsScreen() {
     error: roomError,
   } = useGetChatRoomByIdQuery(selectedRoom?.id, { skip: !selectedRoom });
 
-  // Mutations
-  const [createMessage] = useCreateMessageMutation();
-
-  // Initialize socket connection
+  // 1. Infrastructure Setup (First)
+  // Socket connection - should be first
   useEffect(() => {
     const token = accessToken;
 
@@ -91,23 +92,21 @@ export default function InterviewerChatsScreen() {
       return;
     }
 
+    // Prevent multiple socket connections
+    if (socket) {
+      return;
+    }
+
     const newSocket = io(`${SERVER_URL}/chat`, {
       auth: { token },
     });
 
     newSocket.on('connect', () => {
-      console.log('Connected to chat socket');
       setSocket(newSocket);
       setIsConnected(true);
-
-      // Join room if one is selected
-      if (selectedRoom) {
-        newSocket.emit('join-room', selectedRoom.id);
-      }
     });
 
     newSocket.on('connect_error', (err) => {
-      console.error('Connection error:', err.message);
       setError(`Connection error: ${err.message}`);
     });
 
@@ -116,26 +115,42 @@ export default function InterviewerChatsScreen() {
         newSocket.emit('leave-room', selectedRoom.id);
       }
       newSocket.disconnect();
+      setSocket(null);
+      setIsConnected(false);
     };
-  }, [accessToken, selectedRoom]);
+  }, [accessToken]);
 
-  // Set up socket event listeners
+  // Responsive handling - independent of other state
+  useEffect(() => {
+    const onResize = () => {
+      const newIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
+      setIsMobile(newIsMobile);
+      if (!newIsMobile) setShowChat(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // 2. Socket Event Listeners (Second)
   useEffect(() => {
     if (!socket) return;
 
     // Socket event handlers
     socket.on('room-joined', (data) => {
-      console.log('Room joined successfully:', data);
-      if (data.success) {
-        setParticipants(data.data.participants);
+      if (data.success && data.data) {
+        // Ensure participants are unique and filter out duplicates
+        const uniqueParticipants =
+          data.data.participants?.filter(
+            (participant, index, self) =>
+              index === self.findIndex((p) => p.userId === participant.userId)
+          ) || [];
+        setParticipants(uniqueParticipants);
       }
     });
 
     socket.on('new-message', (data) => {
       if (data.success && data.data) {
-        console.log('New message received:', data.data);
         setMessages((prev) => [...prev, data.data]);
-        setShouldScrollToBottom(true);
       }
     });
 
@@ -153,14 +168,17 @@ export default function InterviewerChatsScreen() {
 
     socket.on('user-joined', (data) => {
       if (data.success && data.data) {
-        console.log('User joined:', data.data);
-        setParticipants((prev) => [...prev, data.data]);
+        setParticipants((prev) => {
+          // Check if user already exists to prevent duplicates
+          const exists = prev.some((p) => p.userId === data.data.userId);
+          if (exists) return prev;
+          return [...prev, data.data];
+        });
       }
     });
 
     socket.on('user-left', (data) => {
       if (data.success && data.data) {
-        console.log('User left:', data.data);
         setParticipants((prev) =>
           prev.filter((p) => p.userId !== data.data.userId)
         );
@@ -176,7 +194,6 @@ export default function InterviewerChatsScreen() {
 
     socket.on('messages-read', (data) => {
       if (data.success && data.data) {
-        console.log('Messages read by:', data.data.userId);
         // Mark messages as read
         setMessages((prev) =>
           prev.map((msg) =>
@@ -188,15 +205,13 @@ export default function InterviewerChatsScreen() {
       }
     });
 
-    socket.on('contract-created', (data) => {
-      if (data.success && data.data) {
-        console.log('Contract created:', data.data.contract);
-        // Display a notification or update UI for new contract
-      }
-    });
+    // socket.on('contract-created', (data) => {
+    //   if (data.success && data.data) {
+    //     console.log('Contract created:', data.data.contract);
+    //   }
+    // });
 
     socket.on('error', (data) => {
-      console.error('Socket error:', data);
       setError(data.message || 'An error occurred');
     });
 
@@ -212,116 +227,94 @@ export default function InterviewerChatsScreen() {
     };
   }, [socket, user.id]);
 
-  // Join room when selected room changes
+  // 3. Room Management (Third) - SINGLE consolidated room switching effect
   useEffect(() => {
-    if (socket && isConnected && selectedRoom) {
-      // Leave previous room if any
+    if (!selectedRoom) {
+      setMessages([]);
+      setParticipants([]);
+      return;
+    }
+
+    // Clear state immediately for new room
+    setMessages([]);
+    setParticipants([]);
+    setMessageInput('');
+
+    // Socket operations
+    if (socket && isConnected) {
       if (selectedRoom.previousId) {
         socket.emit('leave-room', selectedRoom.previousId);
       }
-
-      // Join new room
       socket.emit('join-room', selectedRoom.id);
-
-      // Clear messages when switching rooms
-      setMessages([]);
-      setShouldScrollToBottom(true);
     }
-  }, [socket, isConnected, selectedRoom]);
 
-  // Update messages when fetched from API
+    // Mobile navigation
+    if (isMobile) {
+      setShowChat(true);
+    }
+
+    // Focus input with slight delay
+    if (!isMobile && messageInputRef.current) {
+      setTimeout(() => messageInputRef.current?.focus(), 100);
+    }
+  }, [selectedRoom, socket, isConnected, isMobile]);
+
+  // 4. API Data Handling (Fourth)
   useEffect(() => {
-    if (messagesData?.messages && selectedRoom) {
-      setMessages(messagesData.messages);
-      setShouldScrollToBottom(true);
+    if (messagesData?.messages && selectedRoom?.id) {
+      // Only update if we have messages and a valid room ID
+      if (messagesData.messages.length > 0) {
+        setMessages(messagesData.messages);
+      }
+      // If no messages, keep the empty array
 
       // Mark messages as read
       if (socket && isConnected) {
         socket.emit('mark-read', { roomId: selectedRoom.id });
       }
     }
-  }, [messagesData, selectedRoom, socket, isConnected]);
+  }, [messagesData, selectedRoom?.id, socket, isConnected]);
 
-  // Fix for the focus issue - maintain focus when typing
+  // 5. UI Updates (Last)
+  // Participants logging - for debugging only
+  useEffect(() => {
+    if (
+      JSON.stringify(participants) !==
+      JSON.stringify(prevParticipantsRef.current)
+    ) {
+      prevParticipantsRef.current = participants;
+    }
+  }, [participants]);
+
+  // Auto-scroll - should be last
+  useEffect(() => {
+    const messagesChanged = messages.length > prevMessagesLengthRef.current;
+    if (
+      messagesEndRef.current &&
+      messages.length > 0 &&
+      (messagesChanged || selectedRoom)
+    ) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+      });
+    }
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages, selectedRoom?.id]);
+
+  // Typing indicator focus
   useEffect(() => {
     if (messageInputRef.current && isTyping) {
       messageInputRef.current.focus();
     }
   }, [isTyping, messageInput]);
 
-  // Handle scroll to bottom
-  useEffect(() => {
-    if (shouldScrollToBottom && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      setShouldScrollToBottom(false);
-    }
-  }, [shouldScrollToBottom, messages]);
-
-  // Listen for scroll events to determine if auto-scroll should continue
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      // Check if user has scrolled up
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // Allow small margin
-      // Only auto-scroll for new messages if user is already at the bottom
-      if (!isAtBottom) {
-        setShouldScrollToBottom(false);
-      } else {
-        setShouldScrollToBottom(true);
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Track messages length changes
-  useEffect(() => {
-    // Only auto-scroll for new messages
-    if (messages.length > prevMessagesLengthRef.current) {
-      setShouldScrollToBottom(true);
-    }
-    prevMessagesLengthRef.current = messages.length;
-  }, [messages.length]);
-
-  // Responsive handling
-  useEffect(() => {
-    const onResize = () => {
-      const newIsMobile = window.innerWidth < MOBILE_BREAKPOINT;
-      setIsMobile(newIsMobile);
-      if (!newIsMobile) setShowChat(false);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  // Focus input when selecting a chat
-  useEffect(() => {
-    if (selectedRoom && !isMobile) {
-      messageInputRef.current?.focus();
-    }
-  }, [selectedRoom, isMobile]);
-
-  // Set mobile view when selecting a room
-  useEffect(() => {
-    if (selectedRoom && isMobile) {
-      setShowChat(true);
-    }
-  }, [selectedRoom, isMobile]);
-
-  // Reset message input when changing rooms
-  useEffect(() => {
-    setMessageInput('');
-  }, [selectedRoom]);
-
   // Filter rooms
   const rooms = roomsData?.chatRooms || [];
   const filtered = rooms.filter((r) => {
-    const name =
-      `${r.recruiter.firstName} ${r.recruiter.lastName}`.toLowerCase();
+    const name = user.isRecruiter
+      ? `${r.interviewer.firstName} ${r.interviewer.lastName}`.toLowerCase()
+      : `${r.recruiter.firstName} ${r.recruiter.lastName}`.toLowerCase();
     const title = r.job.title.toLowerCase();
     return (
       name.includes(searchTerm.toLowerCase()) ||
@@ -332,31 +325,24 @@ export default function InterviewerChatsScreen() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     const trimmedMessage = messageInput.trim();
-    if (!trimmedMessage || !selectedRoom || !socket || !isConnected) return;
+    if (!trimmedMessage || !selectedRoom?.id || !socket || !isConnected) return;
+
+    console.log('Selected Room:', selectedRoom);
+    // Store the room ID to ensure it doesn't change during execution
+    const roomId = selectedRoom.id;
 
     try {
       // Clear typing indicator
       handleTypingStop();
 
-      // Send via socket
+      // Send via socket first
       socket.emit('send-message', {
-        roomId: selectedRoom.id,
+        roomId: roomId,
         content: trimmedMessage,
       });
 
-      // Clear input
+      // Clear input after socket emit
       setMessageInput('');
-      setShouldScrollToBottom(true);
-
-      // Fallback: API call if socket fails or is slow
-      try {
-        await createMessage({
-          chatRoomId: selectedRoom.id,
-          content: trimmedMessage,
-        }).unwrap();
-      } catch (error) {
-        console.error('API fallback for message creation failed:', error);
-      }
     } catch (error) {
       console.error('Failed to send message:', error);
       setError('Failed to send message. Please try again.');
@@ -364,8 +350,11 @@ export default function InterviewerChatsScreen() {
   };
 
   const handleSelectRoom = (room) => {
-    // If selecting a different room, update the selection with previous id
+    // If selecting a different room, clear messages immediately and update selection
     if (selectedRoom?.id !== room.id) {
+      setMessages([]); // Clear messages immediately on room switch
+      setParticipants([]); // Clear participants too
+      setMessageInput(''); // Clear input
       setSelectedRoom({
         ...room,
         previousId: selectedRoom?.id,
@@ -413,7 +402,33 @@ export default function InterviewerChatsScreen() {
     typingTimeoutRef.current = null;
   };
 
-  // === Sub‑components ===
+  const handleCreateContract = async () => {
+    if (
+      !selectedRoom ||
+      !agreedPrice ||
+      isNaN(parseFloat(agreedPrice)) ||
+      parseFloat(agreedPrice) <= 0
+    ) {
+      return;
+    }
+
+    try {
+      // Send via socket
+      if (socket && isConnected) {
+        socket.emit('create-contract', {
+          roomId: selectedRoom.id,
+          agreedPrice: parseFloat(agreedPrice),
+        });
+      }
+
+      setShowContractModal(false);
+      setAgreedPrice('');
+    } catch (error) {
+      console.error('Failed to create contract:', error);
+      setError('Failed to create contract. Please try again.');
+    }
+  };
+
   const RoomList = () => (
     <div className="flex h-full flex-col">
       <div className="border-b border-light-border p-3 dark:border-dark-border">
@@ -421,7 +436,7 @@ export default function InterviewerChatsScreen() {
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 transform text-light-primary dark:text-dark-primary" />
           <input
             type="text"
-            placeholder="Search jobs or recruiters..."
+            placeholder="Search jobs or interviewers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full rounded-lg border border-light-border bg-light-surface py-4 pl-12 pr-4 text-light-text transition-all duration-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-light-primary dark:border-dark-border dark:bg-dark-surface dark:text-dark-text dark:focus:ring-dark-primary"
@@ -446,7 +461,9 @@ export default function InterviewerChatsScreen() {
               <div className="flex-grow">
                 <div className="flex justify-between">
                   <span className="font-medium text-light-text dark:text-dark-text">
-                    {`${r.recruiter.firstName} ${r.recruiter.lastName}`}
+                    {user.isRecruiter
+                      ? `${r.interviewer.firstName} ${r.interviewer.lastName}`
+                      : `${r.recruiter.firstName} ${r.recruiter.lastName}`}
                   </span>
                   <span className="text-xs text-light-text/60 dark:text-dark-text/60">
                     {new Date(r.updatedAt).toLocaleDateString()}
@@ -470,8 +487,16 @@ export default function InterviewerChatsScreen() {
   const MessagesPane = () => {
     if (!selectedRoom) {
       return (
-        <div className="flex h-full items-center justify-center text-light-text opacity-50 dark:text-dark-text">
-          Select a chat to start messaging.
+        <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-light-primary bg-opacity-10 dark:bg-dark-primary dark:bg-opacity-10">
+            <FaComments className="h-8 w-8 text-light-primary dark:text-dark-primary" />
+          </div>
+          <h3 className="mb-2 text-lg font-medium text-light-text dark:text-dark-text">
+            Select a chat to start messaging
+          </h3>
+          <p className="text-sm text-light-text/60 dark:text-dark-text/60">
+            Choose a conversation from the left to begin communicating
+          </p>
         </div>
       );
     }
@@ -519,7 +544,9 @@ export default function InterviewerChatsScreen() {
 
             <div className="flex flex-col">
               <div className="font-medium text-light-text dark:text-dark-text">
-                {`${roomDetails?.chatRoom?.recruiter?.firstName || ''} ${roomDetails?.chatRoom?.recruiter?.lastName || ''}`}
+                {user.isRecruiter
+                  ? `${roomDetails?.chatRoom?.interviewer?.firstName || ''} ${roomDetails?.chatRoom?.interviewer?.lastName || ''}`
+                  : `${roomDetails?.chatRoom?.recruiter?.firstName || ''} ${roomDetails?.chatRoom?.recruiter?.lastName || ''}`}
               </div>
               <div className="text-xs text-light-text/70 dark:text-dark-text/70">
                 {roomDetails?.chatRoom?.job?.title || ''}
@@ -527,6 +554,14 @@ export default function InterviewerChatsScreen() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {user.isRecruiter && (
+              <button
+                onClick={() => setShowContractModal(true)}
+                className="flex items-center gap-1 rounded-md bg-light-primary p-2 text-sm text-white transition-opacity hover:opacity-90 dark:bg-dark-primary dark:text-dark-text"
+              >
+                <FaPlus size={12} /> Contract
+              </button>
+            )}
             <button className="rounded-full p-2 hover:bg-light-background dark:hover:bg-dark-background">
               <FaEllipsisV className="text-light-text dark:text-dark-text/60" />
             </button>
@@ -534,49 +569,64 @@ export default function InterviewerChatsScreen() {
         </div>
 
         {/* Messages */}
-        <div
-          ref={messagesContainerRef}
-          className="flex-1 space-y-3 overflow-auto p-3"
-        >
+        <div className="flex-1 space-y-3 overflow-auto">
           {messages.length > 0 ? (
-            messages.map((m) => {
-              const me = m.senderId === user.id;
-              return (
-                <div
-                  key={m.id}
-                  className={`flex ${me ? 'justify-end' : 'justify-start'}`}
-                >
+            <div className="space-y-3 p-3">
+              {messages.map((m) => {
+                const me = m.senderId === user.id;
+                return (
                   <div
-                    className={`max-w-[75%] p-3 ${
-                      me
-                        ? 'rounded-b-lg rounded-tl-lg bg-light-primary text-dark-text dark:bg-dark-primary'
-                        : 'rounded-b-lg rounded-tr-lg bg-light-secondary text-dark-text dark:bg-dark-secondary'
-                    } ${m.messageType === 'contract' ? 'border-2 border-green-500' : ''}`}
+                    key={m.id}
+                    className={`flex ${me ? 'justify-end' : 'justify-start'}`}
                   >
-                    <p className="break-words">{m.content}</p>
                     <div
-                      className={`mt-1 flex justify-end text-xs ${
-                        me ? 'text-dark-text/70' : 'text-dark-text/60'
-                      }`}
+                      className={`max-w-[75%] p-3 ${
+                        me
+                          ? 'rounded-b-lg rounded-tl-lg bg-light-primary text-dark-text dark:bg-dark-primary'
+                          : 'rounded-b-lg rounded-tr-lg bg-light-secondary text-dark-text dark:bg-dark-secondary'
+                      } ${m.messageType === 'contract' ? 'border-2 border-green-500' : ''}`}
                     >
-                      {formatTime(m.createdAt)}
-                      {m.isRead && me && <span className="ml-1">✓</span>}
+                      <p className="break-words">{m.content}</p>
+                      <div
+                        className={`mt-1 flex justify-end text-xs ${
+                          me ? 'text-dark-text/70' : 'text-dark-text/60'
+                        }`}
+                      >
+                        {formatTime(m.createdAt)}
+                        {m.isRead && me && <span className="ml-1">✓</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="flex h-full items-center justify-center text-light-text opacity-50 dark:text-dark-text">
-              No messages found. Start a conversation!
-            </div>
-          )}
+                );
+              })}
 
-          {/* Typing indicator */}
-          {typingUserNames.length > 0 && (
-            <div className="flex items-center text-xs italic text-light-text/70 dark:text-dark-text/70">
-              {typingUserNames.join(', ')}{' '}
-              {typingUserNames.length === 1 ? 'is' : 'are'} typing...
+              {/* Typing indicator */}
+              {typingUserNames.length > 0 && (
+                <div className="flex items-center px-3 text-xs italic text-light-text/70 dark:text-dark-text/70">
+                  {typingUserNames.join(', ')}{' '}
+                  {typingUserNames.length === 1 ? 'is' : 'are'} typing...
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-light-primary bg-opacity-10 dark:bg-dark-primary dark:bg-opacity-10">
+                <FaComments className="h-10 w-10 text-light-primary dark:text-dark-primary" />
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-light-text dark:text-dark-text">
+                Let&apos;s Start the Conversation!
+              </h3>
+              <p className="mb-4 max-w-sm text-sm text-light-text/70 dark:text-dark-text/70">
+                Send your first message to{' '}
+                {user.isRecruiter
+                  ? `${roomDetails?.chatRoom?.interviewer?.firstName || ''} ${roomDetails?.chatRoom?.interviewer?.lastName || ''}`
+                  : `${roomDetails?.chatRoom?.recruiter?.firstName || ''} ${roomDetails?.chatRoom?.recruiter?.lastName || ''}`}{' '}
+                and start collaborating on the job opportunity.
+              </p>
+              <div className="flex items-center gap-2 text-xs text-light-text/50 dark:text-dark-text/50">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-light-primary dark:bg-dark-primary"></div>
+                <span>Type your message below to begin</span>
+              </div>
             </div>
           )}
 
@@ -618,12 +668,12 @@ export default function InterviewerChatsScreen() {
     if (roomLoading) return <Loader />;
     if (!roomDetails?.chatRoom) return null;
 
-    const { job, recruiter } = roomDetails.chatRoom;
+    const { job, interviewer } = roomDetails.chatRoom;
 
     return (
-      <div className="h-full overflow-y-auto p-3">
+      <div className="h-full space-y-4 overflow-y-auto p-4">
         {/* Job Info */}
-        <div className="mb-4 rounded-lg bg-light-background p-4 dark:bg-dark-background">
+        <div className="rounded-lg bg-light-background p-4 dark:bg-dark-background">
           <h3 className="mb-2 flex items-center gap-2 font-semibold text-light-primary dark:text-dark-primary">
             <FaBriefcase /> Job Details
           </h3>
@@ -640,10 +690,10 @@ export default function InterviewerChatsScreen() {
           </div>
         </div>
 
-        {/* Recruiter */}
-        <div className="mb-4 rounded-lg bg-light-background p-4 dark:bg-dark-background">
+        {/* Interviewer */}
+        <div className="rounded-lg bg-light-background p-4 dark:bg-dark-background">
           <h3 className="mb-2 flex items-center gap-2 font-semibold text-light-primary dark:text-dark-primary">
-            <FaUser /> Recruiter
+            <FaUser /> Interviewer
           </h3>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-light-primary bg-opacity-20 dark:bg-dark-primary dark:bg-opacity-20">
@@ -651,27 +701,27 @@ export default function InterviewerChatsScreen() {
             </div>
             <div>
               <div className="font-medium text-light-text dark:text-dark-text">
-                {recruiter.firstName} {recruiter.lastName}
+                {interviewer.firstName} {interviewer.lastName}
               </div>
               <div className="text-sm text-light-text/70 dark:text-dark-text/70">
-                {recruiter.email}
+                {interviewer.email}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Contract Information (for interviewers to see contracts) */}
-        {selectedRoom.contractId && (
-          <div className="mb-4 rounded-lg bg-light-background p-4 dark:bg-dark-background">
+        {/* Create Contract Button (for recruiters) */}
+        {user.isRecruiter && (
+          <div className="rounded-lg bg-light-background p-4 dark:bg-dark-background">
             <h3 className="mb-2 flex items-center gap-2 font-semibold text-light-primary dark:text-dark-primary">
-              <FaBriefcase /> Contract Details
+              <FaBriefcase /> Contract
             </h3>
-            <div className="rounded-md border border-green-500 p-3 text-light-text dark:text-dark-text">
-              <p>You have an active contract for this job!</p>
-              <p className="mt-2 font-medium">
-                Agreed Price: ${selectedRoom.contract?.agreedPrice}
-              </p>
-            </div>
+            <button
+              onClick={() => setShowContractModal(true)}
+              className="mt-2 w-full rounded-md bg-light-primary py-2 text-white transition-opacity hover:opacity-90 dark:bg-dark-primary dark:text-dark-text"
+            >
+              Create Contract
+            </button>
           </div>
         )}
 
@@ -708,18 +758,82 @@ export default function InterviewerChatsScreen() {
     );
   };
 
+  // Contract Modal
+  const ContractModal = () => (
+    <Modal
+      isOpen={showContractModal}
+      onClose={() => setShowContractModal(false)}
+      title="Create Contract"
+    >
+      <div className="p-4">
+        <p className="mb-4 text-light-text dark:text-dark-text">
+          Create a contract with {selectedRoom?.interviewer?.firstName}{' '}
+          {selectedRoom?.interviewer?.lastName} for the job:{' '}
+          {selectedRoom?.job?.title}
+        </p>
+
+        <div className="mb-4">
+          <label
+            htmlFor="agreedPrice"
+            className="mb-1 block text-sm font-medium text-light-text dark:text-dark-text"
+          >
+            Agreed Price ($)
+          </label>
+          <input
+            type="number"
+            id="agreedPrice"
+            value={agreedPrice}
+            onChange={(e) => setAgreedPrice(e.target.value)}
+            min="0"
+            step="0.01"
+            className="w-full rounded-lg border border-light-border bg-light-surface p-3 text-light-text focus:outline-none focus:ring-2 focus:ring-light-primary dark:border-dark-border dark:bg-dark-surface dark:text-dark-text dark:focus:ring-dark-primary"
+            placeholder="Enter agreed price"
+          />
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => setShowContractModal(false)}
+            className="rounded-md bg-light-secondary px-4 py-2 text-light-text transition-opacity hover:opacity-90 dark:bg-dark-secondary dark:text-dark-text"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCreateContract}
+            disabled={
+              !agreedPrice ||
+              isNaN(parseFloat(agreedPrice)) ||
+              parseFloat(agreedPrice) <= 0 ||
+              !isConnected
+            }
+            className={`rounded-md px-4 py-2 text-white ${
+              !agreedPrice ||
+              isNaN(parseFloat(agreedPrice)) ||
+              parseFloat(agreedPrice) <= 0 ||
+              !isConnected
+                ? 'cursor-not-allowed bg-gray-400'
+                : 'bg-light-primary transition-opacity hover:opacity-90 dark:bg-dark-primary'
+            }`}
+          >
+            Create Contract
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+
   // === Layout ===
   return (
     <>
       <Helmet>
-        <title>Messages - OptaHire | Communicate with Recruiters</title>
+        <title>Messages - OptaHire | Connect with Top Interviewers</title>
         <meta
           name="description"
-          content="Communicate with recruiters on OptaHire. Discuss interview requirements, negotiate contracts, and build professional relationships."
+          content="Connect with professional interviewers on OptaHire. Discuss requirements, negotiate contracts, and streamline your hiring process."
         />
         <meta
           name="keywords"
-          content="OptaHire Interviewer Messages, Recruiter Communication, Interview Negotiations, Professional Chat, Contract Discussions"
+          content="OptaHire Recruiter Messages, Interviewer Communication, Professional Interviews, Contract Negotiations, Hiring Support"
         />
       </Helmet>
 
@@ -733,12 +847,12 @@ export default function InterviewerChatsScreen() {
             <h1 className="mb-6 text-center text-3xl font-bold text-light-text dark:text-dark-text sm:text-4xl md:text-5xl">
               Messages &{' '}
               <span className="text-light-primary dark:text-dark-primary">
-                Communication
+                Collaboration
               </span>
             </h1>
             <p className="mb-8 text-center text-lg text-light-text/70 dark:text-dark-text/70">
-              Communicate with recruiters, discuss interview requirements, and
-              negotiate contracts professionally.
+              Connect with professional interviewers and streamline your hiring
+              process through effective communication.
             </p>
 
             {(roomsError || roomError || msgsError || error) && (
@@ -787,6 +901,9 @@ export default function InterviewerChatsScreen() {
             </div>
           </div>
         )}
+
+        {/* Contract Modal */}
+        <ContractModal />
       </section>
     </>
   );
