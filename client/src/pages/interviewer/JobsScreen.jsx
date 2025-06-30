@@ -34,7 +34,9 @@ export default function JobsScreen() {
     data: jobsData,
     isLoading: isLoadingJobs,
     error,
-  } = useGetAllJobsQuery();
+  } = useGetAllJobsQuery({
+    isClosed: false,
+  });
 
   const [
     createChatRoom,

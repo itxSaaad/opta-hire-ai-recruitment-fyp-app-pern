@@ -29,7 +29,11 @@ export default function JobsScreen() {
 
   const user = useSelector((state) => state.auth.userInfo);
 
-  const { data: jobsData, isLoading, error } = useGetAllJobsQuery();
+  const {
+    data: jobsData,
+    isLoading,
+    error,
+  } = useGetAllJobsQuery({ isClosed: false });
 
   const handleJobClick = (job) => {
     setSelectedJob(job);
