@@ -59,6 +59,8 @@ const createJob = asyncHandler(async (req, res) => {
     !title ||
     !description ||
     !requirements ||
+    !benefits ||
+    !company ||
     !salaryRange ||
     !category ||
     !location
@@ -69,73 +71,73 @@ const createJob = asyncHandler(async (req, res) => {
     );
   }
 
+  const requirementsArray = convertToArray(requirements);
+  const validatedRequirements = validateArray(
+    res,
+    requirementsArray,
+    'Requirements',
+    1,
+    20
+  );
+
+  const benefitsArray = convertToArray(benefits);
+  const validatedBenefits = validateArray(
+    res,
+    benefitsArray,
+    'Benefits',
+    1,
+    20
+  );
+
+  const requirementsJson = JSON.stringify(validatedRequirements);
+  const benefitsJson = JSON.stringify(validatedBenefits);
+
+  if (requirementsJson.length < 50 || requirementsJson.length > 2000) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error(
+      'Requirements content must be between 50 and 2000 characters when formatted.'
+    );
+  }
+
+  if (benefitsJson.length < 50 || benefitsJson.length > 2000) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error(
+      'Benefits content must be between 50 and 2000 characters when formatted.'
+    );
+  }
+
   const validatedData = {
-    title: title ? validateString(res, title, 'Title', 5, 100) : job.title,
-    description: description
-      ? validateString(res, description, 'Description', 10, 5000)
-      : job.description,
-    requirements: requirements
-      ? JSON.stringify(
-          validateArray(
-            res,
-            convertToArray(requirements),
-            'Requirements',
-            1,
-            20
-          )
-        )
-      : null,
-    benefits: benefits
-      ? JSON.stringify(
-          validateArray(res, convertToArray(benefits), 'Benefits', 1, 20)
-        )
-      : null,
-    company: company
-      ? validateString(res, company, 'Company', 2, 100)
-      : job.company,
-    salaryRange: salaryRange
-      ? validateString(res, salaryRange, 'Salary Range', 2, 100)
-      : job.salaryRange,
-    category: category
-      ? validateString(res, category, 'Category', 2, 100)
-      : job.category,
-    location: location
-      ? validateString(res, location, 'Location', 2, 100)
-      : job.location,
+    title: validateString(res, title, 'Title', 2, 100),
+    description: validateString(res, description, 'Description', 50, 5000),
+    requirements: requirementsJson,
+    benefits: benefitsJson,
+    company: validateString(res, company, 'Company', 2, 100),
+    salaryRange: validateString(res, salaryRange, 'Salary Range', 2, 100),
+    category: validateString(res, category, 'Category', 2, 100),
+    location: validateString(res, location, 'Location', 2, 100),
+    recruiterId,
     isClosed: false,
   };
 
-  const job = await Job.create({
-    ...validatedData,
-    recruiterId,
-  });
+  const job = await Job.create(validatedData);
 
   if (!job) {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Unable to create job posting. Please try again.');
   }
 
-  const requirementsArrayParsed =
-    typeof job.requirements === 'string'
-      ? JSON.parse(job.requirements)
-      : job.requirements;
+  const requirementsForResponse = JSON.parse(job.requirements);
+  const benefitsForResponse = JSON.parse(job.benefits);
 
-  const requirementsArrayJoined = Array.isArray(requirementsArrayParsed)
-    ? requirementsArrayParsed.join(', ')
-    : requirementsArrayParsed;
-
-  const benefitsArrayParsed =
-    typeof job.benefits === 'string' ? JSON.parse(job.benefits) : job.benefits;
-
-  const benefitsArrayJoined = Array.isArray(benefitsArrayParsed)
-    ? benefitsArrayParsed.join(', ')
-    : benefitsArrayParsed;
+  const requirementsDisplay = requirementsForResponse.join(', ');
+  const benefitsDisplay = benefitsForResponse.join(', ');
 
   const jobData = {
     ...job.dataValues,
-    requirements: requirementsArrayJoined,
-    benefits: benefitsArrayJoined,
+    requirements: requirementsDisplay,
+    benefits: benefitsDisplay,
   };
+
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: recruiter.email,
@@ -162,8 +164,8 @@ const createJob = asyncHandler(async (req, res) => {
           value: [
             `Title: ${job.title}`,
             `Description: ${job.description}`,
-            `Requirements: ${requirementsArrayJoined}`,
-            `Benefits: ${benefitsArrayJoined}`,
+            `Requirements: ${requirementsDisplay}`,
+            `Benefits: ${benefitsDisplay}`,
             `Company: ${job.company}`,
             `Salary Range: ${job.salaryRange}`,
             `Category: ${job.category}`,

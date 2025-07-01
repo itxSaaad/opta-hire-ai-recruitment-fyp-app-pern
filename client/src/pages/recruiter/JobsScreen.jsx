@@ -141,17 +141,15 @@ export default function JobsScreen() {
   const createNewJob = async () => {
     try {
       await createJob({
-        jobData: {
-          title,
-          description,
-          company,
-          requirements,
-          benefits,
-          salaryRange,
-          category,
-          location,
-          isClosed,
-        },
+        title,
+        description,
+        company,
+        requirements,
+        benefits,
+        salaryRange,
+        category,
+        location,
+        isClosed,
       }).unwrap();
       setShowCreateModal(false);
       refetch();
