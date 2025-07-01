@@ -278,28 +278,16 @@ const getAllJobs = asyncHandler(async (req, res) => {
   }
 
   const jobsData = jobs.map((job) => {
-    const requirementsArrayParsed =
-      typeof job.requirements === 'string'
-        ? JSON.parse(job.requirements)
-        : job.requirements;
+    const requirementsForResponse = JSON.parse(job.requirements);
+    const benefitsForResponse = JSON.parse(job.benefits);
 
-    const requirementsArrayJoined = Array.isArray(requirementsArrayParsed)
-      ? requirementsArrayParsed.join(', ')
-      : requirementsArrayParsed;
-
-    const benefitsArrayParsed =
-      typeof job.benefits === 'string'
-        ? JSON.parse(job.benefits)
-        : job.benefits;
-
-    const benefitsArrayJoined = Array.isArray(benefitsArrayParsed)
-      ? benefitsArrayParsed.join(', ')
-      : benefitsArrayParsed;
+    const requirementsDisplay = requirementsForResponse.join(', ');
+    const benefitsDisplay = benefitsForResponse.join(', ');
 
     return {
       ...job.dataValues,
-      requirements: requirementsArrayJoined,
-      benefits: benefitsArrayJoined,
+      requirements: requirementsDisplay,
+      benefits: benefitsDisplay,
     };
   });
 
@@ -342,26 +330,16 @@ const getJobById = asyncHandler(async (req, res) => {
     throw new Error('This job posting no longer exists or has been removed.');
   }
 
-  const requirementsArrayParsed =
-    typeof job.requirements === 'string'
-      ? JSON.parse(job.requirements)
-      : job.requirements;
+  const requirementsForResponse = JSON.parse(job.requirements);
+  const benefitsForResponse = JSON.parse(job.benefits);
 
-  const requirementsArrayJoined = Array.isArray(requirementsArrayParsed)
-    ? requirementsArrayParsed.join(', ')
-    : requirementsArrayParsed;
-
-  const benefitsArrayParsed =
-    typeof job.benefits === 'string' ? JSON.parse(job.benefits) : job.benefits;
-
-  const benefitsArrayJoined = Array.isArray(benefitsArrayParsed)
-    ? benefitsArrayParsed.join(', ')
-    : benefitsArrayParsed;
+  const requirementsDisplay = requirementsForResponse.join(', ');
+  const benefitsDisplay = benefitsForResponse.join(', ');
 
   const jobData = {
     ...job.dataValues,
-    requirements: requirementsArrayJoined,
-    benefits: benefitsArrayJoined,
+    requirements: requirementsDisplay,
+    benefits: benefitsDisplay,
   };
 
   res.status(StatusCodes.OK).json({
@@ -430,27 +408,48 @@ const updateJobById = asyncHandler(async (req, res) => {
     throw new Error('Job posting not found. Please check and try again.');
   }
 
+  const requirementsArray = convertToArray(requirements);
+  const validatedRequirements = validateArray(
+    res,
+    requirementsArray,
+    'Requirements',
+    1,
+    20
+  );
+
+  const benefitsArray = convertToArray(benefits);
+  const validatedBenefits = validateArray(
+    res,
+    benefitsArray,
+    'Benefits',
+    1,
+    20
+  );
+
+  const requirementsJson = JSON.stringify(validatedRequirements);
+  const benefitsJson = JSON.stringify(validatedBenefits);
+
+  if (requirementsJson.length < 50 || requirementsJson.length > 2000) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error(
+      'Requirements content must be between 50 and 2000 characters when formatted.'
+    );
+  }
+
+  if (benefitsJson.length < 50 || benefitsJson.length > 2000) {
+    res.status(StatusCodes.BAD_REQUEST);
+    throw new Error(
+      'Benefits content must be between 50 and 2000 characters when formatted.'
+    );
+  }
+
   const validatedData = {
-    title: title ? validateString(res, title, 'Title', 5, 100) : job.title,
+    title: title ? validateString(res, title, 'Title', 2, 100) : job.title,
     description: description
-      ? validateString(res, description, 'Description', 10, 5000)
+      ? validateString(res, description, 'Description', 50, 5000)
       : job.description,
-    requirements: requirements
-      ? JSON.stringify(
-          validateArray(
-            res,
-            convertToArray(requirements),
-            'Requirements',
-            1,
-            20
-          )
-        )
-      : null,
-    benefits: benefits
-      ? JSON.stringify(
-          validateArray(res, convertToArray(benefits), 'Benefits', 1, 20)
-        )
-      : null,
+    requirements: requirementsJson,
+    benefits: benefitsJson,
     company: company
       ? validateString(res, company, 'Company', 2, 100)
       : job.company,
@@ -463,7 +462,7 @@ const updateJobById = asyncHandler(async (req, res) => {
     location: location
       ? validateString(res, location, 'Location', 2, 100)
       : job.location,
-    isClosed: typeof isClosed !== 'undefined' ? isClosed : job.isClosed,
+    isClosed: typeof isClosed === 'undefined' ? job.isClosed : isClosed,
   };
 
   const updatedJob = await job.update(validatedData);
@@ -492,28 +491,16 @@ const updateJobById = asyncHandler(async (req, res) => {
       });
   }
 
-  const requirementsArrayParsed =
-    typeof updatedJob.requirements === 'string'
-      ? JSON.parse(updatedJob.requirements)
-      : updatedJob.requirements;
+  const requirementsForResponse = JSON.parse(updatedJob.requirements);
+  const benefitsForResponse = JSON.parse(updatedJob.benefits);
 
-  const requirementsArrayJoined = Array.isArray(requirementsArrayParsed)
-    ? requirementsArrayParsed.join(', ')
-    : requirementsArrayParsed;
-
-  const benefitsArrayParsed =
-    typeof updatedJob.benefits === 'string'
-      ? JSON.parse(updatedJob.benefits)
-      : updatedJob.benefits;
-
-  const benefitsArrayJoined = Array.isArray(benefitsArrayParsed)
-    ? benefitsArrayParsed.join(', ')
-    : benefitsArrayParsed;
+  const requirementsDisplay = requirementsForResponse.join(', ');
+  const benefitsDisplay = benefitsForResponse.join(', ');
 
   const jobData = {
     ...updatedJob.dataValues,
-    requirements: requirementsArrayJoined,
-    benefits: benefitsArrayJoined,
+    requirements: requirementsDisplay,
+    benefits: benefitsDisplay,
   };
 
   const isEmailSent = await sendEmail({
@@ -630,30 +617,6 @@ const deleteJobById = asyncHandler(async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST);
     throw new Error('Unable to delete job posting. Please try again.');
   }
-
-  const requirementsArrayParsed =
-    typeof job.requirements === 'string'
-      ? JSON.parse(job.requirements)
-      : job.requirements;
-
-  const requirementsArrayJoined = Array.isArray(requirementsArrayParsed)
-    ? requirementsArrayParsed.join(', ')
-    : requirementsArrayParsed;
-
-  const benefitsArrayParsed =
-    typeof updatedJob.benefits === 'string'
-      ? JSON.parse(updatedJob.benefits)
-      : updatedJob.benefits;
-
-  const benefitsArrayJoined = Array.isArray(benefitsArrayParsed)
-    ? benefitsArrayParsed.join(', ')
-    : benefitsArrayParsed;
-
-  const jobData = {
-    ...job.dataValues,
-    requirements: requirementsArrayJoined,
-    benefits: benefitsArrayJoined,
-  };
 
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
