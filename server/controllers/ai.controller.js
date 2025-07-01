@@ -393,34 +393,52 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
       }
     );
 
-    const shortlistedCandidates = response.data.shortlisted_candidates || [];
+    let shortlistedCandidates = response.data.shortlisted_candidates || [];
 
-    // Update application statuses in database
-    if (shortlistedCandidates.length > 0) {
-      const applicationIds = shortlistedCandidates.map(
-        (candidate) => candidate.application_id
-      );
+    // Get IDs of all applications for this job to identify the rejected ones
+    const allAppIds = applications.map((app) => app.id);
 
-      const [updatedCount] = await Application.update(
+    // Get IDs of shortlisted applications
+    const shortlistedAppIds = shortlistedCandidates.map(
+      (candidate) => candidate.application_id
+    );
+
+    // Find rejected application IDs (all applications minus shortlisted ones)
+    const rejectedAppIds = allAppIds.filter(
+      (id) => !shortlistedAppIds.includes(id)
+    );
+
+    // Update shortlisted applications status
+    if (shortlistedAppIds.length > 0) {
+      await Application.update(
         { status: 'shortlisted' },
         {
           where: {
             id: {
-              [Op.in]: applicationIds,
+              [Op.in]: shortlistedAppIds,
             },
           },
         }
       );
+    }
 
-      if (!updatedCount) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-        throw new Error(
-          'AI shortlisting completed but failed to update application statuses. Please try again.'
-        );
-      }
+    // Update rejected applications status
+    if (rejectedAppIds.length > 0) {
+      await Application.update(
+        { status: 'rejected' },
+        {
+          where: {
+            id: {
+              [Op.in]: rejectedAppIds,
+            },
+          },
+        }
+      );
+    }
 
-      // Send notification emails to shortlisted candidates
-      const emailPromises = shortlistedCandidates.map(async (candidate) => {
+    // Send notification emails to shortlisted candidates
+    const shortlistedEmailPromises = shortlistedCandidates.map(
+      async (candidate) => {
         const application = applications.find(
           (app) => app.id === candidate.application_id
         );
@@ -471,18 +489,60 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
             }),
           });
         }
-      });
-
-      const emailResults = await Promise.allSettled(emailPromises);
-      const failedEmails = emailResults.filter(
-        (result) => result.status === 'rejected'
-      ).length;
-
-      if (failedEmails > 0) {
-        console.warn(
-          `${failedEmails} notification emails failed to send during shortlisting.`
-        );
       }
+    );
+
+    // Send rejection emails to rejected candidates
+    const rejectedEmailPromises = rejectedAppIds.map(async (appId) => {
+      const application = applications.find((app) => app.id === appId);
+
+      if (application) {
+        return sendEmail({
+          from: process.env.NODEMAILER_SMTP_EMAIL,
+          to: application.candidate.email,
+          subject: 'OptaHire - Application Update',
+          html: generateEmailTemplate({
+            firstName: application.candidate.firstName,
+            subject: 'Update on your job application',
+            content: [
+              {
+                type: 'heading',
+                value: 'Application Status Update',
+              },
+              {
+                type: 'text',
+                value: `Thank you for applying for the position of <strong>${job.title}</strong> at ${job.company}.`,
+              },
+              {
+                type: 'text',
+                value:
+                  'After careful consideration, we regret to inform you that your application has not been selected to move forward at this time.',
+              },
+              {
+                type: 'text',
+                value:
+                  'We appreciate your interest in this position and encourage you to apply for future opportunities that align with your skills and experience.',
+              },
+            ],
+          }),
+        });
+      }
+    });
+
+    // Wait for all emails to send
+    const emailResults = await Promise.allSettled([
+      ...shortlistedEmailPromises,
+      ...rejectedEmailPromises,
+    ]);
+
+    const failedEmails = emailResults.filter(
+      (result) => result.status === 'rejected'
+    ).length;
+
+    if (failedEmails > 0) {
+      console.warn(
+        `${failedEmails} notification emails failed to send during shortlisting.`
+      );
     }
 
     res.status(StatusCodes.OK).json({
@@ -495,6 +555,7 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
           response.data.total_applications || applications.length,
         shortlistedCount:
           response.data.shortlisted_count || shortlistedCandidates.length,
+        rejectedCount: rejectedAppIds.length,
         shortlistedCandidates: shortlistedCandidates,
         aiMetrics: response.data.shortlisting_metadata,
         job: {
