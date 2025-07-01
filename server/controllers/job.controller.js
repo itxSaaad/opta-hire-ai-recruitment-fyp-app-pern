@@ -529,8 +529,8 @@ const updateJobById = asyncHandler(async (req, res) => {
           value: [
             `Title: ${updatedJob.title}`,
             `Description: ${updatedJob.description}`,
-            `Requirements: ${requirementsArrayJoined}`,
-            `Benefits: ${benefitsArrayJoined}`,
+            `Requirements: ${requirementsDisplay}`,
+            `Benefits: ${benefitsDisplay}`,
             `Company: ${updatedJob.company}`,
             `Salary Range: ${updatedJob.salaryRange}`,
             `Category: ${updatedJob.category}`,
@@ -618,6 +618,12 @@ const deleteJobById = asyncHandler(async (req, res) => {
     throw new Error('Unable to delete job posting. Please try again.');
   }
 
+  const requirementsForResponse = JSON.parse(deletedJob.requirements);
+  const benefitsForResponse = JSON.parse(deletedJob.benefits);
+
+  const requirementsDisplay = requirementsForResponse.join(', ');
+  const benefitsDisplay = benefitsForResponse.join(', ');
+
   const isEmailSent = await sendEmail({
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
@@ -644,8 +650,8 @@ const deleteJobById = asyncHandler(async (req, res) => {
           value: [
             `Title: ${job.title}`,
             `Description: ${job.description}`,
-            `Requirements: ${requirementsArrayJoined}`,
-            `Benefits: ${benefitsArrayJoined}`,
+            `Requirements: ${requirementsDisplay}`,
+            `Benefits: ${benefitsDisplay}`,
             `Company: ${job.company}`,
             `Salary Range: ${job.salaryRange}`,
             `Category: ${job.category}`,

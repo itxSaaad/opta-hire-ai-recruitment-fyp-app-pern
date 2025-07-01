@@ -15,7 +15,7 @@ let sequelize;
 
 try {
   sequelize = config.database_url
-    ? new Sequelize(`${[config.database_url]}?sslmode=no-verify`, config)
+    ? new Sequelize(`${config.database_url}?sslmode=no-verify`, config)
     : new Sequelize(config.database, config.username, config.password, config);
 
   sequelize.authenticate();
