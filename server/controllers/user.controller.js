@@ -511,6 +511,8 @@ const getAllUsersProfile = asyncHandler(async (req, res) => {
   const { role, email, firstName, lastName } = req.query;
   let whereClause = {};
 
+  const isAdminRequest = req.user && req.user.isAdmin;
+
   if (role) {
     switch (role.toLowerCase()) {
       case 'admin':
@@ -529,6 +531,8 @@ const getAllUsersProfile = asyncHandler(async (req, res) => {
         res.status(StatusCodes.BAD_REQUEST);
         throw new Error('Invalid user role. Please select a valid role.');
     }
+  } else if (isAdminRequest) {
+    whereClause.isAdmin = false;
   }
 
   if (email) {
@@ -712,10 +716,10 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
               user.isAdmin
                 ? 'Administrator'
                 : user.isRecruiter
-                ? 'Recruiter'
-                : user.isInterviewer
-                ? 'Interviewer'
-                : 'Candidate'
+                  ? 'Recruiter'
+                  : user.isInterviewer
+                    ? 'Interviewer'
+                    : 'Candidate'
             }`,
             `Verification Status: ${
               user.isVerified ? 'Verified' : 'Not Verified'
