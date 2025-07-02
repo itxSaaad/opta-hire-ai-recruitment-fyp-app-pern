@@ -14,6 +14,7 @@ import {
   FaSave,
   FaTimes,
 } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
@@ -56,7 +57,9 @@ export default function JobsScreen() {
     isLoading: isJobsLoading,
     error,
     refetch,
-  } = useGetAllJobsQuery();
+  } = useGetAllJobsQuery({
+    recruiterId: useSelector((state) => state.auth.userInfo?.id),
+  });
 
   const {
     data: aiServiceStatus,

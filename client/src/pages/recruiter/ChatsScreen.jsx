@@ -503,7 +503,7 @@ export default function ChatsScreen() {
 
     if (!isConnected) {
       return (
-        <div className="flex h-full items-center justify-center">
+        <div className="flex h-full items-center justify-center p-8">
           <Loader />
         </div>
       );
@@ -511,7 +511,7 @@ export default function ChatsScreen() {
 
     if (msgsLoading) {
       return (
-        <div className="flex h-full items-center justify-center">
+        <div className="flex h-full items-center justify-center p-8">
           <Loader />
         </div>
       );
@@ -665,7 +665,12 @@ export default function ChatsScreen() {
 
   const DetailsPane = () => {
     if (!selectedRoom) return null;
-    if (roomLoading) return <Loader />;
+    if (roomLoading)
+      return (
+        <div className="flex h-full items-center justify-center p-8">
+          <Loader />
+        </div>
+      );
     if (!roomDetails?.chatRoom) return null;
 
     const { job, interviewer } = roomDetails.chatRoom;
