@@ -29,8 +29,10 @@ import {
   useCreateContractPaymentMutation,
 } from '../../features/payment/paymentApi';
 
+const VITE_STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+
 // Initialize Stripe
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(VITE_STRIPE_PUBLISHABLE_KEY);
 
 // Card element styling to match your theme
 const CARD_ELEMENT_OPTIONS = {
