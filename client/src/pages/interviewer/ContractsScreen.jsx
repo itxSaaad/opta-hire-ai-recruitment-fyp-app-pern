@@ -845,7 +845,7 @@ export default function ContractsScreen() {
                   </div>
                 )}
 
-                {/* Transaction History */}
+                {/* Transaction History  */}
                 {payoutInfoContract.transactions?.length > 0 && (
                   <div className="border-b border-light-border pb-4 dark:border-dark-border">
                     <div className="flex items-start">
@@ -868,7 +868,21 @@ export default function ContractsScreen() {
                               >
                                 <div>
                                   <p className="text-sm font-medium text-light-text dark:text-dark-text">
-                                    {transaction.transactionType}
+                                    {transaction.getDisplayType
+                                      ? transaction.getDisplayType()
+                                      : transaction.transactionType ===
+                                          'payment'
+                                        ? 'Contract Payment'
+                                        : transaction.transactionType ===
+                                            'refund'
+                                          ? 'Payment Refund'
+                                          : transaction.transactionType ===
+                                              'payout'
+                                            ? 'Interviewer Payout'
+                                            : transaction.transactionType ===
+                                                'platform_fee'
+                                              ? 'Platform Fee'
+                                              : 'Transaction'}
                                   </p>
                                   <p className="text-xs text-light-text/70 dark:text-dark-text/70">
                                     {new Date(
@@ -880,18 +894,28 @@ export default function ContractsScreen() {
                                   <p className="text-sm font-medium text-light-text dark:text-dark-text">
                                     ${transaction.amount}
                                   </p>
+                                  {transaction.netAmount && (
+                                    <p className="text-xs text-green-600 dark:text-green-400">
+                                      Net: ${transaction.netAmount}
+                                    </p>
+                                  )}
                                   <p
                                     className={`text-xs ${
                                       transaction.status === 'completed'
-                                        ? 'text-green-600'
+                                        ? 'text-green-600 dark:text-green-400'
                                         : transaction.status === 'failed'
-                                          ? 'text-red-600'
-                                          : transaction.status === 'pending'
-                                            ? 'text-yellow-600'
-                                            : 'text-gray-600'
+                                          ? 'text-red-600 dark:text-red-400'
+                                          : transaction.status ===
+                                                'cancelled' ||
+                                              transaction.status === 'refunded'
+                                            ? 'text-purple-600 dark:text-purple-400'
+                                            : 'text-yellow-600 dark:text-yellow-400'
                                     }`}
                                   >
-                                    {transaction.status}
+                                    {transaction.status
+                                      .charAt(0)
+                                      .toUpperCase() +
+                                      transaction.status.slice(1)}
                                   </p>
                                 </div>
                               </div>
@@ -1010,19 +1034,27 @@ export default function ContractsScreen() {
                               </div>
                               <div className="text-right">
                                 <p className="font-semibold text-green-600 dark:text-green-400">
-                                  +${payout.netAmount}
+                                  +${payout.netAmount || payout.amount}
                                 </p>
-                                <p className="text-xs text-light-text/60 dark:text-dark-text/60">
-                                  Fee: ${payout.platformFee}
-                                </p>
+                                {payout.platformFee && (
+                                  <p className="text-xs text-light-text/60 dark:text-dark-text/60">
+                                    Fee: ${payout.platformFee}
+                                  </p>
+                                )}
                                 <span
                                   className={`mt-1 inline-block rounded-full px-2 py-1 text-xs ${
                                     payout.status === 'completed'
                                       ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                                      : payout.status === 'failed'
+                                        ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                                        : payout.status === 'cancelled' ||
+                                            payout.status === 'refunded'
+                                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
+                                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
                                   }`}
                                 >
-                                  {payout.status}
+                                  {payout.status.charAt(0).toUpperCase() +
+                                    payout.status.slice(1)}
                                 </span>
                               </div>
                             </div>
