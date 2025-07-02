@@ -1,32 +1,94 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { FaPencilAlt, FaSave, FaTimes } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
+import Modal from '../../components/Modal';
 import Table from '../../components/ui/dashboardLayout/Table';
+import InputField from '../../components/ui/mainLayout/InputField';
 
-import { trackPageView } from '../../utils/analytics';
+import { trackEvent, trackPageView } from '../../utils/analytics';
 
-import { useGetAllApplicationsQuery } from '../../features/application/applicationApi';
+import {
+  useGetAllApplicationsQuery,
+  useUpdateApplicationMutation,
+} from '../../features/application/applicationApi';
 
 export default function CandidateApplicationsScreen() {
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [status, setStatus] = useState('');
+
   const location = useLocation();
   const { userInfo } = useSelector((state) => state.auth);
 
   const {
     data: applications,
-    isLoading,
+    isLoading: isApplicationsLoading,
     error,
+    refetch,
   } = useGetAllApplicationsQuery({
     role: 'recruiter',
     recruiterId: userInfo.id,
   });
 
+  const [
+    updateApplication,
+    {
+      isLoading: isUpdating,
+      error: updateError,
+      data: updatedApplication,
+      isSuccess,
+    },
+  ] = useUpdateApplicationMutation();
+
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (selectedApplication) {
+      setStatus(selectedApplication.status);
+      setShowUpdateModal(true);
+    }
+  }, [selectedApplication]);
+
+  const handleUpdateStatus = (application) => {
+    setSelectedApplication(application);
+    trackEvent(
+      'Open Update Status Modal',
+      'User Action',
+      `User opened update status modal for application ID: ${application.id}`
+    );
+  };
+
+  const updateApplicationStatus = async () => {
+    try {
+      await updateApplication({
+        id: selectedApplication.id,
+        applicationData: { status },
+      }).unwrap();
+
+      setShowUpdateModal(false);
+      setSelectedApplication(null);
+      refetch();
+      trackEvent(
+        'Update Application Status',
+        'User Action',
+        `User updated application status to ${status}`
+      );
+    } catch (err) {
+      console.error('Update failed:', err);
+      trackEvent(
+        'Update Application Status Failed',
+        'User Action',
+        `User failed to update application status`
+      );
+    }
+  };
 
   const columns = [
     {
@@ -96,6 +158,20 @@ export default function CandidateApplicationsScreen() {
     },
   ];
 
+  const actions = [
+    {
+      onClick: handleUpdateStatus,
+      render: () => (
+        <button className="flex items-center gap-1 rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600">
+          <FaPencilAlt />
+          Update Status
+        </button>
+      ),
+    },
+  ];
+
+  const isLoading = isApplicationsLoading || isUpdating;
+
   return (
     <>
       <Helmet>
@@ -131,11 +207,99 @@ export default function CandidateApplicationsScreen() {
             </p>
 
             {error && <Alert message={error.data?.message} />}
+            {updateError && <Alert message={updateError.data?.message} />}
+            {isSuccess && (
+              <Alert
+                message={updatedApplication?.message}
+                isSuccess={isSuccess}
+              />
+            )}
 
-            <Table columns={columns} data={applications?.applications || []} />
+            <Table
+              columns={columns}
+              actions={actions}
+              data={applications?.applications || []}
+            />
           </div>
         )}
       </section>
+
+      <Modal
+        isOpen={showUpdateModal}
+        onClose={() => {
+          setShowUpdateModal(false);
+          setSelectedApplication(null);
+        }}
+        title="Update Application Status"
+      >
+        {isUpdating ? (
+          <Loader />
+        ) : (
+          <div className="space-y-4">
+            {updateError && <Alert message={updateError.data?.message} />}
+            {isSuccess && (
+              <Alert
+                type="success"
+                message="Application status updated successfully!"
+              />
+            )}
+
+            {selectedApplication && (
+              <div className="mb-4 rounded bg-gray-50 p-4 dark:bg-gray-800">
+                <p className="font-medium text-light-text dark:text-dark-text">
+                  <span className="text-light-primary dark:text-dark-primary">
+                    Job:
+                  </span>{' '}
+                  {selectedApplication.job?.title}
+                </p>
+                <p className="text-light-text/70 dark:text-dark-text/70">
+                  <span className="font-medium">Candidate:</span>{' '}
+                  {selectedApplication.candidate?.firstName &&
+                  selectedApplication.candidate?.lastName
+                    ? `${selectedApplication.candidate.firstName} ${selectedApplication.candidate.lastName}`
+                    : 'Unknown Candidate'}
+                </p>
+              </div>
+            )}
+
+            <InputField
+              id="status"
+              type="select"
+              label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              options={[
+                { value: 'applied', label: 'Applied' },
+                { value: 'shortlisted', label: 'Shortlisted' },
+                { value: 'rejected', label: 'Rejected' },
+                { value: 'hired', label: 'Hired' },
+              ]}
+            />
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <button
+                className="flex items-center gap-2 rounded bg-gray-300 px-4 py-2 text-gray-800 transition-all duration-200 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+                onClick={() => {
+                  setShowUpdateModal(false);
+                  setSelectedApplication(null);
+                }}
+                disabled={isUpdating}
+              >
+                <FaTimes />
+                Cancel
+              </button>
+              <button
+                className="flex items-center gap-2 rounded bg-light-primary px-4 py-2 text-white transition-all duration-200 hover:bg-light-secondary dark:bg-dark-primary dark:hover:bg-dark-secondary"
+                onClick={updateApplicationStatus}
+                disabled={isUpdating}
+              >
+                <FaSave />
+                Update Status
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </>
   );
 }

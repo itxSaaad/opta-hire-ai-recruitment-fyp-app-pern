@@ -351,7 +351,11 @@ const updateApplication = asyncHandler(async (req, res) => {
   const application = await Application.findByPk(req.params.id, {
     include: [
       { model: User, as: 'candidate' },
-      { model: Job, as: 'job' },
+      {
+        model: Job,
+        as: 'job',
+        include: [{ model: User, as: 'recruiter' }],
+      },
     ],
   });
 
