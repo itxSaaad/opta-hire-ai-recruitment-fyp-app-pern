@@ -148,11 +148,11 @@ export default function RatingsScreen() {
 
   const columns = [
     {
-      key: 'recruiter',
-      label: 'Recruiter',
+      key: 'interviewer',
+      label: 'Interviewer',
       render: (rating) => (
         <span className="text-light-text/70 dark:text-dark-text/70">
-          {`${rating.recruiter.firstName} ${rating.recruiter.lastName}`}
+          {`${rating.interviewer.firstName} ${rating.interviewer.lastName}`}
         </span>
       ),
     },
