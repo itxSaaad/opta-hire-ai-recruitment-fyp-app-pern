@@ -438,7 +438,7 @@ const updateResumeById = asyncHandler(async (req, res) => {
     throw new Error('Unable to update resume. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: updatedProfile.user.email,
     subject: 'OptaHire - Resume Updated',
@@ -538,7 +538,7 @@ const deleteResumeById = asyncHandler(async (req, res) => {
     throw new Error('Failed to delete resume. Please try again later.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: profile.user.email,
     subject: 'OptaHire - Resume Deleted',
@@ -565,8 +565,7 @@ const deleteResumeById = asyncHandler(async (req, res) => {
             `Title: ${profile.title}`,
             `Industry: ${profile.industry || 'Not specified'}`,
             `Headline: ${profile.headline || 'Not specified'}`,
-            `Skills: ${
-              profile.skills ? profile.skills.join(', ') : 'Not specified'
+            `Skills: ${profile.skills ? profile.skills.join(', ') : 'Not specified'
             }`,
             `Experience: ${profile.experience ? 'Included' : 'Not specified'}`,
             `Education: ${profile.education ? 'Included' : 'Not specified'}`,

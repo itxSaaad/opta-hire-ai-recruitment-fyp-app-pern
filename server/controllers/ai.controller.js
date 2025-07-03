@@ -444,7 +444,7 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
         );
 
         if (application) {
-          return sendEmail({
+          return sendEmail(res, {
             from: process.env.NODEMAILER_SMTP_EMAIL,
             to: application.candidate.email,
             subject: 'OptaHire - Application Shortlisted',
@@ -497,7 +497,7 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
       const application = applications.find((app) => app.id === appId);
 
       if (application) {
-        return sendEmail({
+        return sendEmail(res, {
           from: process.env.NODEMAILER_SMTP_EMAIL,
           to: application.candidate.email,
           subject: 'OptaHire - Application Update',

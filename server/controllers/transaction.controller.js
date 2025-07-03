@@ -139,7 +139,7 @@ const createTransaction = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.recruiter.email,
       subject: 'OptaHire - Transaction Processed',
@@ -149,7 +149,7 @@ const createTransaction = asyncHandler(async (req, res) => {
         content: recruiterEmailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.interviewer.email,
       subject: 'OptaHire - Transaction Processed',
@@ -472,7 +472,7 @@ const updateTransactionById = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: transaction.Contract.recruiter.email,
       subject: 'OptaHire - Transaction Updated',
@@ -482,7 +482,7 @@ const updateTransactionById = asyncHandler(async (req, res) => {
         content: recruiterEmailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: transaction.Contract.interviewer.email,
       subject: 'OptaHire - Transaction Updated',
@@ -631,7 +631,7 @@ const deleteTransactionById = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: transaction.Contract.recruiter.email,
       subject: 'OptaHire - Transaction Record Deleted',
@@ -641,7 +641,7 @@ const deleteTransactionById = asyncHandler(async (req, res) => {
         content: recruiterEmailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: transaction.Contract.interviewer.email,
       subject: 'OptaHire - Transaction Record Deleted',

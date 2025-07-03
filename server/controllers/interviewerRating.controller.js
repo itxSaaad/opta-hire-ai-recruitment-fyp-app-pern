@@ -147,7 +147,7 @@ const createInterviewerRating = asyncHandler(async (req, res) => {
     },
   ];
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: interviewer.email,
     subject: 'OptaHire - New Rating Received',
@@ -391,7 +391,7 @@ const updateInterviewerRating = asyncHandler(async (req, res) => {
     },
   ];
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: interviewerRating.interviewer.email,
     subject: 'OptaHire - Rating Update',
@@ -501,7 +501,7 @@ const deleteInterviewerRating = asyncHandler(async (req, res) => {
     },
   ];
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: interviewerRating.interviewer.email,
     subject: 'OptaHire - Rating Deletion Notification',

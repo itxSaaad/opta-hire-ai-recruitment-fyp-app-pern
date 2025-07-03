@@ -163,7 +163,7 @@ const createContract = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - New Contract Created',
@@ -173,7 +173,7 @@ const createContract = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: interviewer.email,
       subject: 'OptaHire - New Contract Created',
@@ -486,7 +486,7 @@ const updateContractById = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.recruiter.email,
       subject: 'OptaHire - Contract Updated',
@@ -496,7 +496,7 @@ const updateContractById = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.interviewer.email,
       subject: 'OptaHire - Contract Updated',
@@ -639,7 +639,7 @@ const deleteContractById = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.recruiter.email,
       subject: 'OptaHire - Contract Record Deleted',
@@ -649,7 +649,7 @@ const deleteContractById = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: contract.interviewer.email,
       subject: 'OptaHire - Contract Record Deleted',

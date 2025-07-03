@@ -279,7 +279,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('Unable to create user resume. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'Welcome to OptaHire - Verify Your Email',
@@ -434,7 +434,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new Error('Unable to process your request. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Reset Your Password',
@@ -563,7 +563,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Password Reset Successful',
@@ -675,7 +675,7 @@ const regenerateOTP = asyncHandler(async (req, res) => {
     throw new Error('Unable to update user. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Your New Verification Code',

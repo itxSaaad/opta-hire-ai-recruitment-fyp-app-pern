@@ -138,7 +138,7 @@ const createJob = asyncHandler(async (req, res) => {
     benefits: benefitsDisplay,
   };
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: recruiter.email,
     subject: 'OptaHire - New Job Created Successfully',
@@ -503,7 +503,7 @@ const updateJobById = asyncHandler(async (req, res) => {
     benefits: benefitsDisplay,
   };
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Updated',
@@ -624,7 +624,7 @@ const deleteJobById = asyncHandler(async (req, res) => {
   const requirementsDisplay = requirementsForResponse.join(', ');
   const benefitsDisplay = benefitsForResponse.join(', ');
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - Job Deleted',

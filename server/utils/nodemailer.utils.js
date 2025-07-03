@@ -43,7 +43,7 @@ const transporter = nodemailer.createTransport({
  * @returns {Promise<Object>} The response from the nodemailer transporter.
  */
 
-const sendEmail = asyncHandler(async (options) => {
+const sendEmail = asyncHandler(async (res, options) => {
   try {
     const response = await transporter.sendMail(options);
 

@@ -71,7 +71,7 @@ const verifyUserEmail = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'Welcome to OptaHire - Email Verified',
@@ -190,7 +190,7 @@ const updateUserPassword = asyncHandler(async (req, res) => {
     throw new Error('Password could not be updated. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Password Updated',
@@ -337,7 +337,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     throw new Error('Profile could not be updated. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Profile Updated Successfully',
@@ -436,7 +436,7 @@ const deleteUserProfile = asyncHandler(async (req, res) => {
     throw new Error('We could not find your profile. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Account Deletion Confirmation',
@@ -563,9 +563,8 @@ const getAllUsersProfile = asyncHandler(async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     success: true,
-    message: `Found ${users.count} user${
-      users.count === 1 ? '' : 's'
-    } matching your search.`,
+    message: `Found ${users.count} user${users.count === 1 ? '' : 's'
+      } matching your search.`,
     count: users.count,
     users: users.rows,
     timestamp: new Date().toISOString(),
@@ -685,7 +684,7 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
     throw new Error('User profile could not be updated. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Your Profile Has Been Updated',
@@ -712,17 +711,15 @@ const updateUserProfileById = asyncHandler(async (req, res) => {
             `Name: ${user.firstName} ${user.lastName}`,
             `Email: ${user.email}`,
             `Phone: ${user.phone || 'Not provided'}`,
-            `Account Role: ${
-              user.isAdmin
-                ? 'Administrator'
-                : user.isRecruiter
-                  ? 'Recruiter'
-                  : user.isInterviewer
-                    ? 'Interviewer'
-                    : 'Candidate'
+            `Account Role: ${user.isAdmin
+              ? 'Administrator'
+              : user.isRecruiter
+                ? 'Recruiter'
+                : user.isInterviewer
+                  ? 'Interviewer'
+                  : 'Candidate'
             }`,
-            `Verification Status: ${
-              user.isVerified ? 'Verified' : 'Not Verified'
+            `Verification Status: ${user.isVerified ? 'Verified' : 'Not Verified'
             }`,
           ],
         },
@@ -808,7 +805,7 @@ const deleteUserById = asyncHandler(async (req, res) => {
     );
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Account Deactivated',
@@ -898,7 +895,7 @@ const deleteUserPermById = asyncHandler(async (req, res) => {
     throw new Error('Unable to process deletion request. Please try again.');
   }
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: user.email,
     subject: 'OptaHire - Account Permanently Deleted',

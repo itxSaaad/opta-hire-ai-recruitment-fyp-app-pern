@@ -225,7 +225,7 @@ const deleteChatRoom = asyncHandler(async (req, res) => {
   const recruiter = await User.findByPk(job.recruiterId);
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: interviewer.email,
       subject: 'OptaHire - Chat Room Deleted',
@@ -250,7 +250,7 @@ const deleteChatRoom = asyncHandler(async (req, res) => {
         ],
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Chat Room Deleted',

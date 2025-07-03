@@ -64,7 +64,7 @@ const createApplication = asyncHandler(async (req, res) => {
     applicationDate: new Date(),
   });
 
-  const isEmailSent = await sendEmail({
+  const isEmailSent = await sendEmail(res, {
     from: process.env.NODEMAILER_SMTP_EMAIL,
     to: job.recruiter.email,
     subject: 'OptaHire - New Application Received',
@@ -92,9 +92,8 @@ const createApplication = asyncHandler(async (req, res) => {
             `Application Date: ${new Date(
               application.applicationDate
             ).toLocaleDateString()}`,
-            `Status: ${
-              application.status.charAt(0).toUpperCase() +
-              application.status.slice(1)
+            `Status: ${application.status.charAt(0).toUpperCase() +
+            application.status.slice(1)
             }`,
           ],
         },
@@ -399,9 +398,8 @@ const updateApplication = asyncHandler(async (req, res) => {
         `Application Date: ${new Date(
           application.applicationDate
         ).toLocaleDateString()}`,
-        `Current Status: ${
-          application.status.charAt(0).toUpperCase() +
-          application.status.slice(1)
+        `Current Status: ${application.status.charAt(0).toUpperCase() +
+        application.status.slice(1)
         }`,
       ],
     },
@@ -420,7 +418,7 @@ const updateApplication = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: application.candidate.email,
       subject: 'OptaHire - Application Status Update',
@@ -430,7 +428,7 @@ const updateApplication = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: application.job.recruiter.email,
       subject: 'OptaHire - Application Status Update',
@@ -516,7 +514,7 @@ const deleteApplication = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Application Record Deleted',
@@ -526,7 +524,7 @@ const deleteApplication = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: candidate.email,
       subject: 'OptaHire - Application Record Deleted',

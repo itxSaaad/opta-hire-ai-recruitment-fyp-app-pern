@@ -178,7 +178,7 @@ const createInterview = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       to: interviewer.email,
       subject: 'OptaHire - Interview Scheduled',
       html: generateEmailTemplate({
@@ -187,7 +187,7 @@ const createInterview = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       to: recruiter.email,
       subject: 'OptaHire - Interview Scheduled',
       html: generateEmailTemplate({
@@ -196,7 +196,7 @@ const createInterview = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       to: candidate.email,
       subject: 'OptaHire - Interview Scheduled',
       html: generateEmailTemplate({
@@ -573,11 +573,10 @@ const updateInterview = asyncHandler(async (req, res) => {
     },
     {
       type: 'text',
-      value: `The interview ${
-        status
+      value: `The interview ${status
           ? `status has been updated to ${status}`
           : 'details have been modified'
-      }.`,
+        }.`,
     },
     {
       type: 'heading',
@@ -607,7 +606,7 @@ const updateInterview = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: interviewer.email,
       subject: 'OptaHire - Interview Updated',
@@ -617,7 +616,7 @@ const updateInterview = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Interview Updated',
@@ -627,7 +626,7 @@ const updateInterview = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: candidate.email,
       subject: 'OptaHire - Interview Updated',
@@ -720,7 +719,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
   ];
 
   const isEmailSent = await Promise.all([
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: interviewer.email,
       subject: 'OptaHire - Interview Record Deleted',
@@ -730,7 +729,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: recruiter.email,
       subject: 'OptaHire - Interview Record Deleted',
@@ -740,7 +739,7 @@ const deleteInterview = asyncHandler(async (req, res) => {
         content: emailContent,
       }),
     }),
-    sendEmail({
+    sendEmail(res, {
       from: process.env.NODEMAILER_SMTP_EMAIL,
       to: candidate.email,
       subject: 'OptaHire - Interview Record Deleted',

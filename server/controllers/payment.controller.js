@@ -88,7 +88,7 @@ const processScheduledPayouts = async () => {
         // Send payout completion emails
         await Promise.all([
           // Email to recruiter
-          sendEmail({
+          sendEmail(res, {
             from: process.env.NODEMAILER_SMTP_EMAIL,
             to: transaction.contract.recruiter.email,
             subject: 'OptaHire - Scheduled Payout Processed',
@@ -108,7 +108,7 @@ const processScheduledPayouts = async () => {
             }),
           }),
           // Email to interviewer
-          sendEmail({
+          sendEmail(res, {
             from: process.env.NODEMAILER_SMTP_EMAIL,
             to: transaction.contract.interviewer.email,
             subject: 'OptaHire - Payment Released',
@@ -574,7 +574,7 @@ const confirmContractPayment = asyncHandler(async (req, res) => {
       // Send confirmation emails
       await Promise.all([
         // Email to recruiter
-        sendEmail({
+        sendEmail(res, {
           from: process.env.NODEMAILER_SMTP_EMAIL,
           to: contract.recruiter.email,
           subject: 'OptaHire - Payment Confirmed',
@@ -598,7 +598,7 @@ const confirmContractPayment = asyncHandler(async (req, res) => {
           }),
         }),
         // Email to interviewer
-        sendEmail({
+        sendEmail(res, {
           from: process.env.NODEMAILER_SMTP_EMAIL,
           to: contract.interviewer.email,
           subject: 'OptaHire - Contract Payment Received',
@@ -719,7 +719,7 @@ const completeContractAndPayout = asyncHandler(async (req, res) => {
       // Send emails about completion and scheduled payout
       await Promise.all([
         // Email to recruiter
-        sendEmail({
+        sendEmail(res, {
           from: process.env.NODEMAILER_SMTP_EMAIL,
           to: contract.recruiter.email,
           subject: 'OptaHire - Contract Completed',
@@ -747,7 +747,7 @@ const completeContractAndPayout = asyncHandler(async (req, res) => {
           }),
         }),
         // Email to interviewer
-        sendEmail({
+        sendEmail(res, {
           from: process.env.NODEMAILER_SMTP_EMAIL,
           to: contract.interviewer.email,
           subject: 'OptaHire - Contract Completed - Payment Scheduled',
@@ -822,7 +822,7 @@ const completeContractAndPayout = asyncHandler(async (req, res) => {
 
       // Send completion emails
       await Promise.all([
-        sendEmail({
+        sendEmail(res, {
           from: process.env.NODEMAILER_SMTP_EMAIL,
           to: contract.recruiter.email,
           subject: 'OptaHire - Contract Completed by Interviewer',
@@ -841,7 +841,7 @@ const completeContractAndPayout = asyncHandler(async (req, res) => {
             ],
           }),
         }),
-        sendEmail({
+        sendEmail(res, {
           from: process.env.NODEMAILER_SMTP_EMAIL,
           to: contract.interviewer.email,
           subject: 'OptaHire - Payment Released',
