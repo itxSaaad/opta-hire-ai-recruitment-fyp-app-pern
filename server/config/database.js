@@ -10,10 +10,6 @@ module.exports = {
     database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
       statement_timeout: 30000,
       idle_in_transaction_session_timeout: 30000,
     },
@@ -35,10 +31,6 @@ module.exports = {
     database_url: process.env.DATABASE_URL,
     dialect: 'postgres',
     dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
       statement_timeout: 30000,
       idle_in_transaction_session_timeout: 30000,
     },
