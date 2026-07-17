@@ -344,7 +344,6 @@ NODEMAILER_SMTP_PASSWORD=your_app_password
 
 # Stripe Configuration
 STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 ```
 
@@ -356,12 +355,13 @@ VITE_CLIENT_URL=http://localhost:5173
 VITE_SERVER_URL=http://localhost:5000
 
 # Stripe Configuration
-VITE_STRIPE_SECRET_KEY=your_stripe_secret_key
 VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 
 # Analytics Configuration
 VITE_GA_TRACKING_ID=your_google_analytics_tracking_id
 ```
+
+For full Stripe onboarding steps (new account setup, webhook setup, required events, and key placement), see [docs/stripe-setup.md](docs/stripe-setup.md).
 
 **AI/ML Services (.env in ml-services directory):**
 
@@ -474,7 +474,6 @@ Start all services in separate terminals:
    ```
 
 4. **Access the application**
-
    - **Frontend:** [http://localhost:5173](http://localhost:5173)
    - **Backend API:** [http://localhost:5000](http://localhost:5000)
    - **API Documentation:** [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
@@ -508,13 +507,11 @@ The application is deployed across multiple platforms for optimal performance:
 ### Deployment Platforms
 
 1. **Vercel (Frontend)**
-
    - Automatic deployments from GitHub
    - Edge network optimization
    - Environment variable management
 
 2. **Heroku (Backend & Database)**
-
    - Managed PostgreSQL database
    - Automatic SSL certificates
    - Horizontal scaling capabilities
