@@ -20,8 +20,8 @@ class ShortlistController:
     who are most likely to be successful in the role.
     """
 
-    def __init__(self):
-        self.matcher = CandidateMatcher()
+    def __init__(self, matcher=None):
+        self.matcher = matcher or CandidateMatcher()
 
     def shortlist_candidates(self, request_data):
         """
@@ -45,6 +45,7 @@ class ShortlistController:
         }
         """
         try:
+            self.matcher.refresh_from_artifact_store()
             # Validate request structure
             if not request_data:
                 raise ValidationError("Request body is required")
