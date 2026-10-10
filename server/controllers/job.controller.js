@@ -1,8 +1,13 @@
+const axios = require('axios');
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
 const { Op } = require('sequelize');
 
 const { User, Job } = require('../models');
+
+const SERVER_URL = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : process.env.SERVER_URL || 'http://localhost:5000';
 
 const { validateString, validateArray } = require('../utils/validation.utils');
 const {
@@ -475,7 +480,7 @@ const updateJobById = asyncHandler(async (req, res) => {
   if (!job.isClosed && updatedJob.isClosed === true && req.user.isRecruiter) {
     axios
       .post(
-        `${process.env.SERVER_URL || 'http://localhost:5000'}/api/v1/ai/shortlist/${jobId}`,
+        `${SERVER_URL}/api/v1/ai/shortlist/${jobId}`,
         {},
         {
           headers: {
