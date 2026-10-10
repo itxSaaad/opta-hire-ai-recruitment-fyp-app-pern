@@ -25,6 +25,7 @@ from middlewares.error_middleware import setup_error_handlers
 from controllers.health_controller import HealthController
 from controllers.model_controller import ModelController
 from controllers.shortlist_controller import ShortlistController
+from models.candidate_matcher import CandidateMatcher
 
 # Load environment variables
 load_dotenv()
@@ -163,10 +164,12 @@ def create_app():
             logging.debug(f"Response: {response.status_code}")
         return response
 
-    # Initialize controllers
-    health_controller = HealthController()
-    shortlist_controller = ShortlistController()
-    model_controller = ModelController()
+    # A single matcher keeps training, health, metrics, and inference status
+    # consistent within each serverless instance.
+    matcher = CandidateMatcher()
+    health_controller = HealthController(matcher)
+    shortlist_controller = ShortlistController(matcher)
+    model_controller = ModelController(matcher)
 
     # ===== HEALTH CONTROLLER ROUTES =====
     health_bp = Blueprint("health", __name__, url_prefix="/api/v1/health")
