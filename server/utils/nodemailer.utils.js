@@ -1,9 +1,13 @@
-const asyncHandler = require('express-async-handler');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
 const { StatusCodes } = require('http-status-codes');
 
 dotenv.config();
+
+const smtpPort = Number(process.env.NODEMAILER_SMTP_PORT || 587);
+const smtpSecure = process.env.NODEMAILER_SMTP_SECURE
+  ? process.env.NODEMAILER_SMTP_SECURE.toLowerCase() === 'true'
+  : smtpPort === 465;
 
 /**
  * @desc Creates a nodemailer transporter for sending emails.
@@ -23,8 +27,8 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   service: process.env.NODEMAILER_SMTP_SERVICE,
   host: process.env.NODEMAILER_SMTP_HOST,
-  port: process.env.NODEMAILER_SMTP_PORT,
-  secure: process.env.NODE_ENV === 'production' ? true : false,
+  port: smtpPort,
+  secure: smtpSecure,
   auth: {
     user: process.env.NODEMAILER_SMTP_EMAIL,
     pass: process.env.NODEMAILER_SMTP_PASSWORD,
@@ -43,19 +47,19 @@ const transporter = nodemailer.createTransport({
  * @returns {Promise<Object>} The response from the nodemailer transporter.
  */
 
-const sendEmail = asyncHandler(async (res, options) => {
+const sendEmail = async (res, options) => {
   try {
     const response = await transporter.sendMail(options);
 
     return response;
   } catch (error) {
     console.error(`Error Sending Email: ${error}`);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    if (res) res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
       'Unable to send email notification. Please check your network connection and try again later.'
     );
   }
-});
+};
 
 /**
  * @desc Generates a universal HTML email template. This template is adaptable to various use cases (OTP, CTA, headings, lists, etc.)
@@ -266,7 +270,7 @@ const generateEmailTemplate = ({ firstName, subject, content = [] }) => {
     <body>
       <div class="container" role="main">
         <header class="header-container">
-          <img src="https://opta-hire-develop-server.vercel.app/assets/logo.png" alt="OptaHire Logo" class="logo" />
+          <img src="${process.env.CLIENT_URL || 'https://opta-hire-fyp.vercel.app'}/favicon.svg" alt="OptaHire Logo" class="logo" />
           <div class="header" role="banner">
             <h1>OptaHire</h1>
             <h3 class="header-subheader">Optimizing Your Recruitment Journey</h3>
@@ -280,7 +284,7 @@ const generateEmailTemplate = ({ firstName, subject, content = [] }) => {
         </main>
         <footer class="footer" role="contentinfo">
           <p>
-            Visit <a href="https://opta-hire-fyp-app-client.vercel.app" style="color: var(--primary); text-decoration: none">OptaHire</a> to experience the full platform.
+            Visit <a href="${process.env.CLIENT_URL || 'https://opta-hire-fyp.vercel.app'}" style="color: var(--primary); text-decoration: none">OptaHire</a> to experience the full platform.
           </p>
           <p>&copy; ${new Date().getFullYear()} OptaHire | Optimizing Your Recruitment Journey</p>
         </footer>

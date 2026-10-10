@@ -1,6 +1,5 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
-const cron = require('node-cron');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Op } = require('sequelize');
 
@@ -48,6 +47,11 @@ const isPayoutScheduled = async (contractId) => {
  * Process scheduled payouts (called by cron job)
  */
 const processScheduledPayouts = async () => {
+  if (process.env.DISABLE_SCHEDULED_PAYOUTS === 'true') {
+    console.log('Scheduled payouts are disabled by configuration.');
+    return { processed: 0, skipped: true };
+  }
+
   try {
     const now = new Date();
 
@@ -74,41 +78,43 @@ const processScheduledPayouts = async () => {
 
     console.log(`Found ${duePayouts.length} payouts to process`);
 
+    let processed = 0;
+    let failed = 0;
+
     for (const transaction of duePayouts) {
       try {
-        // Update transaction status to completed
-        await Transaction.update(
-          {
-            status: 'completed',
-            transactionDate: new Date(),
-          },
-          { where: { id: transaction.id } }
+        // Conditional transition prevents duplicate cron invocations from
+        // processing the same pending payout record twice.
+        const [updatedCount] = await Transaction.update(
+          { status: 'completed' },
+          { where: { id: transaction.id, status: 'pending' } }
         );
+        if (!updatedCount) continue;
 
         // Send payout completion emails
         await Promise.all([
           // Email to recruiter
-          sendEmail(res, {
+          sendEmail(null, {
             from: process.env.NODEMAILER_SMTP_EMAIL,
             to: transaction.contract.recruiter.email,
-            subject: 'OptaHire - Scheduled Payout Processed',
+            subject: 'OptaHire - Scheduled Payout Completed',
             html: generateEmailTemplate({
               firstName: transaction.contract.recruiter.firstName,
               subject: 'Scheduled Payout Processed',
               content: [
                 {
                   type: 'heading',
-                  value: 'Payout Processed!',
+                  value: 'Scheduled Payout Completed!',
                 },
                 {
                   type: 'text',
-                  value: `The scheduled payout for your contract has been processed. $${transaction.netAmount} has been transferred to the interviewer.`,
+                  value: 'The scheduled payout for your contract has reached its release date. Stripe Connect handles the connected-account transfer and settlement.',
                 },
               ],
             }),
           }),
           // Email to interviewer
-          sendEmail(res, {
+          sendEmail(null, {
             from: process.env.NODEMAILER_SMTP_EMAIL,
             to: transaction.contract.interviewer.email,
             subject: 'OptaHire - Payment Released',
@@ -118,11 +124,11 @@ const processScheduledPayouts = async () => {
               content: [
                 {
                   type: 'heading',
-                  value: 'Payment Released!',
+                  value: 'Scheduled Payment Released!',
                 },
                 {
                   type: 'text',
-                  value: `Your scheduled payment of $${transaction.netAmount} has been transferred to your Stripe account.`,
+                  value: `Your scheduled payout of $${transaction.netAmount} has reached its release date. Stripe Connect handles the connected-account transfer and settlement.`,
                 },
                 {
                   type: 'text',
@@ -137,23 +143,26 @@ const processScheduledPayouts = async () => {
         console.log(
           `✅ Processed scheduled payout for contract ${transaction.contractId}`
         );
+        processed++;
       } catch (error) {
+        failed++;
         console.error(
           `❌ Failed to process payout for transaction ${transaction.id}:`,
           error
         );
       }
     }
+    return { processed, failed, skipped: false };
   } catch (error) {
     console.error('Error processing scheduled payouts:', error);
+    throw error;
   }
 };
 
-// Set up cron job to run every hour to check for due payouts
-cron.schedule('0 * * * *', () => {
-  console.log('🔄 Checking for scheduled payouts...');
-  processScheduledPayouts();
-});
+// Do not schedule work inside the API process. Vercel runs this API in
+// serverless instances, so an in-process timer is neither durable nor reliable.
+// Scheduled payouts remain disabled until the transfer routine is made safe and
+// exposed through an authenticated, idempotent Vercel Cron endpoint.
 
 /**
  * @desc Create Stripe Connect account for interviewer
@@ -1137,7 +1146,11 @@ const handleStripeWebhook = asyncHandler(async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(
+      req.rawBody || req.body,
+      sig,
+      endpointSecret
+    );
   } catch (err) {
     console.error(`Webhook signature verification failed:`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);

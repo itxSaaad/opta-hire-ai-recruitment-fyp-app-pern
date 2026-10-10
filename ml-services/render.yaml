@@ -3,11 +3,16 @@ services:
     name: optahire-ai-service
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    rootDir: ml-services
+    buildCommand: uv sync --frozen --no-dev
+    startCommand: uv run --frozen --no-sync gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 app:app
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: PYTHON_VERSION
+        value: 3.12.13
+      - key: UV_VERSION
+        value: 0.11.16
       - key: DEBUG
         value: 'false'
       - key: HOST

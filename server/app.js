@@ -20,7 +20,6 @@ const {
   errorHandler,
   notFoundHandler,
 } = require('./middlewares/error.middleware');
-const rawBodyMiddleware = require('./middlewares/webhook.middleware');
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
@@ -35,6 +34,8 @@ const interviewerRating = require('./routes/interviewerRating.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const aiRoutes = require('./routes/ai.routes.js');
 const reportRoutes = require('./routes/report.routes');
+const cronRoutes = require('./routes/cron.routes');
+const startScheduledPayoutCron = require('./jobs/scheduledPayouts.job');
 
 const setupChatSocket = require('./sockets/chat.socket');
 const setupVideoCallSocket = require('./sockets/webrtc.socket');
@@ -68,7 +69,15 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buffer) => {
+      if (req.path === '/api/v1/payments/webhooks/stripe') {
+        req.rawBody = Buffer.from(buffer);
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -105,8 +114,6 @@ if (NODE_ENV === 'production') {
   app.use(morgan('combined'));
 }
 
-app.use(rawBodyMiddleware);
-
 app.get('/', (req, res) => {
   res
     .status(StatusCodes.OK)
@@ -118,6 +125,15 @@ app.get('/api/v1/test', (req, res) => {
     success: true,
     message: 'API health check successful. System is operational.',
     timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/api', (req, res) => {
+  res.status(StatusCodes.OK).json({
+    success: true,
+    service: 'OptaHire API',
+    health: '/api/v1/test',
+    mlHealth: '/api/v1/ai/health/system',
   });
 });
 
@@ -139,6 +155,7 @@ app.use('/api/v1/interviewer-ratings', interviewerRating);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/cron', cronRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
@@ -158,6 +175,7 @@ setupVideoCallSocket(io);
 
 const startServer = async () => {
   try {
+    startScheduledPayoutCron();
     server.listen(PORT, () => {
       console.log('\n' + '='.repeat(86).yellow);
       console.log(`🚀 SERVER STATUS`.bold.yellow);

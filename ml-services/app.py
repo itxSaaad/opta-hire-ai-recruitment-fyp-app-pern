@@ -13,6 +13,11 @@ import signal
 import atexit
 from colorama import Fore, Style, init
 
+# Keep Windows terminals with legacy code pages from failing on status symbols.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 from config.settings import AppConfig
 
 from middlewares.error_middleware import setup_error_handlers

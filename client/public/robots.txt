@@ -27,7 +27,7 @@ Allow: /auth/register
 Allow: /coming-soon
 
 # Sitemap location - helps search engines find your sitemap
-Sitemap: https://opta-hire-fyp-app-client.vercel.app/sitemap.xml
+Sitemap: https://opta-hire-fyp.vercel.app/sitemap.xml
 
 # Crawl delay - be respectful to your server (1 second between requests)
 Crawl-delay: 1
