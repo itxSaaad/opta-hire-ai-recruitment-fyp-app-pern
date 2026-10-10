@@ -97,6 +97,7 @@ export default function ChatsScreen() {
 
     const newSocket = io('/chat', {
       auth: { token },
+      transports: ['websocket'],
     });
 
     newSocket.on('connect', () => {
@@ -106,6 +107,10 @@ export default function ChatsScreen() {
 
     newSocket.on('connect_error', (err) => {
       setError(`Connection error: ${err.message}`);
+    });
+
+    newSocket.on('disconnect', () => {
+      setIsConnected(false);
     });
 
     return () => {

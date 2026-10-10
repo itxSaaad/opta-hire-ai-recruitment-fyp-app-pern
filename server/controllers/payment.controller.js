@@ -1,6 +1,5 @@
 const asyncHandler = require('express-async-handler');
 const { StatusCodes } = require('http-status-codes');
-const cron = require('node-cron');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { Op } = require('sequelize');
 
@@ -48,6 +47,11 @@ const isPayoutScheduled = async (contractId) => {
  * Process scheduled payouts (called by cron job)
  */
 const processScheduledPayouts = async () => {
+  if (process.env.DISABLE_SCHEDULED_PAYOUTS === 'true') {
+    console.log('Scheduled payouts are disabled by configuration.');
+    return { processed: 0, skipped: true };
+  }
+
   try {
     const now = new Date();
 
@@ -149,11 +153,10 @@ const processScheduledPayouts = async () => {
   }
 };
 
-// Set up cron job to run every hour to check for due payouts
-cron.schedule('0 * * * *', () => {
-  console.log('🔄 Checking for scheduled payouts...');
-  processScheduledPayouts();
-});
+// Do not schedule work inside the API process. Vercel runs this API in
+// serverless instances, so an in-process timer is neither durable nor reliable.
+// Scheduled payouts remain disabled until the transfer routine is made safe and
+// exposed through an authenticated, idempotent Vercel Cron endpoint.
 
 /**
  * @desc Create Stripe Connect account for interviewer
@@ -1137,7 +1140,11 @@ const handleStripeWebhook = asyncHandler(async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(
+      req.rawBody || req.body,
+      sig,
+      endpointSecret
+    );
   } catch (err) {
     console.error(`Webhook signature verification failed:`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
