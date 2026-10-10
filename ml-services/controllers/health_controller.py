@@ -12,8 +12,8 @@ class HealthController:
     Similar to your Node.js controllers but focused on AI service health
     """
 
-    def __init__(self):
-        self.matcher = CandidateMatcher()
+    def __init__(self, matcher=None):
+        self.matcher = matcher or CandidateMatcher()
         self.config = AppConfig()
 
     def check_health(self):
@@ -61,6 +61,7 @@ class HealthController:
         This provides information about whether the AI model is trained and ready
         """
         try:
+            self.matcher.refresh_from_artifact_store()
             ai_status = {
                 "model_trained": self.matcher.is_trained,
                 "model_version": self.config.MODEL_VERSION,
@@ -116,6 +117,9 @@ class HealthController:
     def _get_last_training_time(self):
         """Get timestamp of last model training"""
         try:
+            training_timestamp = self.matcher.training_metadata.get("training_timestamp")
+            if training_timestamp:
+                return training_timestamp
             model_path = os.path.join(
                 self.config.MODEL_STORAGE_PATH, "text_vectorizer.pkl"
             )

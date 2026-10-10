@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import logging
+import tempfile
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -41,7 +42,14 @@ class AppConfig:
         self.MODEL_VERSION = os.getenv("MODEL_VERSION", "1.0.0")
         self.MAX_CANDIDATES = int(os.getenv("MAX_CANDIDATES", 5))
         self.MIN_SIMILARITY = float(os.getenv("MIN_SIMILARITY", 0.3))
-        self.MODEL_STORAGE_PATH = os.getenv("MODEL_STORAGE_PATH", "data/models")
+        default_model_path = (
+            os.path.join(tempfile.gettempdir(), "optahire_models")
+            if os.getenv("VERCEL") or os.getenv("VERCEL_ENV")
+            else "data/models"
+        )
+        self.MODEL_STORAGE_PATH = os.getenv("MODEL_STORAGE_PATH", default_model_path)
+        self.MODEL_ARTIFACT_BACKEND = os.getenv("MODEL_ARTIFACT_BACKEND", "auto")
+        self.MODEL_ARTIFACT_NAMESPACE = os.getenv("MODEL_ARTIFACT_NAMESPACE")
 
         # Scoring Weights
         self.WEIGHT_SKILLS = float(os.getenv("WEIGHT_SKILLS", 0.40))

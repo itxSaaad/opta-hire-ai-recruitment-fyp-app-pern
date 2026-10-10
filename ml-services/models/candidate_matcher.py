@@ -9,9 +9,13 @@ from collections import Counter
 import joblib
 import os
 from datetime import datetime, timezone
+import time
+from pathlib import Path
+import tempfile
 
 from utils.error_utils import AIModelError
 from config.settings import AppConfig
+from storage.vercel_blob_model_store import VercelBlobModelStore
 
 
 class CandidateMatcher:
@@ -21,8 +25,11 @@ class CandidateMatcher:
     This model works like a sophisticated HR professional, evaluating multiple
     aspects of a candidate's profile against job requirements to find the best matches.
 
+    Model artifacts are cached locally for inference and durably stored in a
+    private Vercel Blob store when the service is deployed there.
+
     FIXED ISSUES:
-    - ✅ Proper training status persistence to disk
+    - ✅ Proper training status persistence in Vercel Blob
     - ✅ Robust model loading with detailed error handling
     - ✅ Automatic directory creation
     - ✅ Training state validation
@@ -36,6 +43,20 @@ class CandidateMatcher:
         self.text_vectorizer = None
         self.is_trained = False
         self.training_metadata = {}
+        self.artifact_store = VercelBlobModelStore()
+        self._last_artifact_refresh = 0.0
+
+        # A local Vercel env pull may contain MODEL_STORAGE_PATH=data/models.
+        # Never download remote artifacts over the bundled, tracked model files.
+        if self.artifact_store.enabled:
+            configured_cache = Path(self.config.MODEL_STORAGE_PATH).resolve()
+            bundled_models = Path(__file__).resolve().parents[1] / "data" / "models"
+            if configured_cache == bundled_models.resolve():
+                self.config.MODEL_STORAGE_PATH = os.path.join(
+                    tempfile.gettempdir(),
+                    "optahire_models",
+                    self.artifact_store.namespace,
+                )
 
         # Scoring weights from configuration
         self.weights = {
@@ -292,6 +313,13 @@ class CandidateMatcher:
                 logging.error("❌ Model save verification failed: some files missing")
                 return False
 
+            if self.artifact_store.enabled and not self.artifact_store.publish(
+                self.config.MODEL_STORAGE_PATH
+            ):
+                logging.error("❌ Model artifacts could not be persisted to Vercel Blob")
+                return False
+
+            self._last_artifact_refresh = time.monotonic()
             logging.info("✅ Model and training state saved successfully")
             return True
 
@@ -305,72 +333,83 @@ class CandidateMatcher:
 
         FIXED: More robust loading with proper state management
         """
-        try:
-            # Check for training state file first
-            state_path = os.path.join(
-                self.config.MODEL_STORAGE_PATH, "training_state.json"
-            )
-            text_path = os.path.join(
-                self.config.MODEL_STORAGE_PATH, "text_vectorizer.pkl"
-            )
-            skills_path = os.path.join(
-                self.config.MODEL_STORAGE_PATH, "skills_vectorizer.pkl"
-            )
-
-            # If no state file exists, try legacy loading
-            if not os.path.exists(state_path):
-                logging.info(
-                    "🔍 No training state file found, checking for legacy model files..."
+        if self.artifact_store.enabled:
+            result = self.artifact_store.load_latest(self.config.MODEL_STORAGE_PATH)
+            self._last_artifact_refresh = time.monotonic()
+            if result["state"] in {"loaded", "unchanged"}:
+                self._load_cached_model()
+                return
+            if result["state"] == "error":
+                logging.error(
+                    "Model loading is blocked because durable Blob storage is unavailable: %s",
+                    result.get("error"),
                 )
+                return
+
+            # One-time migration for the model files already checked into the
+            # repository. Publish them only after Blob has confirmed it is reachable.
+            legacy_directory = Path(__file__).resolve().parents[1] / "data" / "models"
+            if self._load_cached_model(str(legacy_directory)):
+                logging.info("Migrating the bundled legacy model into Vercel Blob")
+                if not self._save_model():
+                    logging.error("Legacy model loaded but could not be migrated to Blob")
+                return
+            logging.info("No model exists in Blob or the legacy bundle; training is required")
+            return
+
+        self._load_cached_model()
+
+    def _load_cached_model(self, directory=None) -> bool:
+        """Load and verify the model files in a local cache directory."""
+        directory = directory or self.config.MODEL_STORAGE_PATH
+        state_path = os.path.join(directory, "training_state.json")
+        text_path = os.path.join(directory, "text_vectorizer.pkl")
+        skills_path = os.path.join(directory, "skills_vectorizer.pkl")
+
+        try:
+            if not os.path.exists(state_path):
                 if os.path.exists(text_path) and os.path.exists(skills_path):
                     return self._load_legacy_model(text_path, skills_path)
-                else:
-                    logging.info(
-                        "📝 No trained model found. Model will need to be trained."
-                    )
-                    return
+                return False
 
-            # Load training state
-            with open(state_path, "r") as f:
-                state_data = json.load(f)
-
-            # Verify state data integrity
+            with open(state_path, "r", encoding="utf-8") as state_file:
+                state_data = json.load(state_file)
             if not state_data.get("is_trained", False):
-                logging.warning("⚠️ Training state indicates model is not trained")
-                return
+                return False
+            if not all(os.path.exists(path) for path in (text_path, skills_path)):
+                return False
 
-            # Verify model files exist
-            if not all(os.path.exists(path) for path in [text_path, skills_path]):
-                logging.warning("⚠️ Training state exists but model files are missing")
-                self._cleanup_incomplete_state()
-                return
-
-            # Load vectorizers
             self.text_vectorizer = joblib.load(text_path)
             self.skills_vectorizer = joblib.load(skills_path)
-
-            # Restore metadata
             self.training_metadata = state_data.get("training_metadata", {})
-
-            # Verify loaded models are functional
             if not self._verify_loaded_models():
-                logging.warning("⚠️ Loaded models failed verification")
                 self._cleanup_incomplete_state()
-                return
+                return False
 
-            # FIXED: Only set trained status after everything loads successfully
             self.is_trained = True
-
-            trained_time = self.training_metadata.get("training_timestamp", "Unknown")
-            sample_count = self.training_metadata.get("valid_samples", "Unknown")
-
             logging.info(
-                f"✅ Pre-trained model loaded successfully (trained: {trained_time}, samples: {sample_count})"
+                "Loaded trained model (trained: %s, samples: %s)",
+                self.training_metadata.get("training_timestamp", "Unknown"),
+                self.training_metadata.get("valid_samples", "Unknown"),
             )
-
-        except Exception as e:
-            logging.warning(f"⚠️ Could not load existing model: {str(e)}")
+            return True
+        except Exception as error:
+            logging.warning("Could not load model files from %s: %s", directory, error)
             self._cleanup_incomplete_state()
+            return False
+
+    def refresh_from_artifact_store(self, interval_seconds: int = 15):
+        """Refresh a warm instance when another instance publishes a new model."""
+        if not self.artifact_store.enabled or not self.artifact_store.client:
+            return
+        now = time.monotonic()
+        if now - self._last_artifact_refresh < interval_seconds:
+            return
+
+        result = self.artifact_store.load_latest(self.config.MODEL_STORAGE_PATH)
+        self._last_artifact_refresh = now
+        if result["state"] == "loaded":
+            self._load_cached_model()
 
     def _load_legacy_model(self, text_path: str, skills_path: str) -> bool:
         """Load model files without state file (backward compatibility)"""

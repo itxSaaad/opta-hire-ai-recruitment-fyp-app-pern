@@ -21,6 +21,7 @@ dependencies = [
   "Faker==20.1.0",
   "gunicorn==21.2.0",
   "memory-profiler==0.61.0",
+  "vercel>=0.5.0,<1",
 ]
 
 [tool.uv]

@@ -14,8 +14,8 @@ class ModelController:
     This handles the machine learning aspects of the recruitment system
     """
 
-    def __init__(self):
-        self.matcher = CandidateMatcher()
+    def __init__(self, matcher=None):
+        self.matcher = matcher or CandidateMatcher()
 
     def train_model(self, request_data):
         """
@@ -145,6 +145,8 @@ class ModelController:
         This helps your Node.js server understand if the AI is ready to work
         """
         try:
+            self.matcher.refresh_from_artifact_store()
+            storage_status = self._get_storage_status()
             # Get basic status information
             status_data = {
                 "is_trained": self.matcher.is_trained,
@@ -160,6 +162,7 @@ class ModelController:
                     "text_similarity",
                 ],
                 "ready_for_shortlisting": self.matcher.is_trained,
+                "model_storage": storage_status,
             }
 
             # Add detailed training information if model is trained
@@ -185,6 +188,9 @@ class ModelController:
                             ),
                             "weights_configured": bool(self.matcher.weights),
                             "storage_path": self.matcher.config.MODEL_STORAGE_PATH,
+                            "storage_backend": storage_status["backend"],
+                            "artifact_namespace": storage_status["namespace"],
+                            "artifact_persistence_available": storage_status["accessible"],
                         },
                     }
                 )
@@ -205,6 +211,9 @@ class ModelController:
                             "vectorizers_loaded": False,
                             "weights_configured": bool(self.matcher.weights),
                             "storage_path": self.matcher.config.MODEL_STORAGE_PATH,
+                            "storage_backend": storage_status["backend"],
+                            "artifact_namespace": storage_status["namespace"],
+                            "artifact_persistence_available": storage_status["accessible"],
                         },
                     }
                 )
@@ -229,6 +238,7 @@ class ModelController:
         This provides insights into how well the AI model is performing
         """
         try:
+            self.matcher.refresh_from_artifact_store()
             if not self.matcher.is_trained:
                 raise AIModelError(
                     "AI model is not trained yet. Please train the model before retrieving metrics.",
@@ -299,6 +309,9 @@ class ModelController:
                     "vectorizers_functional": self._check_vectorizers_health(),
                     "storage_path": self.matcher.config.MODEL_STORAGE_PATH,
                     "storage_accessible": self._check_storage_health(),
+                    "storage_backend": "vercel_blob" if self.matcher.artifact_store.enabled else "local",
+                    "artifact_namespace": self.matcher.artifact_store.namespace,
+                    "artifact_persistence_available": self._check_storage_health(),
                     "memory_usage": self._get_memory_usage(),
                     "last_health_check": self._get_current_timestamp(),
                 },
@@ -342,12 +355,26 @@ class ModelController:
             return False
 
     def _check_storage_health(self):
-        """Check if model storage directory is accessible"""
+        """Check durable artifact storage instead of local directory writability."""
         try:
+            if self.matcher.artifact_store.enabled:
+                return bool(
+                    self.matcher.artifact_store.client
+                    and self.matcher.artifact_store.last_check_ok
+                )
             storage_path = self.matcher.config.MODEL_STORAGE_PATH
             return os.path.exists(storage_path) and os.access(storage_path, os.W_OK)
         except:
             return False
+
+    def _get_storage_status(self):
+        store = self.matcher.artifact_store
+        return {
+            "backend": "vercel_blob" if store.enabled else "local",
+            "namespace": store.namespace,
+            "accessible": self._check_storage_health(),
+            "error": None if self._check_storage_health() else "storage_unavailable",
+        }
 
     def _get_memory_usage(self):
         """Get approximate memory usage of model components"""
