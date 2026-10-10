@@ -10,4 +10,4 @@ Thanks for helping improve OptaHire. Start by opening an issue for a larger chan
 4. Run the relevant service build/lint or manual verification and describe what you ran.
 5. Do not commit credentials, environment bundles, database dumps, or real user data.
 
-For local setup and service boundaries, begin with the [root README](README.md) and [development guide](docs/development.md). Keep client secrets out of `VITE_*` variables.
+For local setup and service boundaries, begin with the [root README](README.md) and [development guide](docs/development/README.md). Keep client secrets out of `VITE_*` variables.
