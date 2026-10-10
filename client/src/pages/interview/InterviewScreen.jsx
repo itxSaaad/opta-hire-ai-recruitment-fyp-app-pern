@@ -19,8 +19,6 @@ import 'webrtc-adapter';
 import Alert from '../../components/Alert';
 import Loader from '../../components/Loader';
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
-
 const InterviewScreen = () => {
   const [socket, setSocket] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -55,7 +53,7 @@ const InterviewScreen = () => {
       return;
     }
 
-    const newSocket = io(`${SERVER_URL}/video-interviews`, {
+    const newSocket = io('/video-interviews', {
       auth: { token },
     });
 

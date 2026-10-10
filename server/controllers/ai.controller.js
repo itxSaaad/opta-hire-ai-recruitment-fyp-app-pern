@@ -10,7 +10,13 @@ const {
   generateEmailTemplate,
 } = require('../utils/nodemailer.utils');
 
-const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:5001';
+const getAiServiceUrl = (path) => {
+  const baseUrl = process.env.ML_SERVICES_URL || 'http://localhost:5001/';
+  return new URL(
+    path.replace(/^\//, ''),
+    baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+  );
+};
 
 /**
  * @desc Check AI server system health
@@ -24,7 +30,9 @@ const AI_SERVER_URL = process.env.AI_SERVER_URL || 'http://localhost:5001';
  */
 const checkSystemHealth = asyncHandler(async (req, res) => {
   try {
-    const response = await axios.get(`${AI_SERVER_URL}/api/v1/health/`);
+    const response = await axios.get(
+      getAiServiceUrl('/api/v1/health/').toString()
+    );
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -60,7 +68,7 @@ const checkSystemHealth = asyncHandler(async (req, res) => {
 const checkAiServiceStatus = asyncHandler(async (req, res) => {
   try {
     const response = await axios.get(
-      `${AI_SERVER_URL}/api/v1/health/ai-service`
+      getAiServiceUrl('/api/v1/health/ai-service').toString()
     );
 
     res.status(StatusCodes.OK).json({
@@ -96,7 +104,9 @@ const checkAiServiceStatus = asyncHandler(async (req, res) => {
  */
 const getModelStatus = asyncHandler(async (req, res) => {
   try {
-    const response = await axios.get(`${AI_SERVER_URL}/api/v1/model/status`);
+    const response = await axios.get(
+      getAiServiceUrl('/api/v1/model/status').toString()
+    );
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -127,7 +137,9 @@ const getModelStatus = asyncHandler(async (req, res) => {
  */
 const getModelMetrics = asyncHandler(async (req, res) => {
   try {
-    const response = await axios.get(`${AI_SERVER_URL}/api/v1/model/metrics`);
+    const response = await axios.get(
+      getAiServiceUrl('/api/v1/model/metrics').toString()
+    );
 
     res.status(StatusCodes.OK).json({
       success: true,
@@ -245,7 +257,7 @@ const trainModel = asyncHandler(async (req, res) => {
       : { trainingSize };
 
     const response = await axios.post(
-      `${AI_SERVER_URL}/api/v1/model/train`,
+      getAiServiceUrl('/api/v1/model/train').toString(),
       requestBody,
       {
         headers: {
@@ -384,7 +396,7 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
 
     // Call AI service for shortlisting
     const response = await axios.post(
-      `${AI_SERVER_URL}/api/v1/shortlist/candidates`,
+      getAiServiceUrl('/api/v1/shortlist/candidates').toString(),
       aiRequestData,
       {
         headers: {
@@ -686,7 +698,7 @@ const previewCandidateShortlist = asyncHandler(async (req, res) => {
 
     // Call AI service for preview
     const response = await axios.post(
-      `${AI_SERVER_URL}/api/v1/shortlist/preview`,
+      getAiServiceUrl('/api/v1/shortlist/preview').toString(),
       previewData,
       {
         headers: { 'Content-Type': 'application/json' },
