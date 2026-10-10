@@ -2,6 +2,18 @@
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+const getTokenLifetime = (value, fallback, variableName) => {
+  const unquoted = value?.trim().replace(/^['"]|['"]$/g, '');
+  if (!unquoted) return fallback;
+  if (/^\d+$/.test(unquoted)) return Number(unquoted);
+  if (/^\d+(ms|s|m|h|d|w|y)$/i.test(unquoted)) return unquoted;
+
+  console.warn(
+    `${variableName} must be seconds or a duration such as 15m; using ${fallback}.`
+  );
+  return fallback;
+};
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
@@ -194,7 +206,11 @@ module.exports = (sequelize, DataTypes) => {
    */
   User.prototype.generateAccessToken = function () {
     return jwt.sign({ id: this.id }, process.env.JWT_ACCESS_TOKEN_SECRET, {
-      expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
+      expiresIn: getTokenLifetime(
+        process.env.JWT_ACCESS_TOKEN_EXPIRES_IN,
+        '15m',
+        'JWT_ACCESS_TOKEN_EXPIRES_IN'
+      ),
     });
   };
 
@@ -206,7 +222,11 @@ module.exports = (sequelize, DataTypes) => {
    */
   User.prototype.generateRefreshToken = function () {
     return jwt.sign({ id: this.id }, process.env.JWT_REFRESH_TOKEN_SECRET, {
-      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
+      expiresIn: getTokenLifetime(
+        process.env.JWT_REFRESH_TOKEN_EXPIRES_IN,
+        '7d',
+        'JWT_REFRESH_TOKEN_EXPIRES_IN'
+      ),
     });
   };
 
