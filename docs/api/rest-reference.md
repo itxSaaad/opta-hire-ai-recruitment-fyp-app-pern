@@ -23,6 +23,7 @@ Express business routers are mounted under `/api/v1` in `server/app.js`. This ta
 - `GET /api` returns API identity and route links. The exact Vercel `/api` rewrite is required.
 - `GET /api/v1/test` is API liveness only; it does not prove DB/ML readiness.
 - `GET /api/v1/ai/health/system` is protected Express/ML system health.
+- `GET /api/cron/scheduled-payouts` is an internal cron trigger. It requires a bearer `CRON_SECRET` and honors `DISABLE_SCHEDULED_PAYOUTS`; see the [scheduled payout runbook](../operations/scheduled-payouts.md).
 - `GET /api-docs` exposes Swagger only in development.
 
 ## Flask endpoints

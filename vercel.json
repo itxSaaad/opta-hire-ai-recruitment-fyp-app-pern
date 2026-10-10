@@ -1,5 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/scheduled-payouts",
+      "schedule": "0 5 * * *"
+    }
+  ],
   "services": {
     "client": {
       "root": "client",

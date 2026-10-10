@@ -1,5 +1,6 @@
 # Operations
 
+- [Scheduled payout job](scheduled-payouts.md)
 - [Deployment and current status](deployment.md)
 - [Environment scopes](environment-variables.md)
 - [Heroku-to-Supabase migration runbook](../data/migration-runbook.md)

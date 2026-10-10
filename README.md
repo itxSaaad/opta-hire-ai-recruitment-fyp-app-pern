@@ -52,7 +52,7 @@ The root [`vercel.json`](vercel.json) configures all three services in one Verce
 
 ## Get started
 
-Install the client and API dependencies in their respective folders, configure local service settings from the tracked examples, then start the API (`npm run dev` in `server/`), client (`npm run dev` in `client/`), and Flask app (`python app.py` in `ml-services/`). Set the local ML service URL to `http://localhost:5001/` for the API proxy. See [local setup](docs/development/local-setup.md) for prerequisites, commands, ports, and configuration.
+Install the client and API dependencies in their respective folders, configure local service settings from the tracked examples, then start the API (`npm run dev` in `server/`), client (`npm run dev` in `client/`), and Flask app (`uv sync --frozen` then `uv run --frozen python app.py` in `ml-services/`). Set the local ML service URL to `http://localhost:5001/` for the API proxy. See [local setup](docs/development/local-setup.md) for prerequisites, commands, ports, and configuration.
 
 ## Documentation
 

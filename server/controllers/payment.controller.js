@@ -78,41 +78,43 @@ const processScheduledPayouts = async () => {
 
     console.log(`Found ${duePayouts.length} payouts to process`);
 
+    let processed = 0;
+    let failed = 0;
+
     for (const transaction of duePayouts) {
       try {
-        // Update transaction status to completed
-        await Transaction.update(
-          {
-            status: 'completed',
-            transactionDate: new Date(),
-          },
-          { where: { id: transaction.id } }
+        // Conditional transition prevents duplicate cron invocations from
+        // processing the same pending payout record twice.
+        const [updatedCount] = await Transaction.update(
+          { status: 'completed' },
+          { where: { id: transaction.id, status: 'pending' } }
         );
+        if (!updatedCount) continue;
 
         // Send payout completion emails
         await Promise.all([
           // Email to recruiter
-          sendEmail(res, {
+          sendEmail(null, {
             from: process.env.NODEMAILER_SMTP_EMAIL,
             to: transaction.contract.recruiter.email,
-            subject: 'OptaHire - Scheduled Payout Processed',
+            subject: 'OptaHire - Scheduled Payout Completed',
             html: generateEmailTemplate({
               firstName: transaction.contract.recruiter.firstName,
               subject: 'Scheduled Payout Processed',
               content: [
                 {
                   type: 'heading',
-                  value: 'Payout Processed!',
+                  value: 'Scheduled Payout Completed!',
                 },
                 {
                   type: 'text',
-                  value: `The scheduled payout for your contract has been processed. $${transaction.netAmount} has been transferred to the interviewer.`,
+                  value: 'The scheduled payout for your contract has reached its release date. Stripe Connect handles the connected-account transfer and settlement.',
                 },
               ],
             }),
           }),
           // Email to interviewer
-          sendEmail(res, {
+          sendEmail(null, {
             from: process.env.NODEMAILER_SMTP_EMAIL,
             to: transaction.contract.interviewer.email,
             subject: 'OptaHire - Payment Released',
@@ -122,11 +124,11 @@ const processScheduledPayouts = async () => {
               content: [
                 {
                   type: 'heading',
-                  value: 'Payment Released!',
+                  value: 'Scheduled Payment Released!',
                 },
                 {
                   type: 'text',
-                  value: `Your scheduled payment of $${transaction.netAmount} has been transferred to your Stripe account.`,
+                  value: `Your scheduled payout of $${transaction.netAmount} has reached its release date. Stripe Connect handles the connected-account transfer and settlement.`,
                 },
                 {
                   type: 'text',
@@ -141,15 +143,19 @@ const processScheduledPayouts = async () => {
         console.log(
           `✅ Processed scheduled payout for contract ${transaction.contractId}`
         );
+        processed++;
       } catch (error) {
+        failed++;
         console.error(
           `❌ Failed to process payout for transaction ${transaction.id}:`,
           error
         );
       }
     }
+    return { processed, failed, skipped: false };
   } catch (error) {
     console.error('Error processing scheduled payouts:', error);
+    throw error;
   }
 };
 
