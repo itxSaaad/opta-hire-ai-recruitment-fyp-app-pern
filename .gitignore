@@ -1,0 +1,9 @@
+# Deployment credentials belong in the hosting dashboard, not in Git.
+.env
+.env.*
+!.env*.example
+**/.env
+**/.env.*
+!**/.env*.example
+.opta-migration/
+supabase/.temp/

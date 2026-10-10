@@ -55,6 +55,7 @@ const InterviewScreen = () => {
 
     const newSocket = io('/video-interviews', {
       auth: { token },
+      transports: ['websocket'],
     });
 
     newSocket.on('connect', () => {
@@ -67,6 +68,10 @@ const InterviewScreen = () => {
     newSocket.on('connect_error', (err) => {
       console.error('Connection error:', err.message);
       setError(`Connection error: ${err.message}`);
+    });
+
+    newSocket.on('disconnect', () => {
+      setIsConnected(false);
     });
 
     return () => {

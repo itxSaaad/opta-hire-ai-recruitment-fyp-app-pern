@@ -20,7 +20,6 @@ const {
   errorHandler,
   notFoundHandler,
 } = require('./middlewares/error.middleware');
-const rawBodyMiddleware = require('./middlewares/webhook.middleware');
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
@@ -68,7 +67,15 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buffer) => {
+      if (req.path === '/api/v1/payments/webhooks/stripe') {
+        req.rawBody = Buffer.from(buffer);
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -105,8 +112,6 @@ if (NODE_ENV === 'production') {
   app.use(morgan('combined'));
 }
 
-app.use(rawBodyMiddleware);
-
 app.get('/', (req, res) => {
   res
     .status(StatusCodes.OK)
@@ -118,6 +123,15 @@ app.get('/api/v1/test', (req, res) => {
     success: true,
     message: 'API health check successful. System is operational.',
     timestamp: new Date().toISOString(),
+  });
+});
+
+app.get('/api', (req, res) => {
+  res.status(StatusCodes.OK).json({
+    success: true,
+    service: 'OptaHire API',
+    health: '/api/v1/test',
+    mlHealth: '/api/v1/ai/health/system',
   });
 });
 

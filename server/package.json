@@ -4,8 +4,8 @@
   "main": "app.js",
   "type": "commonjs",
   "engines": {
-    "node": "22.x",
-    "npm": "10.x"
+    "node": "24.x",
+    "npm": ">=10"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

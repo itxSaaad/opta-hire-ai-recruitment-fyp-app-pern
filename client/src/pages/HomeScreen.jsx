@@ -10,6 +10,8 @@ import StatsSection from '../components/home/StatsSection';
 
 import { trackPageView } from '../utils/analytics';
 
+const SITE_URL = import.meta.env.VITE_CLIENT_URL || 'https://opta-hire-fyp.vercel.app';
+
 export default function HomeScreen() {
   useEffect(() => {
     trackPageView('/');
@@ -21,7 +23,7 @@ export default function HomeScreen() {
     name: 'OptaHire',
     description:
       'AI-powered recruitment platform connecting recruiters, interviewers, and candidates for optimized hiring decisions.',
-    url: 'https://opta-hire-fyp-app-client.vercel.app',
+    url: SITE_URL,
     foundingDate: '2024',
     sameAs: [
       'https://www.linkedin.com/company/optahire',
@@ -104,7 +106,7 @@ export default function HomeScreen() {
         <meta property="og:type" content="website" />
         <meta
           property="og:url"
-          content="https://opta-hire-fyp-app-client.vercel.app/"
+          content={`${SITE_URL}/`}
         />
         <meta
           property="og:title"
@@ -116,7 +118,7 @@ export default function HomeScreen() {
         />
         <meta
           property="og:image"
-          content="https://opta-hire-fyp-app-client.vercel.app/opengraph-image.png"
+          content={`${SITE_URL}/opengraph-image.png`}
         />
         <meta property="og:site_name" content="OptaHire" />
 
@@ -124,7 +126,7 @@ export default function HomeScreen() {
         <meta property="twitter:card" content="summary_large_image" />
         <meta
           property="twitter:url"
-          content="https://opta-hire-fyp-app-client.vercel.app/"
+          content={`${SITE_URL}/`}
         />
         <meta
           property="twitter:title"
@@ -136,7 +138,7 @@ export default function HomeScreen() {
         />
         <meta
           property="twitter:image"
-          content="https://opta-hire-fyp-app-client.vercel.app/opengraph-image.png"
+          content={`${SITE_URL}/opengraph-image.png`}
         />
 
         {/* Additional SEO Meta Tags */}
@@ -150,7 +152,7 @@ export default function HomeScreen() {
         {/* Canonical URL */}
         <link
           rel="canonical"
-          href="https://opta-hire-fyp-app-client.vercel.app/"
+          href={`${SITE_URL}/`}
         />
 
         {/* Structured Data */}

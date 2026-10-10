@@ -14,11 +14,21 @@ const db = {};
 let sequelize;
 
 try {
-  sequelize = config.database_url
-    ? new Sequelize(`${config.database_url}?sslmode=no-verify`, config)
+  const { database_url: databaseUrl, ...sequelizeOptions } = config;
+  sequelize = databaseUrl
+    ? new Sequelize(databaseUrl, sequelizeOptions)
     : new Sequelize(config.database, config.username, config.password, config);
 
-  sequelize.authenticate();
+  sequelize
+    .authenticate()
+    .then(() => {
+      console.log('✅ PostgreSQL authentication succeeded.'.green);
+    })
+    .catch((error) => {
+      console.error(
+        `❌ PostgreSQL authentication failed: ${error.message}`.red
+      );
+    });
 
   fs.readdirSync(__dirname)
     .filter((file) => {
@@ -49,10 +59,8 @@ try {
   console.log('\n' + '='.repeat(86).blue);
   console.log(`🌐 DATABASE CONNECTION STATUS`.bold.blue);
   console.log('='.repeat(86).blue);
-  console.log(`✅ Connection: ${config.dialect} connection established!`.green);
-  console.log(`🔗 Host:       ${sequelize.config.host}`.cyan);
-  console.log(`📦 Database:   ${sequelize.config.database}`.cyan);
-  console.log(`👤 Username:   ${sequelize.config.username}`.cyan);
+  console.log(`🔗 Host:       ${sequelize.config.host || 'from connection URL'}`.cyan);
+  console.log(`📦 Database:   ${sequelize.config.database || 'from connection URL'}`.cyan);
   console.log(`⏰ Timestamp:  ${new Date().toLocaleString()}`.magenta);
   console.log(`🌍 Node ENV:   ${process.env.NODE_ENV}`.yellow);
   console.log(`📚 Loaded Models: ${Object.keys(db).join(', ')}`.cyan);

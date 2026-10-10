@@ -149,11 +149,14 @@ const processScheduledPayouts = async () => {
   }
 };
 
-// Set up cron job to run every hour to check for due payouts
-cron.schedule('0 * * * *', () => {
-  console.log('🔄 Checking for scheduled payouts...');
-  processScheduledPayouts();
-});
+// Local development can use a shared Supabase database, so never process real
+// scheduled transfers from a developer workstation unless explicitly enabled.
+if (process.env.DISABLE_SCHEDULED_PAYOUTS !== 'true') {
+  cron.schedule('0 * * * *', () => {
+    console.log('🔄 Checking for scheduled payouts...');
+    processScheduledPayouts();
+  });
+}
 
 /**
  * @desc Create Stripe Connect account for interviewer
@@ -1137,7 +1140,11 @@ const handleStripeWebhook = asyncHandler(async (req, res) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(
+      req.rawBody || req.body,
+      sig,
+      endpointSecret
+    );
   } catch (err) {
     console.error(`Webhook signature verification failed:`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);

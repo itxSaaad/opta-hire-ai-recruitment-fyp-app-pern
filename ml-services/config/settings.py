@@ -17,18 +17,18 @@ class AppConfig:
         self.FLASK_ENV = os.getenv("FLASK_ENV", "production")
         self.DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
-        # Server Configuration - Important for Render
+        # Bind to all interfaces in hosted environments; local env may override.
         self.HOST = os.getenv("HOST", "0.0.0.0")  # Must be 0.0.0.0 for Render
         self.PORT = self._validate_port()
 
         # External Services URLs with fallbacks
         if self.FLASK_ENV == "production":
             self.CLIENT_URL = os.getenv(
-                "PROD_CLIENT_URL", "https://opta-hire-fyp-app-client.vercel.app"
+                "PROD_CLIENT_URL", "https://opta-hire-fyp.vercel.app"
             )
             self.NODE_SERVER_URL = os.getenv(
                 "PROD_NODE_SERVER_URL",
-                "https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com",
+                "https://opta-hire-fyp.vercel.app",
             )
         else:
             self.CLIENT_URL = os.getenv("CLIENT_URL", "http://localhost:5173")
@@ -78,7 +78,7 @@ class AppConfig:
 
     def _validate_port(self):
         try:
-            port = int(os.getenv("PORT", 10000))  # Render uses PORT env var
+            port = int(os.getenv("PORT", 10000))
             if 1024 <= port <= 65535:
                 return port
             else:
@@ -94,8 +94,8 @@ class AppConfig:
             return cors_env.split(",")
         else:
             return [
-                "https://opta-hire-fyp-app-client.vercel.app",
-                "https://opta-hire-develop-client.vercel.app",
+                "https://opta-hire-fyp.vercel.app",
+                "https://dev-opta-hire-fyp.vercel.app",
                 "http://localhost:5173",
                 "http://localhost:5000",
             ]
