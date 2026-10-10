@@ -9,4 +9,4 @@ Python Flask service for model health/status and candidate-job ranking/shortlist
 - [Local development](../docs/development/local-setup.md)
 - [Environment variables](../docs/development/configuration.md)
 
-Install `requirements.txt`, then run `python app.py` from this folder. Flask defaults to port `10000`; use `5001` for the API's local fallback. Rate limiting uses process memory; Redis/Upstash is not required.
+The service pins Python `3.12.13` in `.python-version` and resolves dependencies with `uv` from `pyproject.toml` and `uv.lock`. Install `uv`, then run `uv sync --frozen` and `uv run --frozen python app.py` from this folder. Flask defaults to port `10000`; use `5001` for the API's local fallback. Hosted Docker and Render deployments use Gunicorn with one worker and four threads to limit model memory usage. `requirements.txt` is generated from the lockfile for tools that only support pip. Rate limiting uses process memory; Redis/Upstash is not required.
