@@ -8,7 +8,7 @@ const swaggerOptions = {
         'OptaHire API is a RESTful API for the OptaHire application, a talent acquisition and hiring platform.',
       contact: {
         name: 'OptaHire Team',
-        url: 'https://opta-hire-fyp-app-client.vercel.app',
+        url: 'https://opta-hire-fyp.vercel.app',
       },
     },
     servers: [
@@ -17,12 +17,12 @@ const swaggerOptions = {
         description: 'Local Development server',
       },
       {
-        url: 'https://opta-hire-develop-server.vercel.app',
-        description: 'Vercel Development Server',
+        url: 'https://dev-opta-hire-fyp.vercel.app/api/v1',
+        description: 'Vercel develop preview API',
       },
       {
-        url: 'https://opta-hire-fyp-app-server-4ca9bd7992ab.herokuapp.com',
-        description: 'Heroku Production Server',
+        url: 'https://opta-hire-fyp.vercel.app/api/v1',
+        description: 'Vercel Production API',
       },
     ],
   },

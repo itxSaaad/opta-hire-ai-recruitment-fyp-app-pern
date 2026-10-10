@@ -20,7 +20,7 @@ const getAiServiceUrl = (path) => {
 
 /**
  * @desc Check AI server system health
- * @route GET /api/v1/ml/health/system
+ * @route GET /api/v1/ai/health/system
  * @access Private (Admin)
  *
  * @param {Object} req - The request object.
@@ -57,7 +57,7 @@ const checkSystemHealth = asyncHandler(async (req, res) => {
 
 /**
  * @desc Check AI service specific health status
- * @route GET /api/v1/ml/health/ai-service
+ * @route GET /api/v1/ai/health/ai-service
  * @access Private (Admin)
  *
  * @param {Object} req - The request object.
@@ -94,7 +94,7 @@ const checkAiServiceStatus = asyncHandler(async (req, res) => {
 
 /**
  * @desc Get model training status and metrics
- * @route GET /api/v1/ml/model/status
+ * @route GET /api/v1/ai/model/status
  * @access Private (Admin)
  *
  * @param {Object} req - The request object.
@@ -127,7 +127,7 @@ const getModelStatus = asyncHandler(async (req, res) => {
 
 /**
  * @desc Get detailed model performance metrics
- * @route GET /api/v1/ml/model/metrics
+ * @route GET /api/v1/ai/model/metrics
  * @access Private (Admin)
  *
  * @param {Object} req - The request object.
@@ -164,7 +164,7 @@ const getModelMetrics = asyncHandler(async (req, res) => {
 
 /**
  * @desc Train the AI model with historical data
- * @route POST /api/v1/ml/model/train
+ * @route POST /api/v1/ai/model/train
  * @access Private (Admin)
  *
  * @param {Object} req - The request object containing training parameters.
@@ -298,7 +298,7 @@ const trainModel = asyncHandler(async (req, res) => {
 
 /**
  * @desc Shortlist candidates for a job using AI
- * @route POST /api/v1/ml/shortlist/:jobId
+ * @route POST /api/v1/ai/shortlist/:jobId
  * @access Private (Admin, Recruiter)
  *
  * @param {Object} req - The request object containing the job ID.
@@ -605,7 +605,7 @@ const shortlistCandidates = asyncHandler(async (req, res) => {
 
 /**
  * @desc Preview candidate shortlisting without updating database
- * @route POST /api/v1/ml/shortlist/preview
+ * @route POST /api/v1/ai/shortlist/preview
  * @access Private (Admin, Recruiter)
  *
  * @param {Object} req - The request object containing the job ID.
