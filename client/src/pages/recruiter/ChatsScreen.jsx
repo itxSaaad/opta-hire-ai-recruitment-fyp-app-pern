@@ -30,8 +30,6 @@ const formatTime = (ts) =>
   new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 const MOBILE_BREAKPOINT = 768;
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
-
 export default function ChatsScreen() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -97,7 +95,7 @@ export default function ChatsScreen() {
       return;
     }
 
-    const newSocket = io(`${SERVER_URL}/chat`, {
+    const newSocket = io('/chat', {
       auth: { token },
     });
 
