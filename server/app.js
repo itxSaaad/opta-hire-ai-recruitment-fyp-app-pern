@@ -34,6 +34,8 @@ const interviewerRating = require('./routes/interviewerRating.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const aiRoutes = require('./routes/ai.routes.js');
 const reportRoutes = require('./routes/report.routes');
+const cronRoutes = require('./routes/cron.routes');
+const startScheduledPayoutCron = require('./jobs/scheduledPayouts.job');
 
 const setupChatSocket = require('./sockets/chat.socket');
 const setupVideoCallSocket = require('./sockets/webrtc.socket');
@@ -153,6 +155,7 @@ app.use('/api/v1/interviewer-ratings', interviewerRating);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/cron', cronRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
@@ -172,6 +175,7 @@ setupVideoCallSocket(io);
 
 const startServer = async () => {
   try {
+    startScheduledPayoutCron();
     server.listen(PORT, () => {
       console.log('\n' + '='.repeat(86).yellow);
       console.log(`🚀 SERVER STATUS`.bold.yellow);

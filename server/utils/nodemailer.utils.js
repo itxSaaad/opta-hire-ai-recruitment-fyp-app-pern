@@ -1,4 +1,3 @@
-const asyncHandler = require('express-async-handler');
 const dotenv = require('dotenv');
 const nodemailer = require('nodemailer');
 const { StatusCodes } = require('http-status-codes');
@@ -48,19 +47,19 @@ const transporter = nodemailer.createTransport({
  * @returns {Promise<Object>} The response from the nodemailer transporter.
  */
 
-const sendEmail = asyncHandler(async (res, options) => {
+const sendEmail = async (res, options) => {
   try {
     const response = await transporter.sendMail(options);
 
     return response;
   } catch (error) {
     console.error(`Error Sending Email: ${error}`);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    if (res) res.status(StatusCodes.INTERNAL_SERVER_ERROR);
     throw new Error(
       'Unable to send email notification. Please check your network connection and try again later.'
     );
   }
-});
+};
 
 /**
  * @desc Generates a universal HTML email template. This template is adaptable to various use cases (OTP, CTA, headings, lists, etc.)
