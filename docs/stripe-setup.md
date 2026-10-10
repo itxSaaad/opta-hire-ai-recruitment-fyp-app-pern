@@ -1,5 +1,7 @@
 # Stripe Setup Guide (New Developer Account)
 
+For maintained product behavior and current variable scopes, start with [contracts and payments](features/contracts-and-payments.md), [webhook integration](api/webhooks.md), and [Vercel environment mapping](operations/environment-variables.md). The historical setup steps below are onboarding context; confirm exact endpoints and event handlers against the current server routes before configuring Stripe.
+
 This guide explains exactly how a new developer should set up Stripe for this project and where each key or secret goes.
 
 ## 1) Create and prepare a Stripe account
