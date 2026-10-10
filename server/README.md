@@ -9,4 +9,4 @@ Express and Socket.IO API for authentication, recruitment workflows, persistence
 - [Environment variables](../docs/development/configuration.md)
 - [Deployment and database migration](../docs/operations/README.md)
 
-Start locally with `npm install` then `npm run dev`. Start Flask separately; set `ML_SERVICES_URL=http://localhost:5001/` in the API environment. Keep credentials in ignored local environment files.
+Start locally with `npm install` then `npm run dev`. Start Flask separately; set `ML_SERVICES_URL=http://localhost:5001/` in the API environment. Keep credentials in private local settings and never commit them.

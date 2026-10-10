@@ -1,6 +1,6 @@
 # Configuration
 
-Local secrets belong in ignored per-service `.env` files; examples contain names/placeholders only. Real root `.env.production` and `.env.preview` are ignored import bundles consumed by `vercel-env-import.ps1`. Never stage bundles or print their contents.
+Local credentials belong in private per-service settings; tracked examples document variable names and placeholder values. Keep credentials in local secret storage and provider settings, never in source control or logs.
 
 | Variable family | Consumer | Purpose |
 | --- | --- | --- |
@@ -15,5 +15,6 @@ Local secrets belong in ignored per-service `.env` files; examples contain names
 | `VITE_CLIENT_URL`, `VITE_GA_TRACKING_ID` | Client | Public build-time metadata/analytics |
 | `MODEL_*`, `WEIGHT_*`, `MAX_CANDIDATES`, `MIN_SIMILARITY` | Flask | Model config, scoring, bounds |
 | `RATE_LIMIT_*` | API/Flask | In-memory limits; no Redis/Upstash variable is needed |
+| `DISABLE_SCHEDULED_PAYOUTS` | API | Keep `true` until an authenticated, idempotent payout processor performs verified Stripe transfers and safe state transitions |
 
 See [Vercel env scopes](../operations/environment-variables.md). `VITE_*` values are public and build-time. Preview shares database, payment and mail integrations with Production, so it can produce real effects.

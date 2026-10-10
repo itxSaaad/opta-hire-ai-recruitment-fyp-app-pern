@@ -6,7 +6,7 @@ This procedure protects source data and provides rollback. The Heroku app was ob
 
 1. Confirm Supabase project, destination, TLS CA and exact Vercel env scope; confirm Heroku app/database attachment by exact identity.
 2. Inventory schema/migrations, extensions, sequences, constraints, indexes, large objects and row counts on both databases. Sample records without logging PII.
-3. Capture and verify a fresh Heroku backup; take a Supabase snapshot/`pg_dump` as rollback before replacing destination data. Store artifacts in ignored `.opta-migration/` only.
+3. Capture and verify a fresh Heroku backup; take a Supabase snapshot/`pg_dump` as rollback before replacing destination data. Keep backup artifacts in protected local storage, outside version control.
 4. Check PostgreSQL version, extensions and owner/role compatibility. A restore using clean/drop can destroy target data; test against a disposable DB when possible.
 
 ## Cutover
@@ -24,4 +24,4 @@ Route traffic back to the old service if validation fails. Restore the Supabase 
 
 ## Credential handling
 
-The same current DB credential is shared with Preview at the user's direction and planned for later rotation. Update both Vercel scopes and local ignored bundles together, redeploy, and verify after rotation. Never commit credentials or dumps. The CA certificate is public trust material, not the DB password.
+The same current DB credential is shared with Preview at the user's direction and planned for later rotation. Update both generic Vercel scopes and private local settings together, redeploy, and verify after rotation. Never commit credentials or dumps. The CA certificate is public trust material, not the DB password.

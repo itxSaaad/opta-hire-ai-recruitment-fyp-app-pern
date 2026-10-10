@@ -26,9 +26,9 @@ Notes:
 
 Where to use them in this project:
 
-- Server `.env`:
+- Server private settings:
   - `STRIPE_SECRET_KEY=sk_test_...`
-- Client `.env`:
+- Client public settings:
   - `VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...`
 
 Do not place secret keys in client-side environment variables.
@@ -59,19 +59,19 @@ http://localhost:5000/api/v1/payments/webhooks/stripe
 
 Where to use it:
 
-- Server `.env`:
+- Server private settings:
   - `STRIPE_WEBHOOK_SECRET=whsec_...`
 
 ## 4) Configure project environment variables
 
-Server `.env` required Stripe values:
+Server private settings required Stripe values:
 
 ```env
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-Client `.env` required Stripe values:
+Client public settings required Stripe values:
 
 ```env
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -127,7 +127,7 @@ After forwarding, copy the provided signing secret and set `STRIPE_WEBHOOK_SECRE
 
 ## 8) Security and team onboarding rules
 
-- Never commit `.env` files with real Stripe keys.
+- Never commit local configuration files with real Stripe keys.
 - Rotate keys immediately if exposed.
 - Give each developer their own test keys where possible.
 - Use separate Stripe accounts or projects for staging vs production.

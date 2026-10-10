@@ -4,16 +4,16 @@
 
 ```mermaid
 sequenceDiagram
-  actor C as Candidate
-  participant UI as React client
-  participant API as Express API
-  participant DB as Supabase PostgreSQL
-  C->>UI: Sign in, update profile/resume, choose job
-  UI->>API: Cookie-authenticated /api/v1 calls
-  API->>DB: Read user/resume/job; write application
-  DB-->>API: Application state
-  API-->>UI: Result and next step
-  UI-->>C: Confirmation and application status
+  actor Candidate
+  participant Browser as "React client"
+  participant Express as "Express API"
+  participant Postgres as "Supabase PostgreSQL"
+  Candidate->>Browser: Sign in, update profile/resume, choose job
+  Browser->>Express: Cookie-authenticated /api/v1 calls
+  Express->>Postgres: Read user/resume/job; write application
+  Postgres-->>Express: Application state
+  Express-->>Browser: Result and next step
+  Browser-->>Candidate: Confirmation and application status
 ```
 
 Exact required fields and transitions are in the application/resume controllers and Sequelize models. Consult [feature workflows](../features/README.md) and [data model](../data/models.md) before changing them.
@@ -22,22 +22,22 @@ Exact required fields and transitions are in the application/resume controllers 
 
 ```mermaid
 sequenceDiagram
-  actor R as Recruiter
-  participant UI as Client
-  participant API as Express AI proxy
-  participant ML as Flask service
-  participant DB as PostgreSQL
-  R->>UI: Request shortlist for job
-  UI->>API: Authenticated recruiter request
-  API->>DB: Load job and eligible candidates
-  API->>ML: Private JSON request via ML_SERVICES_URL
-  ML->>ML: Validate and score candidate features
-  ML-->>API: Ranked candidates and score details
-  API-->>UI: Preview or shortlist result
-  UI-->>R: Review recommendation
-  R->>UI: Accept workflow action
-  UI->>API: Persist decision
-  API->>DB: Update application state
+  actor Recruiter
+  participant Browser as "React client"
+  participant Express as "Express API and AI proxy"
+  participant Flask as "Python Flask service"
+  participant Postgres as "Supabase PostgreSQL"
+  Recruiter->>Browser: Request shortlist for job
+  Browser->>Express: Authenticated recruiter request
+  Express->>Postgres: Load job and eligible candidates
+  Express->>Flask: Private JSON request via service binding
+  Flask->>Flask: Validate features and calculate weighted scores
+  Flask-->>Express: Ranked candidates and score details
+  Express-->>Browser: Preview or shortlist result
+  Browser-->>Recruiter: Review recommendation
+  Recruiter->>Browser: Accept workflow action
+  Browser->>Express: Persist decision
+  Express->>Postgres: Update application state
 ```
 
 Preview returns rankings without the normal shortlist persistence path. Model output is decision support; the recruiter owns the hiring decision.

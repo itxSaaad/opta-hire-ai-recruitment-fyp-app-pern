@@ -1,8 +1,8 @@
 # OptaHire
 
-**AI-assisted recruiting, built as a final-year project.** OptaHire brings candidates, recruiters, and interviewers into one workflow: candidates discover jobs and apply with a resume; recruiters review applicants and shortlist matches; teams schedule interviews, communicate in real time, and manage hiring contracts and payments.
+**AI candidate screening and recruitment workflow platform, built as a final-year project.** OptaHire brings candidates, recruiters, and interviewers into one workflow: candidates discover jobs and apply with a resume; recruiters review applicants and shortlist matches; teams schedule interviews, communicate in real time, and manage hiring contracts and payments.
 
-The project’s FYP contribution is the connected workflow: structured recruitment data and candidate profiles feed an explainable, weighted matching service, while the same application carries a match into shortlisting, interviews, and hiring. It combines a PERN application with a Python ML service and browser-to-browser interview calling—an end-to-end system rather than a standalone resume classifier.
+The FYP contribution is an end-to-end AI recruitment workflow: candidate profiles and resumes feed a transparent candidate-job matching pipeline, and recruiter decisions continue through applications, interviews, contracts, and payments. The Python service ranks candidates with a weighted scoring model: direct skill matches plus TF-IDF vector cosine similarity, experience relevance, education alignment, industry rules, and overall text similarity. This is explainable decision support for human recruiters, not an automated hiring decision. The PERN stack, scikit-learn NLP features, Stripe Connect, Socket.IO, and peer-to-peer WebRTC bring the full hiring workflow into one system.
 
 > Built by Computer Science students at the University of the Punjab, Gujranwala Campus. Contributions, issue reports, and stars help us improve and share the project.
 
@@ -38,7 +38,7 @@ flowchart LR
   ML -->|loads bundled model and scoring settings| Model[scikit-learn model]
 ```
 
-Candidates use the browser to build a profile, upload a resume, search openings, submit applications, and join interviews. Recruiters create openings, review applications and match scores, shortlist candidates, message them, and advance hiring through contracts and payments. Interviewers manage interview availability, join calls, submit ratings, and handle payout onboarding. The admin role uses management and reporting screens. REST requests and Socket.IO signaling pass through the API; video media is peer-to-peer WebRTC.
+Candidates use the browser to build profiles, upload resumes, find openings, apply, and join interviews. Recruiters publish jobs, review applicants and score explanations, shortlist, communicate, and manage contracts and payments. Interviewers manage interview participation, submit ratings, and configure Stripe Connect onboarding; administrators manage users and reporting. REST requests and Socket.IO signaling pass through Express, while interview media travels peer-to-peer over WebRTC. For exact scoring inputs, weights, missing-data fallbacks, and ranking behavior, see [candidate matching](docs/features/matching.md).
 
 ## Services
 
@@ -48,11 +48,11 @@ Candidates use the browser to build a profile, upload a resume, search openings,
 | API | [`server/`](server/) | Express endpoints, authentication, PostgreSQL persistence, email, Stripe, Socket.IO and ML proxy |
 | Matching service | [`ml-services/`](ml-services/) | Flask health/model endpoints and candidate-job scoring/shortlisting |
 
-The root [`vercel.json`](vercel.json) configures all three services in one Vercel project. Production and the `develop` Preview now have the shared Supabase connection configured. Production and Preview also share payment/email credentials, so preview effects are real. The app uses in-process rate limiting and no external cache service. Heroku and Render remain available until the final data sync and hosted workflow checks pass.
+The root [`vercel.json`](vercel.json) configures all three services in one Vercel project. Vercel uses generic Production and Preview environment scopes; a Preview deployment is selected by its deployment context, not by branch-specific secrets. Production and Preview share database/payment/email integrations, so preview effects are real. The app uses in-process rate limiting and no external cache service. Heroku and Render remain available until the final data sync and hosted workflow checks pass.
 
 ## Get started
 
-Install the client and API dependencies in their respective folders, provide each service’s ignored `.env` file based on its `.env.example`, then start the API (`npm run dev` in `server/`), client (`npm run dev` in `client/`), and Flask app (`python app.py` in `ml-services/`). Set the local ML service URL to `http://localhost:5001/` for the API proxy. See [local setup](docs/development/local-setup.md) for prerequisites, commands, ports, and configuration.
+Install the client and API dependencies in their respective folders, configure local service settings from the tracked examples, then start the API (`npm run dev` in `server/`), client (`npm run dev` in `client/`), and Flask app (`python app.py` in `ml-services/`). Set the local ML service URL to `http://localhost:5001/` for the API proxy. See [local setup](docs/development/local-setup.md) for prerequisites, commands, ports, and configuration.
 
 ## Documentation
 

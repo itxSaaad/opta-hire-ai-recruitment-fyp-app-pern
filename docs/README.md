@@ -22,4 +22,4 @@ These guides describe behavior implemented in the repository and current hosting
 | Backend developer | [API service](services/api.md) → [Data model](data/models.md) → [Security](security/README.md) |
 | Operator | [Deployment](operations/deployment.md) → [Environments](operations/environment-variables.md) → [Migration](data/migration-runbook.md) |
 
-Real credentials belong in ignored local env files and provider settings. Never commit env bundles, dumps, tokens, private keys, or provider output containing secret values. Browser `VITE_*` variables are public by design; server credentials must never use that prefix.
+Real credentials belong in local secret storage and provider settings. Never commit private configuration, dumps, tokens, private keys, or provider output containing secret values. Browser `VITE_*` variables are public by design; server credentials must never use that prefix.
